@@ -16,9 +16,9 @@ Usage:
     nox -s scan        # Scan SBOM for vulnerabilities
     nox -s compliance  # Run all compliance checks
     nox -s assuredoss  # Validate Google Assured OSS credentials
-    nox -s test        # Run tests across multiple Python versions
-    nox -s lint        # Run Ruff linting and type hint checks across multiple Python versions
-    nox -s typecheck   # Run MyPy type checking across multiple Python versions
+    nox -s test        # Run tests across Python 3.10-3.14
+    nox -s lint        # Run Ruff linting and type hint checks across Python 3.10-3.14
+    nox -s typecheck   # Run MyPy type checking across Python 3.10-3.14
 """
 
 import nox
@@ -272,12 +272,12 @@ def assuredoss(session: nox.Session) -> None:
     session.run("python", "scripts/validate_assuredoss.py")
 
 
-@nox.session(python=["3.11", "3.12", "3.13"])
+@nox.session(python=["3.10", "3.11", "3.12", "3.13", "3.14"])
 def test(session: nox.Session) -> None:
     """Run tests across multiple Python versions.
 
     This session runs the full test suite with coverage reporting
-    across Python 3.11, 3.12, and 3.13 to ensure compatibility.
+    across Python 3.10, 3.11, 3.12, 3.13, and 3.14 to ensure compatibility.
     """
     session.install("-e", ".[dev]")
     session.run(
@@ -291,7 +291,7 @@ def test(session: nox.Session) -> None:
     )
 
 
-@nox.session(python=["3.11", "3.12", "3.13"])
+@nox.session(python=["3.10", "3.11", "3.12", "3.13", "3.14"])
 def lint(session: nox.Session) -> None:
     """Run linting across multiple Python versions.
 
@@ -304,7 +304,7 @@ def lint(session: nox.Session) -> None:
     session.run("python", "scripts/check_type_hints.py", "--src-dir=src")
 
 
-@nox.session(python=["3.11", "3.12", "3.13"])
+@nox.session(python=["3.10", "3.11", "3.12", "3.13", "3.14"])
 def typecheck(session: nox.Session) -> None:
     """Run type checking across multiple Python versions.
 

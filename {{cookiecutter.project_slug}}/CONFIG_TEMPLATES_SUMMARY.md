@@ -101,13 +101,13 @@ All configuration files have been created in `/home/user/cookiecutter-python-tem
   - **sbom**: Generate CycloneDX SBOM using UV (runtime, complete)
   - **scan**: Scan SBOM for vulnerabilities with Trivy (Docker-based)
   - **compliance**: Run all compliance checks (REUSE, SBOM, scan)
-  - **test**: Run tests across multiple Python versions (3.11, 3.12, 3.13)
-  - **lint**: Run Ruff linting and type hint checks across multiple Python versions
-  - **typecheck**: Run MyPy type checking across multiple Python versions
+  - **test**: Run tests across Python 3.10-3.14
+  - **lint**: Run Ruff linting and type hint checks across Python 3.10-3.14
+  - **typecheck**: Run MyPy type checking across Python 3.10-3.14
 - **Features**:
   - Uses nox-uv for fast virtual environment creation
   - UV as the default venv backend for all sessions
-  - Multi-Python version testing support (3.11, 3.12, 3.13)
+  - Multi-Python version testing support (3.10, 3.11, 3.12, 3.13, 3.14)
   - Reuses existing virtualenvs across sessions
   - External tool support for Docker-based operations
   - Comprehensive docstrings with usage examples

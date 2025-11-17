@@ -9,7 +9,7 @@ authors = [
     {name = "{{ cookiecutter.author_name }}", email = "{{ cookiecutter.author_email }}"}
 ]
 readme = "README.md"
-requires-python = ">={{ cookiecutter.python_version }},<3.15"
+requires-python = ">=3.10,<3.15"
 license = {text = "{{ cookiecutter.license }}"}
 keywords = []
 classifiers = [
@@ -29,6 +29,41 @@ dependencies = [
     {% if cookiecutter.include_cli == "yes" -%}
     "click>=8.1.0",
     {% endif -%}
+
+    # Cross-Version Compatibility Dependencies
+    # =========================================
+    # This template targets Python 3.10-3.14. Add version-specific dependencies
+    # here if your code needs compatibility shims or replacements.
+    #
+    # COMMON BACKPORTS FOR 3.10 COMPATIBILITY:
+    #   "tomli>=2.0.0; python_version < '3.11'",  # TOML parser (tomllib added in 3.11)
+    #   "exceptiongroup>=1.1.0; python_version < '3.11'",  # Exception groups (added in 3.11)
+    #   "typing-extensions>=4.12.0",  # Backport newer typing features
+    #
+    # AVAILABLE IN 3.11+:
+    #   - tomllib: Native TOML parser
+    #   - asyncio.TaskGroup: Structured concurrency
+    #   - typing.Self, TypeVarTuple, Never, LiteralString
+    #   - ExceptionGroup and except* syntax
+    #
+    # PEP 594 REMOVALS IN 3.13 (add replacements if needed):
+    #   Removed modules: aifc, audioop, cgi, cgitb, chunk, crypt, imghdr, mailcap,
+    #   msilib, nis, nntplib, ossaudiodev, pipes, sndhdr, spwd, sunau, telnetlib,
+    #   uu, xdrlib
+    #
+    # Examples of version-specific dependencies:
+    #   # Backport for Python 3.10
+    #   "tomli>=2.0.0; python_version < '3.11'",
+    #
+    #   # Replacement for removed modules in 3.13+
+    #   "legacy-cgi>=2.6.1; python_version >= '3.13'",  # If you need cgi module
+    #   "filetype>=1.2.0",  # Better alternative to imghdr/sndhdr
+    #
+    #   # Typing enhancements
+    #   "typing-extensions>=4.12.0; python_version < '3.13'",  # For latest typing features
+    #
+    # UV handles these automatically based on the Python version being used.
+    # See: https://docs.astral.sh/uv/concepts/dependencies/#dependency-specifiers
 ]
 
 # Optional dependency groups
