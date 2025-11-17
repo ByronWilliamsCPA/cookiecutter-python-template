@@ -73,23 +73,23 @@ Guidance for Claude Code when working with this repository.
 ### Quick Start
 ```bash
 # Setup
-poetry install --with dev
-poetry run pre-commit install
+uv sync --all-extras
+uv run pre-commit install
 
 # Development cycle
-poetry run pytest -v              # Run tests
-poetry run ruff format .          # Format code
-poetry run ruff check . --fix     # Lint and fix
-poetry run mypy src/              # Type check
+uv run pytest -v              # Run tests
+uv run ruff format .          # Format code
+uv run ruff check . --fix     # Lint and fix
+uv run mypy src/              # Type check
 ```
 
 ### Before Commit (MANDATORY)
 ```bash
 # All must pass:
-poetry run pytest --cov=src --cov-fail-under={{cookiecutter.code_coverage_target}}
-poetry run ruff check .
-poetry run mypy src/
-poetry run bandit -r src
+uv run pytest --cov=src --cov-fail-under={{cookiecutter.code_coverage_target}}
+uv run ruff check .
+uv run mypy src/
+uv run bandit -r src
 pre-commit run --all-files        # Or: git commit (runs automatically)
 ```
 
@@ -170,8 +170,8 @@ def test_function_name_should_expected_behavior():
 
 ### Pre-Commit Security Checks
 ```bash
-poetry run bandit -r src         # Python security analysis
-poetry run safety check          # Dependency vulnerabilities
+uv run bandit -r src         # Python security analysis
+uv run safety check          # Dependency vulnerabilities
 {% if cookiecutter.include_gitleaks == "yes" -%}
 gitleaks detect --no-git        # Secrets detection
 {% endif -%}
@@ -280,27 +280,27 @@ settings = Settings()
 
 ### Add New Dependency
 ```bash
-poetry add package-name              # Production dependency
-poetry add --group dev package-name  # Development dependency
+uv add package-name              # Production dependency
+uv add --dev package-name        # Development dependency
 ```
 
 ### Update Dependencies
 ```bash
-poetry update                        # Update all
-poetry update package-name           # Update specific package
+uv sync --upgrade                        # Update all
+uv sync --upgrade-package package-name   # Update specific package
 ```
 
 ### Run Tests with Coverage
 ```bash
-poetry run pytest -v --cov=src --cov-report=html
+uv run pytest -v --cov=src --cov-report=html
 open htmlcov/index.html              # View coverage report
 ```
 
 {% if cookiecutter.use_mkdocs == "yes" -%}
 ### Build Documentation
 ```bash
-poetry run mkdocs serve              # Local preview
-poetry run mkdocs build              # Build static site
+uv run mkdocs serve              # Local preview
+uv run mkdocs build              # Build static site
 ```
 {% endif -%}
 
@@ -313,15 +313,15 @@ pre-commit clean                     # Clean cache
 pre-commit install --install-hooks   # Reinstall hooks
 ```
 
-### Poetry Lock Issues
+### UV Lock Issues
 ```bash
-poetry lock --no-update              # Regenerate lock file
-poetry install                       # Reinstall dependencies
+uv lock                          # Regenerate lock file
+uv sync                          # Reinstall dependencies
 ```
 
 ### MyPy Type Errors
 ```bash
-poetry run mypy src/ --show-error-codes  # See error codes
+uv run mypy src/ --show-error-codes  # See error codes
 # Add `# type: ignore[error-code]` for specific issues
 ```
 
@@ -337,7 +337,8 @@ poetry run mypy src/ --show-error-codes  # See error codes
 
 ## Additional Resources
 
-- **Poetry Docs**: https://python-poetry.org/docs/
+- **UV Docs**: https://docs.astral.sh/uv/
+- **Cruft Docs**: https://cruft.github.io/cruft/
 - **Pydantic Docs**: https://docs.pydantic.dev/
 - **Ruff Docs**: https://docs.astral.sh/ruff/
 - **Conventional Commits**: https://www.conventionalcommits.org/

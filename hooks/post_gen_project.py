@@ -142,7 +142,7 @@ def setup_pre_commit() -> None:
         else:
             print("  ⚠ Failed to install pre-commit hooks")
     else:
-        print("  ⚠ pre-commit not found - run 'poetry install' and 'poetry run pre-commit install'")
+        print("  ⚠ pre-commit not found - run 'uv sync' and 'uv run pre-commit install'")
 
 
 def create_initial_directories() -> None:
@@ -266,18 +266,18 @@ def print_success_message() -> None:
     print(f"     cd {project_slug}")
 
     print(f"\n  2. Install dependencies:")
-    print(f"     poetry install --with dev")
+    print(f"     uv sync --with dev")
 
     if use_pre_commit:
         print(f"\n  3. Install pre-commit hooks:")
-        print(f"     poetry run pre-commit install")
+        print(f"     uv run pre-commit install")
 
     print(f"\n  4. Run tests:")
-    print(f"     poetry run pytest -v")
+    print(f"     uv run pytest -v")
 
     if use_mkdocs:
         print(f"\n  5. Build documentation:")
-        print(f"     poetry run mkdocs build")
+        print(f"     uv run mkdocs build")
 
     print(f"\n  6. Initialize git (if not done automatically):")
     print(f"     git init")

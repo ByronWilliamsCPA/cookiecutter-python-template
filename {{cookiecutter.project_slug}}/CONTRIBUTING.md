@@ -26,7 +26,7 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
 ### Prerequisites
 
 - Python {{cookiecutter.python_version}} or higher
-- Poetry 1.7+ for dependency management
+- UV 1.7+ for dependency management
 - Git
 
 {%- if cookiecutter.use_pre_commit == "yes" %}
@@ -40,25 +40,25 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
 git clone {{cookiecutter.repo_url}}.git
 cd {{cookiecutter.project_slug}}
 
-# Install dependencies with Poetry
-poetry install --with dev
+# Install dependencies with UV
+uv sync --all-extras
 
 {%- if cookiecutter.include_ml_dependencies == "yes" %}
 # Install ML dependencies (if needed)
-poetry install --with dev,ml
+uv sync --all-extras,ml
 {%- endif %}
 
 {%- if cookiecutter.use_pre_commit == "yes" %}
 # Setup pre-commit hooks (REQUIRED)
-poetry run pre-commit install
+uv run pre-commit install
 
 # Verify installation
-poetry run pytest -v
+uv run pytest -v
 {%- if cookiecutter.use_ruff == "yes" %}
-poetry run ruff check src tests
+uv run ruff check src tests
 {%- endif %}
 {%- if cookiecutter.use_mypy == "yes" %}
-poetry run mypy src
+uv run mypy src
 {%- endif %}
 {%- endif %}
 ```
@@ -120,23 +120,23 @@ Before committing, ensure all quality checks pass:
 ```bash
 {%- if cookiecutter.use_ruff == "yes" %}
 # Format code
-poetry run ruff format src tests
+uv run ruff format src tests
 
 # Lint code
-poetry run ruff check --fix src tests
+uv run ruff check --fix src tests
 {%- endif %}
 
 {%- if cookiecutter.use_mypy == "yes" %}
 # Type checking
-poetry run mypy src
+uv run mypy src
 {%- endif %}
 
 # Run tests with coverage
-poetry run pytest --cov={{cookiecutter.project_slug}} --cov-report=term-missing
+uv run pytest --cov={{cookiecutter.project_slug}} --cov-report=term-missing
 
 {%- if cookiecutter.use_pre_commit == "yes" %}
 # Run all pre-commit hooks manually
-poetry run pre-commit run --all-files
+uv run pre-commit run --all-files
 {%- endif %}
 ```
 
@@ -152,12 +152,12 @@ All contributions MUST meet these requirements:
 - **Indentation**: 4 spaces (no tabs)
 - **Imports**: Sorted with Ruff
 - **Quotes**: Double quotes for strings
-- **Verification**: `poetry run ruff format src tests`
+- **Verification**: `uv run ruff format src tests`
 {%- else %}
 - **Tool**: Black
 - **Line Length**: 88 characters
 - **Indentation**: 4 spaces (no tabs)
-- **Verification**: `poetry run black src tests`
+- **Verification**: `uv run black src tests`
 {%- endif %}
 
 ### Linting
@@ -165,8 +165,8 @@ All contributions MUST meet these requirements:
 {%- if cookiecutter.use_ruff == "yes" %}
 - **Tool**: Ruff with project configuration
 - **Rules**: Comprehensive rule set (see `pyproject.toml`)
-- **Auto-fix**: `poetry run ruff check --fix src tests`
-- **Verification**: `poetry run ruff check src tests`
+- **Auto-fix**: `uv run ruff check --fix src tests`
+- **Verification**: `uv run ruff check src tests`
 {%- else %}
 - **Tool**: Pylint or similar
 - **Verification**: Run configured linter
@@ -177,7 +177,7 @@ All contributions MUST meet these requirements:
 {%- if cookiecutter.use_mypy == "yes" %}
 - **Tool**: MyPy strict mode for `src/`
 - **Coverage**: All public functions must have type hints
-- **Verification**: `poetry run mypy src`
+- **Verification**: `uv run mypy src`
 {%- else %}
 - **Tool**: Type hints recommended
 - **Coverage**: Add type hints for clarity
@@ -188,7 +188,7 @@ All contributions MUST meet these requirements:
 - **No Hardcoded Secrets**: Use environment variables or secure vaults
 - **Input Validation**: Validate all user inputs and file paths
 - **Path Sanitization**: Use `pathlib.Path.resolve()` to prevent directory traversal
-- **Dependency Security**: Run `poetry run safety check` before submitting PRs
+- **Dependency Security**: Run `uv run safety check` before submitting PRs
 
 ### Type Hints
 
@@ -254,20 +254,20 @@ All new functionality MUST include corresponding tests:
 
 ```bash
 # Run all tests
-poetry run pytest -v
+uv run pytest -v
 
 # Run only unit tests
-poetry run pytest -v -m unit
+uv run pytest -v -m unit
 
 # Run only integration tests
-poetry run pytest -v -m integration
+uv run pytest -v -m integration
 
 # Run tests with coverage report
-poetry run pytest --cov={{cookiecutter.project_slug}} --cov-report=html
+uv run pytest --cov={{cookiecutter.project_slug}} --cov-report=html
 # Open htmlcov/index.html to view coverage report
 
 # Run specific test file
-poetry run pytest tests/unit/test_module.py -v
+uv run pytest tests/unit/test_module.py -v
 ```
 
 ### Writing Tests

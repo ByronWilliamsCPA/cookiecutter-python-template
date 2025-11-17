@@ -60,7 +60,7 @@ jobs:
 
       - name: Build distribution packages
         run: |
-          poetry build
+          uv build
           echo "📦 Built packages:"
           ls -lh dist/
 

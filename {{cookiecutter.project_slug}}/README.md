@@ -52,7 +52,7 @@ This project provides:
 ### Prerequisites
 
 - Python {{cookiecutter.python_version}}+
-- Poetry 1.7+ for dependency management
+- UV for dependency management
 
 ### Installation
 
@@ -62,18 +62,18 @@ git clone {{cookiecutter.repo_url}}.git
 cd {{cookiecutter.project_slug}}
 
 # Install dependencies
-poetry install
+uv sync
 
 # Install with dev tools (recommended)
-poetry install --with dev
+uv sync --all-extras
 
 {%- if cookiecutter.include_ml_dependencies == "yes" %}
 # Install with ML dependencies
-poetry install --with dev,ml
+uv sync --all-extras,ml
 {%- endif %}
 
 # Setup pre-commit hooks (required)
-poetry run pre-commit install
+uv run pre-commit install
 ```
 
 ### Basic Usage
@@ -94,13 +94,13 @@ print(result)
 
 ```bash
 # Display help
-poetry run {{cookiecutter.cli_tool_name}} --help
+uv run {{cookiecutter.cli_tool_name}} --help
 
 # Use the CLI tool
-poetry run {{cookiecutter.cli_tool_name}} command --option value
+uv run {{cookiecutter.cli_tool_name}} command --option value
 
 # Example: Process input file
-poetry run {{cookiecutter.cli_tool_name}} process input.txt --output result.json
+uv run {{cookiecutter.cli_tool_name}} process input.txt --output result.json
 ```
 
 {%- endif %}
@@ -111,19 +111,19 @@ poetry run {{cookiecutter.cli_tool_name}} process input.txt --output result.json
 
 ```bash
 # Install all dependencies including dev tools
-poetry install --with dev
+uv sync --all-extras
 
 # Setup pre-commit hooks
-poetry run pre-commit install
+uv run pre-commit install
 
 # Run tests
-poetry run pytest -v
+uv run pytest -v
 
 # Run with coverage
-poetry run pytest --cov={{cookiecutter.project_slug}} --cov-report=html
+uv run pytest --cov={{cookiecutter.project_slug}} --cov-report=html
 
 # Run all quality checks
-poetry run pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ### Code Quality Standards
@@ -141,35 +141,35 @@ All code must meet these requirements:
 
 ```bash
 # Run all tests
-poetry run pytest -v
+uv run pytest -v
 
 # Run specific test file
-poetry run pytest tests/unit/test_module.py -v
+uv run pytest tests/unit/test_module.py -v
 
 # Run with coverage report
-poetry run pytest --cov={{cookiecutter.project_slug}} --cov-report=term-missing
+uv run pytest --cov={{cookiecutter.project_slug}} --cov-report=term-missing
 
 # Run tests in parallel
-poetry run pytest -n auto
+uv run pytest -n auto
 ```
 
 ### Quality Checks
 
 ```bash
 # Format code
-poetry run ruff format src tests
+uv run ruff format src tests
 
 # Lint and auto-fix
-poetry run ruff check --fix src tests
+uv run ruff check --fix src tests
 
 # Type checking
-poetry run mypy src
+uv run mypy src
 
 # Security scanning
-poetry run bandit -r src
+uv run bandit -r src
 
 # Check dependencies
-poetry run safety check
+uv run safety check
 ```
 
 ## Project Structure
@@ -221,16 +221,16 @@ All new functionality must include tests:
 
 ```bash
 # Run all tests
-poetry run pytest -v
+uv run pytest -v
 
 # Run only unit tests
-poetry run pytest -v -m unit
+uv run pytest -v -m unit
 
 # Run only integration tests
-poetry run pytest -v -m integration
+uv run pytest -v -m integration
 
 # Run with coverage requirements
-poetry run pytest --cov={{cookiecutter.project_slug}} --cov-fail-under={{cookiecutter.code_coverage_target}}
+uv run pytest --cov={{cookiecutter.project_slug}} --cov-fail-under={{cookiecutter.code_coverage_target}}
 ```
 
 ## Security
