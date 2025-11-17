@@ -9,7 +9,7 @@ from typing import Any
 
 import click
 
-from {{ cookiecutter.project_slug }}.core.config import Settings
+from {{ cookiecutter.project_slug }}.core.config import settings
 from {{ cookiecutter.project_slug }}.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -83,9 +83,6 @@ def config(ctx: click.Context) -> None:
         debug = ctx.obj.get("debug", False) if ctx.obj else False
 
         logger.info("Retrieving configuration")
-
-        # Load settings from environment
-        settings = Settings()
 
         click.echo("Current Configuration:")
         click.echo(f"  Project: {{ cookiecutter.project_name }}")
