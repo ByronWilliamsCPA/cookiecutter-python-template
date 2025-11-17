@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
-      hashes: ${{ steps.hash.outputs.hashes }}
+      hashes: {% raw %}${{  steps.hash.outputs.hashes  }}{% endraw %}
 
     steps:
       - name: Harden the runner
@@ -92,7 +92,7 @@ jobs:
       attestations: write
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.10.0
     with:
-      base64-subjects: "${{ needs.build.outputs.hashes }}"
+      base64-subjects: "{% raw %}${{  needs.build.outputs.hashes  }}{% endraw %}"
       upload-assets: true
 
   sign-and-release:
@@ -118,7 +118,7 @@ jobs:
       - name: Download provenance
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
-          name: ${{ needs.provenance.outputs.provenance-name }}
+          name: {% raw %}${{  needs.provenance.outputs.provenance-name  }}{% endraw %}
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.7.0
@@ -141,12 +141,12 @@ jobs:
         id: notes
         run: |
           cat > release-notes.md <<'EOF'
-          ## Release ${{ github.ref_name }}
+          ## Release {% raw %}${{  github.ref_name  }}{% endraw %}
 
           ### 📦 Installation
 
           ```bash
-          pip install {{cookiecutter.pypi_package_name}}==${{ github.ref_name }}
+          pip install {{cookiecutter.pypi_package_name}}=={% raw %}${{  github.ref_name  }}{% endraw %}
           ```
 
           ### 🔐 Verification
@@ -176,7 +176,7 @@ jobs:
           - Source repository information
           - Complete build reproducibility metadata
 
-          Provenance file: `${{ needs.provenance.outputs.provenance-name }}`
+          Provenance file: `{% raw %}${{  needs.provenance.outputs.provenance-name  }}{% endraw %}`
 
           ### 📋 Changes
 
@@ -188,15 +188,15 @@ jobs:
         with:
           files: |
             dist/*
-            ${{ needs.provenance.outputs.provenance-name }}
+            {% raw %}${{  needs.provenance.outputs.provenance-name  }}{% endraw %}
           body_path: release-notes.md
           draft: false
-          prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+          prerelease: {% raw %}${{  contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha')  }}{% endraw %}
           generate_release_notes: true
 
       - name: Release Summary
         run: |
-          echo "## 🎉 Release ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎉 Release {% raw %}${{  github.ref_name  }}{% endraw %}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

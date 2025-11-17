@@ -55,16 +55,16 @@ jobs:
         uses: google/clusterfuzzlite/actions/build_fuzzers@v1
         with:
           language: python
-          sanitizer: ${{ matrix.sanitizer }}
+          sanitizer: {% raw %}${{  matrix.sanitizer  }}{% endraw %}
 
       - name: Run Fuzzers
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: {% raw %}${{  secrets.GITHUB_TOKEN  }}{% endraw %}
           fuzz-seconds: 600
           mode: 'code-change'
-          sanitizer: ${{ matrix.sanitizer }}
+          sanitizer: {% raw %}${{  matrix.sanitizer  }}{% endraw %}
           output-sarif: true
 
       - name: Upload SARIF
@@ -72,13 +72,13 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif
-          category: fuzzing-${{ matrix.sanitizer }}
+          category: fuzzing-{% raw %}${{  matrix.sanitizer  }}{% endraw %}
 
       - name: Upload Crash Artifacts
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: fuzzing-crashes-${{ matrix.sanitizer }}
+          name: fuzzing-crashes-{% raw %}${{  matrix.sanitizer  }}{% endraw %}
           path: build/out/
           retention-days: 7
 
@@ -87,10 +87,10 @@ jobs:
         run: |
           echo "## Fuzzing Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Sanitizer**: ${{ matrix.sanitizer }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Sanitizer**: {% raw %}${{  matrix.sanitizer  }}{% endraw %}" >> $GITHUB_STEP_SUMMARY
           echo "- **Duration**: 600 seconds" >> $GITHUB_STEP_SUMMARY
-          echo "- **Build Status**: ${{ steps.build.outcome }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Run Status**: ${{ steps.run.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Status**: {% raw %}${{  steps.build.outcome  }}{% endraw %}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run Status**: {% raw %}${{  steps.run.outcome  }}{% endraw %}" >> $GITHUB_STEP_SUMMARY
 
 {%- else %}
 name: Continuous Fuzzing (Disabled)
