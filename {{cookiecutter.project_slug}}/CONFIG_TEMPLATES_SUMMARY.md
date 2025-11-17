@@ -101,18 +101,45 @@ All configuration files have been created in `/home/user/cookiecutter-python-tem
   - **sbom**: Generate CycloneDX SBOM using UV (runtime, complete)
   - **scan**: Scan SBOM for vulnerabilities with Trivy (Docker-based)
   - **compliance**: Run all compliance checks (REUSE, SBOM, scan)
-  - **test**: Run tests across multiple Python versions (3.11, 3.12, 3.13)
-  - **lint**: Run Ruff linting across multiple Python versions
-  - **typecheck**: Run MyPy type checking across multiple Python versions
+  - **test**: Run tests across Python 3.10-3.14
+  - **lint**: Run Ruff linting and type hint checks across Python 3.10-3.14
+  - **typecheck**: Run MyPy type checking across Python 3.10-3.14
 - **Features**:
   - Uses nox-uv for fast virtual environment creation
   - UV as the default venv backend for all sessions
-  - Multi-Python version testing support (3.11, 3.12, 3.13)
+  - Multi-Python version testing support (3.10, 3.11, 3.12, 3.13, 3.14)
   - Reuses existing virtualenvs across sessions
   - External tool support for Docker-based operations
   - Comprehensive docstrings with usage examples
   - Path argument support for flexible execution
   - Error handling for missing SBOM files
+
+### 7. **scripts/check_type_hints.py** - Type Hint Syntax Validation
+- **Purpose**: Enforce that files using Python 3.10+ `|` union syntax include `from __future__ import annotations`
+- **No Cookiecutter Variables** - Script is generic for all projects
+- **Features**:
+  - AST-based detection of `|` union syntax in type annotations
+  - Regex pattern matching for common type hint patterns (`: Type | Type`, `-> Type | Type`)
+  - Automatic fixing with `--fix` flag
+  - Supports `--src-dir` to specify source directory (defaults to `src/`)
+  - `--include-tests` flag to also check test files
+  - Comprehensive error reporting with file paths and violations
+- **Integration**:
+  - Runs in `nox -s lint` session across multiple Python versions
+  - Integrated into CI workflow quality checks
+  - Exit code 0 for compliance, 1 for violations
+- **Usage Examples**:
+  ```bash
+  # Check source files
+  python scripts/check_type_hints.py
+
+  # Check and auto-fix
+  python scripts/check_type_hints.py --fix
+
+  # Include test files
+  python scripts/check_type_hints.py --include-tests
+  ```
+- **Rationale**: While Python 3.10+ supports native `|` union syntax, including the future import ensures forward compatibility and code clarity across Python versions.
 
 ## Cookiecutter Variables Used
 
