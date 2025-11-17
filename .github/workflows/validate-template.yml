@@ -1,0 +1,87 @@
+name: Validate Template
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cookiecutter black ruff mypy
+
+      - name: Validate cookiecutter.json
+        run: |
+          python -m json.tool cookiecutter.json > /dev/null
+          echo "✓ cookiecutter.json is valid JSON"
+
+      - name: Validate hook files
+        run: |
+          python -m py_compile hooks/pre_gen_project.py
+          python -m py_compile hooks/post_gen_project.py
+          echo "✓ Hook files have valid Python syntax"
+
+      - name: Check hook code quality
+        run: |
+          ruff check hooks/
+          black --check hooks/
+          mypy hooks/ --ignore-missing-imports
+
+      - name: Test template generation (minimal)
+        run: |
+          cookiecutter . --no-input --output-dir /tmp/test-minimal
+          echo "✓ Template generated successfully with defaults"
+
+      - name: Test template generation (with features)
+        run: |
+          cookiecutter . --no-input \
+            --output-dir /tmp/test-features \
+            include_cli=yes \
+            include_api_client=yes \
+            include_database=sqlalchemy_migrations \
+            include_ml_dependencies=yes
+          echo "✓ Template generated successfully with features"
+
+      - name: Validate generated project structure
+        run: |
+          cd /tmp/test-minimal/my_python_project
+          test -f pyproject.toml || exit 1
+          test -f README.md || exit 1
+          test -f .pre-commit-config.yaml || exit 1
+          test -d tests || exit 1
+          test -d src/my_python_project || exit 1
+          echo "✓ Generated project has expected structure"
+
+      - name: Check for hardcoded values
+        run: |
+          ! grep -r "williaby\|PromptCraft" \
+            --include="*.md" \
+            --include="*.py" \
+            --include="*.sh" \
+            --exclude-dir="{{cookiecutter.project_slug}}" \
+            --exclude-dir=".git" \
+            --exclude-dir="docs-reference" \
+            . || (echo "❌ Found hardcoded values" && exit 1)
+          echo "✓ No hardcoded values found"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -rf /tmp/test-minimal
+          rm -rf /tmp/test-features

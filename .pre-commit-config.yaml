@@ -1,0 +1,105 @@
+# Pre-commit hooks for the cookiecutter template repository itself
+# This validates the template files before committing changes
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        exclude: '{{cookiecutter.project_slug}}'  # Exclude template files with jinja2
+      - id: check-json
+        files: ^cookiecutter\.json$
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: check-toml
+        exclude: '{{cookiecutter.project_slug}}'  # Exclude template files with jinja2
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.27.3
+    hooks:
+      - id: check-jsonschema
+        name: Validate cookiecutter.json
+        files: ^cookiecutter\.json$
+        args:
+          - --schemafile
+          - https://json.schemastore.org/cookiecutter.json
+
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        files: ^hooks/.*\.py$
+        language_version: python3.12
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        files: ^hooks/.*\.py$
+        args: [--fix, --exit-non-zero-on-fix]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        files: ^hooks/.*\.py$
+        additional_dependencies: [types-all]
+
+  - repo: local
+    hooks:
+      - id: validate-hook-files
+        name: Validate Python hook files
+        entry: python3 -m py_compile
+        language: system
+        files: ^hooks/.*\.py$
+        pass_filenames: true
+
+      - id: test-template-generation
+        name: Test cookiecutter template generation
+        entry: bash -c 'if command -v cookiecutter &> /dev/null; then cookiecutter . --no-input --output-dir /tmp/test-template && rm -rf /tmp/test-template; else echo "Skipping: cookiecutter not installed"; fi'
+        language: system
+        pass_filenames: false
+        stages: [manual]  # Run manually with: pre-commit run test-template-generation --hook-stage manual
+
+      - id: check-hardcoded-values
+        name: Check for hardcoded usernames/repos
+        entry: bash -c 'if grep -r "williaby\|cookiecutter-python-template-2\|PromptCraft" --include="*.md" --include="*.py" --include="*.sh" --exclude-dir="{{cookiecutter.project_slug}}" --exclude-dir=".git" --exclude-dir="docs-reference" .; then echo "ERROR: Found hardcoded values that should be templated"; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+      - id: check-template-syntax
+        name: Check Jinja2 template syntax
+        entry: bash -c 'find {{cookiecutter.project_slug}} -type f \( -name "*.py" -o -name "*.toml" -o -name "*.yaml" -o -name "*.yml" -o -name "*.md" \) -exec sh -c '\''grep -l "{{" "$1" > /dev/null && echo "Checking: $1"'\'' _ {} \;'
+        language: system
+        pass_filenames: false
+        stages: [manual]
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        files: \.(sh|bash)$
+        args: [--severity=warning]
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: script-must-have-extension
+        name: Shell scripts must have .sh extension
+        files: ^.*\.sh$
+        types: [shell]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        exclude: '(docs-reference/|\.git/)'
+        args:
+          - --ignore-words-list=crate,nd,rouge,compiletime

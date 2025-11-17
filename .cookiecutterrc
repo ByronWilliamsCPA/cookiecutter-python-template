@@ -1,0 +1,70 @@
+# Cookiecutter Configuration File
+# This file provides sensible defaults for using this template
+# Place this in your home directory (~/.cookiecutterrc) or project directory
+
+default_context:
+  # Basic Project Information
+  project_name: "My Python Project"
+  author_name: "Your Name"
+  author_email: "you@example.com"
+  github_username: "yourusername"
+  version: "0.1.0"
+
+  # Python Configuration
+  python_version: "3.12"
+  license: "MIT"
+
+  # Core Features (commonly used)
+  include_cli: "no"
+  use_mkdocs: "yes"
+  use_pre_commit: "yes"
+  include_codecov: "yes"
+  include_renovate: "yes"
+  include_nox: "no"
+
+  # Documentation & Community
+  include_code_of_conduct: "yes"
+  include_security_policy: "yes"
+  include_contributing_guide: "yes"
+  use_reuse_licensing: "no"
+
+  # Optional Features (disabled by default)
+  include_ml_dependencies: "no"
+  include_api_framework: "no"
+
+  # MCP Server Support
+  include_mcp_server: "no"
+  mcp_transport: "stdio"
+
+  # API Integration Patterns
+  include_api_client: "no"
+  api_auth_type: "none"
+  include_retry_logic: "yes"
+  include_rate_limiting: "yes"
+
+  # Database Patterns
+  include_database: "none"
+  database_dialect: "postgresql"
+  include_repository_pattern: "no"
+  include_unit_of_work: "no"
+
+  # Financial Patterns
+  include_financial_validators: "no"
+  include_audit_logging: "no"
+  use_decimal_precision: "no"
+
+  # Security Features
+  include_gitleaks: "yes"
+  include_compliance_docs: "no"
+  include_threat_model: "no"
+  include_fuzzing: "no"
+
+  # Development Tools
+  use_hypothesis: "no"
+  include_mutation_testing: "no"
+
+abbreviations:
+  # Shortcuts for GitHub repos
+  gh: https://github.com/{0}.git
+  gl: https://gitlab.com/{0}.git
+  bb: https://bitbucket.org/{0}
