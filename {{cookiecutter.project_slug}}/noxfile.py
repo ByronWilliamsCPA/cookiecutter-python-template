@@ -15,7 +15,10 @@ Usage:
     nox -s sbom        # Generate SBOM
     nox -s scan        # Scan SBOM for vulnerabilities
     nox -s compliance  # Run all compliance checks
+    nox -s assuredoss  # Validate Google Assured OSS credentials
     nox -s test        # Run tests across multiple Python versions
+    nox -s lint        # Run Ruff linting across multiple Python versions
+    nox -s typecheck   # Run MyPy type checking across multiple Python versions
 """
 
 import nox
@@ -249,6 +252,24 @@ def compliance(session: nox.Session) -> None:
     scan(session)
 
     session.log("All compliance checks completed successfully!")
+
+
+@nox.session(python="{{cookiecutter.python_version}}")
+def assuredoss(session: nox.Session) -> None:
+    """Validate Google Assured OSS credentials and configuration.
+
+    This session validates that:
+    - Google Cloud credentials are properly configured
+    - Project ID is set correctly
+    - Assured OSS is accessible
+    - Package listing works
+
+    Requires .env file with:
+    - GOOGLE_CLOUD_PROJECT
+    - GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_APPLICATION_CREDENTIALS_B64
+    """
+    session.install("-e", ".[dev]")
+    session.run("python", "scripts/validate_assuredoss.py")
 
 
 @nox.session(python=["3.11", "3.12", "3.13"])
