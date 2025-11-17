@@ -5,7 +5,6 @@ Performs cleanup and setup tasks after project generation.
 Runs after all files have been created.
 """
 
-import os
 import shutil
 import subprocess
 import sys
@@ -240,14 +239,14 @@ def setup_claude_user_settings() -> None:
 
                 print("\n  ✅ User-level settings are now available to all Claude Code sessions!")
             else:
-                print(f"  ⚠ Failed to clone settings repo. You can manually set up later:")
+                print("  ⚠ Failed to clone settings repo. You can manually set up later:")
                 print(f"     git clone {repo_url} {install_path}")
 
         except (EOFError, KeyboardInterrupt):
             print("\n  Setup cancelled.")
     else:
         print("\n  ℹ Skipping setup. You can set up user-level settings later by:")
-        print(f"     git clone https://github.com/williaby/.claude ~/.claude")
+        print("     git clone https://github.com/williaby/.claude ~/.claude")
 
 
 def print_success_message() -> None:
@@ -262,29 +261,29 @@ def print_success_message() -> None:
     print("="*60)
 
     print("\n📦 Next steps:")
-    print(f"\n  1. Navigate to your project:")
+    print("\n  1. Navigate to your project:")
     print(f"     cd {project_slug}")
 
-    print(f"\n  2. Install dependencies:")
-    print(f"     uv sync --with dev")
+    print("\n  2. Install dependencies:")
+    print("     uv sync --with dev")
 
     if use_pre_commit:
-        print(f"\n  3. Install pre-commit hooks:")
-        print(f"     uv run pre-commit install")
+        print("\n  3. Install pre-commit hooks:")
+        print("     uv run pre-commit install")
 
-    print(f"\n  4. Run tests:")
-    print(f"     uv run pytest -v")
+    print("\n  4. Run tests:")
+    print("     uv run pytest -v")
 
     if use_mkdocs:
-        print(f"\n  5. Build documentation:")
-        print(f"     uv run mkdocs build")
+        print("\n  5. Build documentation:")
+        print("     uv run mkdocs build")
 
-    print(f"\n  6. Initialize git (if not done automatically):")
-    print(f"     git init")
-    print(f"     git add .")
-    print(f"     git commit -m 'Initial commit'")
+    print("\n  6. Initialize git (if not done automatically):")
+    print("     git init")
+    print("     git add .")
+    print("     git commit -m 'Initial commit'")
 
-    print(f"\n  7. Create GitHub repository:")
+    print("\n  7. Create GitHub repository:")
     print(f"     gh repo create {project_slug} --public --source=.")
 
     print("\n" + "="*60)
