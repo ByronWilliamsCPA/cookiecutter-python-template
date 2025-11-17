@@ -38,7 +38,7 @@ permissions:
   checks: write         # For check runs
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-{% raw %}${{  github.ref  }}{% endraw %}
   cancel-in-progress: true
 
 env:
@@ -53,8 +53,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
-      uv-hash: ${{ steps.cache-key.outputs.uv-hash }}
-      pyproject-hash: ${{ steps.cache-key.outputs.pyproject-hash }}
+      uv-hash: {% raw %}${{  steps.cache-key.outputs.uv-hash  }}{% endraw %}
+      pyproject-hash: {% raw %}${{  steps.cache-key.outputs.pyproject-hash  }}{% endraw %}
     steps:
       - name: Harden the runner (Audit outbound calls)
         uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
@@ -66,8 +66,8 @@ jobs:
       - name: Generate cache keys
         id: cache-key
         run: |
-          echo "uv-hash=${{ hashFiles('**/uv.lock') }}" >> $GITHUB_OUTPUT
-          echo "pyproject-hash=${{ hashFiles('**/pyproject.toml') }}" >> $GITHUB_OUTPUT
+          echo "uv-hash={% raw %}${{  hashFiles('**/uv.lock')  }}{% endraw %}" >> $GITHUB_OUTPUT
+          echo "pyproject-hash={% raw %}${{  hashFiles('**/pyproject.toml')  }}{% endraw %}" >> $GITHUB_OUTPUT
 
       - name: Set up Python {% raw %}{{ cookiecutter.python_version }}{% endraw %}
         uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
@@ -87,9 +87,9 @@ jobs:
           path: |
             .venv
             ~/.cache/uv
-          key: py-deps-${{ runner.os }}-${{ steps.cache-key.outputs.uv-hash }}
+          key: py-deps-{% raw %}${{  runner.os  }}{% endraw %}-{% raw %}${{  steps.cache-key.outputs.uv-hash  }}{% endraw %}
           restore-keys: |
-            py-deps-${{ runner.os }}-
+            py-deps-{% raw %}${{  runner.os  }}{% endraw %}-
 
       - name: Install dependencies
         run: |
@@ -122,7 +122,7 @@ jobs:
 
   # Comprehensive testing
   test:
-    name: Test Suite (Python ${{ matrix.python-version }})
+    name: Test Suite (Python {% raw %}${{  matrix.python-version  }}{% endraw %})
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: setup-optimized
@@ -139,10 +139,10 @@ jobs:
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python {% raw %}${{  matrix.python-version  }}{% endraw %}
         uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: {% raw %}${{  matrix.python-version  }}{% endraw %}
 
       - name: Install UV
         uses: astral-sh/setup-uv@v5
@@ -156,9 +156,9 @@ jobs:
           path: |
             .venv
             ~/.cache/uv
-          key: py-deps-${{ runner.os }}-${{ needs.setup-optimized.outputs.uv-hash }}
+          key: py-deps-{% raw %}${{  runner.os  }}{% endraw %}-{% raw %}${{  needs.setup-optimized.outputs.uv-hash  }}{% endraw %}
           restore-keys: |
-            py-deps-${{ runner.os }}-
+            py-deps-{% raw %}${{  runner.os  }}{% endraw %}-
 
       - name: Install dependencies
         run: |
@@ -186,7 +186,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: test-results-${{ matrix.python-version }}
+          name: test-results-{% raw %}${{  matrix.python-version  }}{% endraw %}
           path: |
             junit.xml
             coverage.xml
@@ -223,9 +223,9 @@ jobs:
           path: |
             .venv
             ~/.cache/uv
-          key: py-deps-${{ runner.os }}-${{ needs.setup-optimized.outputs.uv-hash }}
+          key: py-deps-{% raw %}${{  runner.os  }}{% endraw %}-{% raw %}${{  needs.setup-optimized.outputs.uv-hash  }}{% endraw %}
           restore-keys: |
-            py-deps-${{ runner.os }}-
+            py-deps-{% raw %}${{  runner.os  }}{% endraw %}-
 
       - name: Install dependencies
         run: |
@@ -234,7 +234,7 @@ jobs:
       - name: Type checking with MyPy
         run: |
           echo "🔍 Running strict type checking..."
-          uv run mypy src --config-file=pyproject.toml --cache-dir=${{ env.MYPY_CACHE_DIR }}
+          uv run mypy src --config-file=pyproject.toml --cache-dir={% raw %}${{  env.MYPY_CACHE_DIR  }}{% endraw %}
 {% endif %}
 {% if cookiecutter.use_ruff == "yes" %}
       - name: Code formatting validation
@@ -262,18 +262,18 @@ jobs:
     steps:
       - name: Validate CI Results
         run: |
-          if [[ "${{ needs.setup-optimized.result }}" == "success" && \
-                "${{ needs.test.result }}" == "success" && \
-                "${{ needs.quality-checks.result }}" == "success" ]]; then
+          if [[ "{% raw %}${{  needs.setup-optimized.result  }}{% endraw %}" == "success" && \
+                "{% raw %}${{  needs.test.result  }}{% endraw %}" == "success" && \
+                "{% raw %}${{  needs.quality-checks.result  }}{% endraw %}" == "success" ]]; then
             echo "✅ CI Pipeline - All Checks Passed"
             echo "🎯 Code quality validated"
             {% if cookiecutter.include_security_scanning == "yes" %}echo "🔒 Security scans and quality checks completed"{% endif %}
             echo "✅ Ready for deployment"
           else
             echo "❌ CI Pipeline Failed"
-            echo "setup-optimized: ${{ needs.setup-optimized.result }}"
-            echo "test: ${{ needs.test.result }}"
-            echo "quality-checks: ${{ needs.quality-checks.result }}"
+            echo "setup-optimized: {% raw %}${{  needs.setup-optimized.result  }}{% endraw %}"
+            echo "test: {% raw %}${{  needs.test.result  }}{% endraw %}"
+            echo "quality-checks: {% raw %}${{  needs.quality-checks.result  }}{% endraw %}"
             exit 1
           fi
 
@@ -286,9 +286,9 @@ jobs:
     steps:
       - name: CI Gate
         run: |
-          if [[ "${{ needs.setup-optimized.result }}" == "success" && \
-                "${{ needs.test.result }}" == "success" && \
-                "${{ needs.quality-checks.result }}" == "success" ]]; then
+          if [[ "{% raw %}${{  needs.setup-optimized.result  }}{% endraw %}" == "success" && \
+                "{% raw %}${{  needs.test.result  }}{% endraw %}" == "success" && \
+                "{% raw %}${{  needs.quality-checks.result  }}{% endraw %}" == "success" ]]; then
             echo "✅ CI Gate - Production Ready"
             echo "✅ Code quality standards met"
             echo "⚡ Performance validated"
