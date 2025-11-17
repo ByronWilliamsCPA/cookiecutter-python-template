@@ -5,41 +5,44 @@ This folder contains a complete, production-ready cookiecutter template for star
 ## 📦 What's Inside
 
 - **73 files** ready to use as a cookiecutter template
-- **22 analysis documents** (300+ KB) from 5 production repositories
+- **21 analysis documents** (300+ KB) from 5 production repositories (in docs-reference/)
 - **40+ configuration options** for customization
 - **Complete project structure** with best practices
 
 ## 📁 Folder Structure
 
 ```
-cookiecutter-template/
+cookiecutter-python-template/
 ├── cookiecutter.json              # Main configuration (40+ options)
 ├── hooks/
 │   ├── pre_gen_project.py        # Pre-generation validation
 │   └── post_gen_project.py       # Post-generation cleanup
-├── docs/
-│   └── analysis/                 # 22 analysis documents (300+ KB)
+├── docs-reference/
+│   └── analysis/                 # 21 analysis documents (300+ KB)
 │       ├── INDEX.md              # Navigation guide
 │       ├── zen-mcp-patterns-analysis.md
 │       ├── XERO_API_CODE_EXAMPLES.md (1,502 lines)
 │       ├── SECURITY_SUMMARY.md
 │       ├── LEDGER_DATABASE_PATTERNS_ANALYSIS.md
-│       └── ... (17 more docs)
-├── {{cookiecutter.project_slug}}/  # Template files (51 files)
+│       └── ... (16 more docs)
+├── {{cookiecutter.project_slug}}/  # Template files (46 files)
 │   ├── .github/
 │   │   └── workflows/            # 4 CI/CD workflows
 │   ├── src/{{cookiecutter.project_slug}}/
-│   │   ├── cli.py
-│   │   ├── core/config.py
-│   │   └── utils/logging.py
+│   │   ├── __init__.py
+│   │   └── (your code here)
 │   ├── tests/
+│   │   ├── conftest.py
+│   │   └── test_example.py
 │   ├── docs/
 │   ├── pyproject.toml
 │   ├── .pre-commit-config.yaml
 │   ├── codecov.yml
 │   ├── renovate.json
 │   ├── mkdocs.yml
-│   └── ... (40+ more files)
+│   ├── README.md
+│   ├── LICENSE
+│   └── ... (32 more files)
 ├── PUSH_TO_GITHUB.md             # Detailed push guide
 └── QUICK_START.sh                # Interactive push script
 ```
@@ -115,7 +118,7 @@ cookiecutter ~/my-templates/cookiecutter-template
 - `include_audit_logging`: Audit trail
 - `use_decimal_precision`: Decimal for money
 
-### Analysis Documents (docs/analysis/)
+### Analysis Documents (docs-reference/analysis/)
 
 All analysis documents from 5 production repositories:
 - **zen-mcp-server**: MCP protocol patterns
@@ -124,7 +127,9 @@ All analysis documents from 5 production repositories:
 - **FISProject**: Financial system patterns
 - **ledgerbase**: Database/ledger patterns
 
-See `docs/analysis/INDEX.md` for complete navigation guide.
+See `docs-reference/analysis/INDEX.md` for complete navigation guide.
+
+> **Note**: Analysis documents are kept in `docs-reference/` for reference purposes. They are not included in generated projects.
 
 ### Template Files ({{cookiecutter.project_slug}}/)
 
@@ -195,7 +200,7 @@ my_awesome_project/
 
 - **PUSH_TO_GITHUB.md**: Complete guide for pushing to GitHub
 - **QUICK_START.sh**: Interactive script for pushing
-- **docs/analysis/INDEX.md**: Navigation for all analysis documents
+- **docs-reference/analysis/INDEX.md**: Navigation for all analysis documents
 - **cookiecutter.json**: All configuration options with comments
 
 ## 🙏 Based On
@@ -211,14 +216,15 @@ This template was created from patterns found in:
 ## 📞 Support
 
 For questions or issues:
-- Review the analysis documents in `docs/analysis/`
+- Review the analysis documents in `docs-reference/analysis/`
 - Check `PUSH_TO_GITHUB.md` for setup instructions
 - See individual pattern documents for implementation guides
 
 ---
 
 **Total Files**: 73 files
-**Analysis Documents**: 22 documents (300+ KB)
+**Analysis Documents**: 21 documents (300+ KB, in docs-reference/)
 **Configuration Options**: 40+ options
 **Coverage**: 95% of Python project needs
+**Template Files**: 46 files
 **Created**: 2025-11-17
