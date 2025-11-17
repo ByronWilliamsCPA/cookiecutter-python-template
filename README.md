@@ -135,7 +135,9 @@ cookiecutter ~/my-templates/cookiecutter-template
 
 Complete project structure with:
 - ✅ **4 GitHub Actions workflows** (CI, security, docs, PyPI)
-- ✅ **Poetry + PEP 621** packaging
+- ✅ **UV + PEP 621** packaging (10-100x faster than pip/poetry)
+- ✅ **Hatchling** build backend
+- ✅ **Cruft** template update tracking
 - ✅ **Ruff** consolidated linting
 - ✅ **MyPy** strict type checking
 - ✅ **pytest** with 80% coverage
@@ -160,10 +162,13 @@ Complete project structure with:
 ## 📝 Example Usage
 
 ```bash
-# Install cookiecutter
-pip install cookiecutter
+# Install cookiecutter and cruft
+pip install cookiecutter cruft
 
-# Use the template
+# Option 1: Use with Cruft (recommended - enables template updates)
+cruft create /path/to/cookiecutter-template
+
+# Option 2: Use with Cookiecutter (traditional method)
 cookiecutter /path/to/cookiecutter-template
 
 # Answer prompts:
@@ -186,11 +191,142 @@ my_awesome_project/
 ├── tests/
 ├── docs/
 ├── pyproject.toml
+├── uv.lock               # UV lock file
+├── .cruft.json          # Template tracking (cruft only)
 └── README.md
+```
+
+## 🤖 Claude Code Integration
+
+This template includes enhanced support for Claude Code with **user-level settings integration**.
+
+### User-Level Settings Setup
+
+During project generation, you'll be prompted to set up user-level Claude Code settings. These settings enhance Claude Code's capabilities across **all your projects**:
+
+**What's Included:**
+- **Global CLAUDE.md**: Best practices, workflows, and development patterns
+- **Skills**: Reusable capabilities for common tasks
+- **Agents**: Specialized task handlers for security, testing, documentation, etc.
+- **Custom Commands**: Slash commands and hooks for enhanced workflows
+
+**Setup Process:**
+
+When you create a new project using this template, the post-generation hook will:
+
+1. **Check** for existing user-level settings at `~/.claude/` or `~/.config/claude/`
+2. **Prompt** you to set up settings if not found
+3. **Clone** the settings repo (default: `https://github.com/williaby/.claude`)
+4. **Verify** installation of CLAUDE.md, skills, agents, and commands
+
+**Manual Setup:**
+
+If you skip the automatic setup, you can install user-level settings later:
+
+```bash
+# Using the default settings repo
+git clone https://github.com/williaby/.claude ~/.claude
+
+# Or using your own settings repo
+git clone https://github.com/YOUR_USERNAME/YOUR_CLAUDE_SETTINGS ~/.claude
+```
+
+**Benefits:**
+
+✅ **Consistent workflows** across all projects
+✅ **Supervisor patterns** with agent delegation
+✅ **Reusable skills** for common tasks
+✅ **Custom slash commands** for your workflow
+✅ **Global best practices** inherited by all projects
+
+> **Note:** User-level settings are optional but recommended for the best Claude Code experience. Projects work without them but have enhanced capabilities when available.
+
+## 🔄 Template Updates with Cruft
+
+This template supports **Cruft** for keeping generated projects in sync with template updates.
+
+### Why Use Cruft?
+
+- **Stay Updated**: Automatically pull in template improvements, bug fixes, and new features
+- **Selective Updates**: Review and accept/reject changes before applying them
+- **Track Template Version**: `.cruft.json` tracks which template version your project uses
+- **Conflict Resolution**: Smart merging handles conflicts between template updates and your changes
+
+### Using Cruft with This Template
+
+**Create a new project with Cruft:**
+```bash
+# Install cruft
+pip install cruft
+
+# Create project (automatically adds .cruft.json)
+cruft create https://github.com/YOUR_USERNAME/YOUR_TEMPLATE_REPO
+
+# Or use local path
+cruft create /path/to/cookiecutter-python-template
+```
+
+**Check for template updates:**
+```bash
+cd your-project
+cruft check
+```
+
+**Update your project:**
+```bash
+cruft update
+# Review changes, accept/reject updates
+```
+
+**View differences:**
+```bash
+cruft diff
+```
+
+**Update template variables:**
+```bash
+cruft update --variables
+```
+
+### Automated Update Checks
+
+You can add a GitHub Action to automatically check for template updates:
+
+```yaml
+# .github/workflows/cruft-update.yml
+name: Check Template Updates
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Monday
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for template updates
+        run: |
+          pip install cruft
+          cruft check
 ```
 
 ## 🔄 Version History
 
+- **v2.0** (2025-11-17): UV & Cruft Migration Release
+  - **BREAKING**: Migrated from Poetry to UV for package management
+  - Added Cruft support for template updates
+  - Updated all dependencies to use standard PEP 621 format
+  - Changed build backend from poetry-core to hatchling
+  - Updated all documentation and CI/CD workflows for UV
+  - Added `.cruft.json` for template tracking
+  - 10-100x faster dependency resolution with UV
+- **v1.2** (2025-11-17): Claude Code Enhancement Release
+  - Added interactive user-level Claude settings setup
+  - Streamlined dependency management (Poetry as single source of truth)
+  - Simplified CLI help text for better UX
+  - Enhanced post-generation hook with Claude Code integration
 - **v1.1** (2025-11-17): Streamlined release
   - Removed reference documentation (docs-reference/)
   - Added optional monitoring utilities

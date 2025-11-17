@@ -90,7 +90,7 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          poetry install --only main --no-interaction
+          uv sync --only main --no-interaction
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.27.5
@@ -176,17 +176,17 @@ jobs:
       - name: Install Dependencies
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          poetry install --with dev --no-interaction
+          uv sync --all-extras --no-interaction
 
       # Bandit static analysis
       - name: Bandit Security Analysis
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           echo "🔒 Running Bandit security analysis..."
-          poetry run bandit -r src \
+          uv run bandit -r src \
             -f json -o bandit-report.json \
             -c pyproject.toml || true
-          poetry run bandit -r src -c pyproject.toml || true
+          uv run bandit -r src -c pyproject.toml || true
 
       # Safety dependency vulnerability scanning
       - name: Safety Vulnerability Scan
@@ -195,10 +195,10 @@ jobs:
           echo "🛡️ Scanning for known vulnerabilities..."
           poetry self add poetry-plugin-export==1.8.0
           poetry export -f requirements.txt --output requirements-scan.txt
-          poetry run safety check \
+          uv run safety check \
             --file requirements-scan.txt \
             --json --output safety-report.json || true
-          poetry run safety check --file requirements-scan.txt || true
+          uv run safety check --file requirements-scan.txt || true
 
       - name: Upload Security Reports
         if: always()

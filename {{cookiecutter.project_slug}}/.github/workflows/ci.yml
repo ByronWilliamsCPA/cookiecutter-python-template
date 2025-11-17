@@ -97,13 +97,13 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          poetry install --sync --no-interaction --with dev
+          uv sync --sync --no-interaction --with dev
 
       - name: Dependency validation
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           echo "🔍 Validating core dependencies..."
-          poetry run python -c "
+          uv run python -c "
           import sys
           required_deps = ['pydantic', 'structlog']
           print('✅ Core Dependencies:')
@@ -171,14 +171,14 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          poetry install --sync --no-interaction --with dev
+          uv sync --sync --no-interaction --with dev
 
       # Run comprehensive test suite
       - name: Run test suite
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           echo "🧪 Running test suite..."
-          poetry run pytest -v \
+          uv run pytest -v \
             --cov=src \
             --cov-report=xml:coverage.xml \
             --cov-report=term-missing \
@@ -242,26 +242,26 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          poetry install --sync --no-interaction --with dev
+          uv sync --sync --no-interaction --with dev
 {% if cookiecutter.use_mypy == "yes" %}
       - name: Type checking with MyPy
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           echo "🔍 Running strict type checking..."
-          poetry run mypy src --config-file=pyproject.toml --cache-dir=${{ env.MYPY_CACHE_DIR }}
+          uv run mypy src --config-file=pyproject.toml --cache-dir=${{ env.MYPY_CACHE_DIR }}
 {% endif %}
 {% if cookiecutter.use_ruff == "yes" %}
       - name: Code formatting validation
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           echo "🧹 Validating code formatting..."
-          poetry run ruff format --check
+          uv run ruff format --check
 
       - name: Linting with enhanced rules
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           echo "🔧 Running enhanced linting..."
-          poetry run ruff check . --config=pyproject.toml
+          uv run ruff check . --config=pyproject.toml
 {% endif %}
 
   # Success validation
