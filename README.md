@@ -252,7 +252,13 @@ git clone https://github.com/YOUR_USERNAME/YOUR_CLAUDE_SETTINGS ~/.claude
 
 ## 🔄 Template Updates with Cruft
 
-This template supports **Cruft** for keeping generated projects in sync with template updates.
+This template **fully supports Cruft** for keeping generated projects in sync with template updates.
+
+✅ **Status**: Cruft integration is **working and tested**
+- Projects created with `cruft create` include `.cruft.json` tracking file
+- `cruft check` verifies template is up to date
+- `cruft update` applies template changes to existing projects
+- `cruft diff` shows pending template changes
 
 ### Why Use Cruft?
 
