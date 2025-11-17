@@ -4,6 +4,56 @@ Guidance for Claude Code when working with this repository.
 
 > **Context**: Extends global CLAUDE.md from `~/.claude/CLAUDE.md`. Only project-specific configurations below.
 
+## Claude Code Supervisor Role (CRITICAL)
+
+**Claude Code acts as the SUPERVISOR for all development tasks and MUST:**
+
+1. **Always Use TodoWrite Tool**: Create and maintain TODO lists for ALL tasks to track progress
+2. **Assign Tasks to Agents**: Each TODO item should be assigned to a specialized agent via Zen MCP Server
+3. **Review Agent Work**: Validate all agent outputs before proceeding to next steps
+4. **Use Temporary Reference Files**: Create `.tmp-` prefixed files in `tmp_cleanup/` folder to store detailed context that might be lost during compaction
+5. **Maintain Continuity**: Use reference files to preserve TODO details across conversation compactions
+
+### Agent Assignment Patterns
+
+```bash
+# Always assign TODO items to appropriate agents:
+- Security tasks → Security Agent (via mcp__zen-core__secaudit)
+- Code reviews → Code Review Agent (via mcp__zen-core__codereview)
+- Testing → Test Engineer Agent (via mcp__zen-core__testgen)
+- Documentation → Documentation Agent (via mcp__zen-core__docgen)
+- Debugging → Debug Agent (via mcp__zen-core__debug)
+- Analysis → Analysis Agent (via mcp__zen-core__analyze)
+- Refactoring → Refactor Agent (via mcp__zen-core__refactor)
+```
+
+### Temporary Reference Files (Anti-Compaction Strategy)
+
+**ALWAYS create temporary reference files when:**
+- TODO list contains >5 items
+- Complex implementation details need preservation
+- Multi-step workflows span multiple conversation turns
+- Agent assignments and progress need tracking
+
+**Naming Convention**: `tmp_cleanup/.tmp-{task-type}-{timestamp}.md` (e.g., `tmp_cleanup/.tmp-feature-implementation-20250117.md`)
+
+### Supervisor Workflow Patterns (MANDATORY)
+
+**Every development task MUST follow this pattern:**
+
+1. **Create TODO List**: Use TodoWrite tool to break down the task into specific, actionable items
+2. **Agent Assignment**: Assign each TODO item to the most appropriate specialized agent
+3. **Progress Tracking**: Mark items as in_progress when assigned, completed when validated
+4. **Reference File Creation**: For complex tasks, create `.tmp-` reference files immediately
+5. **Agent Output Validation**: Review all agent work before marking items complete
+
+**For complex tasks requiring multiple agents:**
+
+1. **Sequential Dependencies**: Use TodoWrite to show dependencies between tasks
+2. **Parallel Execution**: Assign independent tasks to multiple agents simultaneously
+3. **Integration Points**: Create specific TODO items for integrating agent outputs
+4. **Quality Gates**: Assign review tasks to appropriate agents after implementation
+
 ## Project Overview
 
 **Name**: {{cookiecutter.project_name}}
