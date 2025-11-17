@@ -15,9 +15,7 @@
 [![CI Pipeline](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/ci.yml)
 [![Security Analysis](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/security-analysis.yml/badge.svg)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/security-analysis.yml)
 {%- endif %}
-{%- if cookiecutter.include_code_of_conduct == "yes" %}
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
-{%- endif %}
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](https://github.com/williaby/.github/blob/main/CODE_OF_CONDUCT.md)
 
 {%- endif %}
 
@@ -246,9 +244,7 @@ uv run pytest --cov={{cookiecutter.project_slug}} --cov-fail-under={{cookiecutte
 
 Please report security vulnerabilities to {{cookiecutter.author_email}} rather than using the public issue tracker.
 
-{%- if cookiecutter.include_security_policy == "yes" %}
-See [SECURITY.md](SECURITY.md) for complete disclosure policy.
-{%- endif %}
+See the [williaby Security Policy](https://github.com/williaby/.github/blob/main/SECURITY.md) for complete disclosure policy and response timelines.
 
 ## Contributing
 
