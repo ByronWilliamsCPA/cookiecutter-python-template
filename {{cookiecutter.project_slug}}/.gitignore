@@ -116,6 +116,15 @@ venv.bak/
 .gcloud/
 .config/gcloud/
 
+# Hugging Face
+.cache/huggingface/
+**/.cache/huggingface/
+huggingface_cache/
+
+# Modal Labs
+.modal/
+**/.modal/
+
 # Spyder project settings
 .spyderproject
 .spyproject
