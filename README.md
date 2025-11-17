@@ -189,8 +189,58 @@ my_awesome_project/
 └── README.md
 ```
 
+## 🤖 Claude Code Integration
+
+This template includes enhanced support for Claude Code with **user-level settings integration**.
+
+### User-Level Settings Setup
+
+During project generation, you'll be prompted to set up user-level Claude Code settings. These settings enhance Claude Code's capabilities across **all your projects**:
+
+**What's Included:**
+- **Global CLAUDE.md**: Best practices, workflows, and development patterns
+- **Skills**: Reusable capabilities for common tasks
+- **Agents**: Specialized task handlers for security, testing, documentation, etc.
+- **Custom Commands**: Slash commands and hooks for enhanced workflows
+
+**Setup Process:**
+
+When you create a new project using this template, the post-generation hook will:
+
+1. **Check** for existing user-level settings at `~/.claude/` or `~/.config/claude/`
+2. **Prompt** you to set up settings if not found
+3. **Clone** the settings repo (default: `https://github.com/williaby/.claude`)
+4. **Verify** installation of CLAUDE.md, skills, agents, and commands
+
+**Manual Setup:**
+
+If you skip the automatic setup, you can install user-level settings later:
+
+```bash
+# Using the default settings repo
+git clone https://github.com/williaby/.claude ~/.claude
+
+# Or using your own settings repo
+git clone https://github.com/YOUR_USERNAME/YOUR_CLAUDE_SETTINGS ~/.claude
+```
+
+**Benefits:**
+
+✅ **Consistent workflows** across all projects
+✅ **Supervisor patterns** with agent delegation
+✅ **Reusable skills** for common tasks
+✅ **Custom slash commands** for your workflow
+✅ **Global best practices** inherited by all projects
+
+> **Note:** User-level settings are optional but recommended for the best Claude Code experience. Projects work without them but have enhanced capabilities when available.
+
 ## 🔄 Version History
 
+- **v1.2** (2025-11-17): Claude Code Enhancement Release
+  - Added interactive user-level Claude settings setup
+  - Streamlined dependency management (Poetry as single source of truth)
+  - Simplified CLI help text for better UX
+  - Enhanced post-generation hook with Claude Code integration
 - **v1.1** (2025-11-17): Streamlined release
   - Removed reference documentation (docs-reference/)
   - Added optional monitoring utilities

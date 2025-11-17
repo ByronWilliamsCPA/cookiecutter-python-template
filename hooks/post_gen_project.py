@@ -165,6 +165,91 @@ def create_initial_directories() -> None:
     print(f"  ✓ Created {len(directories)} directories")
 
 
+def setup_claude_user_settings() -> None:
+    """Interactively set up user-level Claude Code settings."""
+    print("\n🤖 Claude Code User-Level Settings Setup")
+    print("="*60)
+
+    # Check common locations for existing settings
+    possible_locations = [
+        Path.home() / ".claude",
+        Path.home() / ".config" / "claude",
+    ]
+
+    existing_location = None
+    for location in possible_locations:
+        if location.exists() and (location / "CLAUDE.md").exists():
+            existing_location = location
+            break
+
+    if existing_location:
+        print(f"\n  ℹ User-level settings already exist at: {existing_location}")
+        print("    Skipping setup.")
+        return
+
+    print("\n  User-level Claude settings provide:")
+    print("    • Global CLAUDE.md configuration (best practices, workflows)")
+    print("    • Skills (reusable capabilities)")
+    print("    • Agents (specialized task handlers)")
+    print("    • Custom slash commands and hooks")
+
+    print("\n  These settings enhance Claude Code's capabilities across all projects.")
+
+    # Get user input
+    try:
+        response = input("\n  Would you like to set up user-level Claude settings? (Y/n): ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print("\n  Skipping user-level settings setup.")
+        return
+
+    # Default to yes if empty response
+    if response in ['', 'y', 'yes']:
+        default_repo = "https://github.com/williaby/.claude"
+        default_location = str(Path.home() / ".claude")
+
+        try:
+            repo_url = input(f"\n  Settings repo URL (press Enter for default: {default_repo}): ").strip()
+            if not repo_url:
+                repo_url = default_repo
+
+            install_location = input(f"  Install location (press Enter for default: {default_location}): ").strip()
+            if not install_location:
+                install_location = default_location
+
+            install_path = Path(install_location).expanduser()
+
+            # Clone the repo
+            print(f"\n  📥 Cloning settings from {repo_url}...")
+
+            if run_command(["git", "clone", repo_url, str(install_path)], check=False):
+                print(f"  ✓ User-level settings installed at: {install_path}")
+
+                # Check what was installed
+                installed_items = []
+                if (install_path / "CLAUDE.md").exists():
+                    installed_items.append("CLAUDE.md")
+                if (install_path / "skills").exists():
+                    installed_items.append("skills/")
+                if (install_path / "agents").exists():
+                    installed_items.append("agents/")
+                if (install_path / ".claude" / "commands").exists() or (install_path / "commands").exists():
+                    installed_items.append("slash commands")
+
+                if installed_items:
+                    print(f"  ✓ Installed: {', '.join(installed_items)}")
+
+                print("\n  ✅ User-level settings are now available to all Claude Code sessions!")
+            else:
+                print(f"  ⚠ Failed to clone settings repo. You can manually set up later:")
+                print(f"     git clone {repo_url} {install_path}")
+
+        except (EOFError, KeyboardInterrupt):
+            print("\n  Setup cancelled.")
+    else:
+        print("\n  ℹ Skipping setup. You can set up user-level settings later by:")
+        print(f"     git clone https://github.com/williaby/.claude ~/.claude")
+
+
 def print_success_message() -> None:
     """Print success message with next steps."""
     project_name = "{{ cookiecutter.project_name }}"
@@ -219,6 +304,7 @@ def main() -> None:
         create_initial_directories()
         initialize_git()
         setup_pre_commit()
+        setup_claude_user_settings()
         print_success_message()
     except Exception as e:
         print(f"\n❌ Error during post-generation: {e}", file=sys.stderr)
