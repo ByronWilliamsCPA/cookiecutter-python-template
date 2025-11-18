@@ -156,6 +156,32 @@ monitoring = [
     "sentry-sdk[fastapi]>=2.0.0",  # Error tracking and performance monitoring
 ]
 {% endif %}
+{% if cookiecutter.include_background_jobs == "arq" %}
+# Background job processing with ARQ (async-native, Redis-based)
+jobs = [
+    "arq>=0.25.0",  # Async task queue
+    "redis[hiredis]>=5.0.0",  # Redis client with C parser
+]
+{% endif %}
+{% if cookiecutter.include_background_jobs == "celery" %}
+# Background job processing with Celery (traditional, supports multiple brokers)
+jobs = [
+    "celery[redis]>=5.3.0",  # Distributed task queue
+    "redis[hiredis]>=5.0.0",  # Redis broker
+]
+{% endif %}
+{% if cookiecutter.include_caching == "yes" %}
+# Caching infrastructure
+caching = [
+    "redis[hiredis]>=5.0.0",  # Redis client with C parser for performance
+]
+{% endif %}
+{% if cookiecutter.include_load_testing == "yes" %}
+# Load and performance testing
+load_testing = [
+    "locust>=2.20.0",  # Python-based load testing with web UI
+]
+{% endif %}
 {% if cookiecutter.include_cli == "yes" %}
 [project.scripts]
 {{ cookiecutter.cli_tool_name }} = "{{ cookiecutter.project_slug }}.cli:cli"
