@@ -98,6 +98,7 @@ def cleanup_conditional_files() -> None:
     # Remove codecov if not needed
     if "{{ cookiecutter.include_codecov }}" == "no":
         remove_file(Path("codecov.yml"))
+        remove_file(Path(".github/workflows/codecov.yml"))
 
     # Remove renovate if not needed
     if "{{ cookiecutter.include_renovate }}" == "no":
@@ -107,6 +108,67 @@ def cleanup_conditional_files() -> None:
     if "{{ cookiecutter.use_reuse_licensing }}" == "no":
         remove_file(Path("REUSE.toml"))
         remove_dir(Path("LICENSES"))
+
+    # Remove Docker files if not needed
+    if "{{ cookiecutter.include_docker }}" == "no":
+        remove_file(Path("Dockerfile"))
+        remove_file(Path("docker-compose.yml"))
+        remove_file(Path("docker-compose.prod.yml"))
+        remove_file(Path(".dockerignore"))
+
+    # Remove health check endpoints if not needed or if no API framework
+    if (
+        "{{ cookiecutter.include_health_checks }}" == "no"
+        or "{{ cookiecutter.include_api_framework }}" == "no"
+    ):
+        remove_file(Path("src/{{ cookiecutter.project_slug }}/api/health.py"))
+        # Remove api directory if empty
+        api_dir = Path("src/{{ cookiecutter.project_slug }}/api")
+        if api_dir.exists() and not any(
+            f.name != "__pycache__" and f.name != "__init__.py" for f in api_dir.iterdir()
+        ):
+            remove_dir(api_dir)
+
+    # Remove Sentry monitoring if not needed
+    if "{{ cookiecutter.include_sentry }}" == "no":
+        remove_file(Path("src/{{ cookiecutter.project_slug }}/core/sentry.py"))
+
+    # Remove API security middleware if API framework not included
+    if "{{ cookiecutter.include_api_framework }}" == "no":
+        remove_file(Path("src/{{ cookiecutter.project_slug }}/middleware/security.py"))
+        # Remove middleware directory if empty
+        middleware_dir = Path("src/{{ cookiecutter.project_slug }}/middleware")
+        if middleware_dir.exists() and not any(middleware_dir.iterdir()):
+            remove_dir(middleware_dir)
+
+    # Remove background job files if not needed
+    if "{{ cookiecutter.include_background_jobs }}" == "no":
+        remove_dir(Path("src/{{ cookiecutter.project_slug }}/jobs"))
+
+    # Remove caching utilities if not needed
+    if "{{ cookiecutter.include_caching }}" == "no":
+        remove_file(Path("src/{{ cookiecutter.project_slug }}/core/cache.py"))
+
+    # Remove load testing files if not needed
+    if "{{ cookiecutter.include_load_testing }}" == "no":
+        remove_dir(Path("tests/load"))
+
+    # Remove fuzzing workflow if not needed
+    if "{{ cookiecutter.include_fuzzing }}" == "no":
+        remove_file(Path(".github/workflows/cifuzzy.yml"))
+
+    # Remove GitHub Actions workflows if not needed
+    if "{{ cookiecutter.include_github_actions }}" == "no":
+        remove_dir(Path(".github/workflows"))
+        remove_dir(Path(".github"))
+
+    # Remove MkDocs workflow if MkDocs not used
+    if "{{ cookiecutter.use_mkdocs }}" == "no":
+        remove_file(Path(".github/workflows/docs.yml"))
+
+    # Remove security scanning workflow if not needed
+    if "{{ cookiecutter.include_security_scanning }}" == "no":
+        remove_file(Path(".github/workflows/security-analysis.yml"))
 
 
 def initialize_git() -> None:
@@ -271,10 +333,36 @@ def print_success_message() -> None:
     project_slug = "{{ cookiecutter.project_slug }}"
     use_pre_commit = "{{ cookiecutter.use_pre_commit }}" == "yes"
     use_mkdocs = "{{ cookiecutter.use_mkdocs }}" == "yes"
+    include_docker = "{{ cookiecutter.include_docker }}" == "yes"
+    include_sentry = "{{ cookiecutter.include_sentry }}" == "yes"
+    include_health_checks = "{{ cookiecutter.include_health_checks }}" == "yes"
+    include_background_jobs = "{{ cookiecutter.include_background_jobs }}"
+    include_caching = "{{ cookiecutter.include_caching }}" == "yes"
+    include_load_testing = "{{ cookiecutter.include_load_testing }}" == "yes"
 
     print("\n" + "=" * 60)
     print(f"🎉 SUCCESS! {project_name} has been created!")
     print("=" * 60)
+
+    # Print optional features that were included
+    optional_features = []
+    if include_docker:
+        optional_features.append("Docker containerization")
+    if include_sentry:
+        optional_features.append("Sentry monitoring")
+    if include_health_checks:
+        optional_features.append("Health check endpoints")
+    if include_background_jobs != "no":
+        optional_features.append(f"Background jobs ({include_background_jobs.upper()})")
+    if include_caching:
+        optional_features.append("Redis caching")
+    if include_load_testing:
+        optional_features.append("Load testing (Locust & k6)")
+
+    if optional_features:
+        print("\n✨ Optional features included:")
+        for feature in optional_features:
+            print(f"  • {feature}")
 
     print("\n📦 Next steps:")
     print("\n  1. Navigate to your project:")
@@ -302,11 +390,36 @@ def print_success_message() -> None:
     print("\n  7. Create GitHub repository:")
     print(f"     gh repo create {project_slug} --public --source=.")
 
+    # Add next steps for optional features
+    if include_docker:
+        print("\n  📦 Docker:")
+        print("     docker-compose up -d    # Start development environment")
+        print("     docker build -t app .   # Build production image")
+
+    if include_background_jobs != "no":
+        if include_background_jobs == "arq":
+            print("\n  ⚙️  ARQ Worker:")
+            print(f"     uv run arq {project_slug}.jobs.worker.WorkerSettings")
+        else:
+            print("\n  ⚙️  Celery Worker:")
+            print(f"     uv run celery -A {project_slug}.jobs worker -l info")
+
+    if include_load_testing:
+        print("\n  🚀 Load Testing:")
+        print("     uv run locust -f tests/load/locustfile.py  # Start Locust")
+        print("     k6 run tests/load/k6-script.js              # Run k6")
+
+    if include_sentry:
+        print("\n  🔍 Sentry:")
+        print("     Set SENTRY_DSN in .env to enable error tracking")
+
     print("\n" + "=" * 60)
     print("📚 Documentation:")
     print("  - README.md: Project overview and quick start")
     print("  - CONTRIBUTING.md: Contribution guidelines")
     print("  - CLAUDE.md: Claude Code development guidance")
+    if include_load_testing:
+        print("  - tests/load/README.md: Load testing guide")
     print("=" * 60 + "\n")
 
 
