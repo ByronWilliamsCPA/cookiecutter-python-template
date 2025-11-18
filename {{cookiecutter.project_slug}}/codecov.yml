@@ -42,8 +42,16 @@ flags:
     paths:
       - src/{{cookiecutter.project_slug}}/
 
+  # Python version flags (CI workflow uploads)
+  python-3.10:
+    carryforward: true
+  python-3.11:
+    carryforward: true
   python-3.12:
-    # CI workflow flag (already configured)
+    carryforward: true
+  python-3.13:
+    carryforward: true
+  python-3.14:
     carryforward: true
 
 # Component-based coverage tracking
