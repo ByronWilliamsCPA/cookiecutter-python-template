@@ -243,6 +243,13 @@ build/
 dist/
 *.egg-info/
 
+# SBOM (Software Bill of Materials)
+sbom-*.json
+sbom-*.xml
+*.cdx.json
+*.spdx.json
+reuse-spdx.json
+
 # Credentials and secrets
 *.pem
 *.key
@@ -271,3 +278,9 @@ tmp_cleanup/
 .tmp-*
 results/
 output/
+
+{% if cookiecutter.include_sonarcloud == "yes" -%}
+# SonarCloud
+.scannerwork/
+.sonar/
+{% endif -%}

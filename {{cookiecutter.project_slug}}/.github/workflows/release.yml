@@ -68,6 +68,25 @@ jobs:
           echo "📦 Built packages:"
           ls -lh dist/
 
+      - name: Generate SBOM (Software Bill of Materials)
+        run: |
+          echo "📋 Generating SBOM in CycloneDX format..."
+          uv pip install cyclonedx-bom==4.6.1
+
+          # Generate runtime SBOM (production dependencies)
+          uv pip compile pyproject.toml --output-file requirements-runtime.txt --no-dev
+          cyclonedx-py requirements requirements-runtime.txt --of json -o dist/sbom-runtime.json
+
+          # Generate complete SBOM (all dependencies)
+          uv export --format requirements-txt --output-file requirements-all.txt --no-hashes
+          cyclonedx-py requirements requirements-all.txt --of json -o dist/sbom-complete.json
+
+          # Clean up temporary files
+          rm -f requirements-runtime.txt requirements-all.txt
+
+          echo "✅ SBOM files generated:"
+          ls -lh dist/sbom-*.json
+
       - name: Generate hashes
         id: hash
         working-directory: dist
@@ -178,6 +197,21 @@ jobs:
 
           Provenance file: `{% raw %}${{  needs.provenance.outputs.provenance-name  }}{% endraw %}`
 
+          ### 📋 Software Bill of Materials (SBOM)
+
+          This release includes CycloneDX SBOMs for transparency and supply chain security:
+          - `sbom-runtime.json` - Production dependencies only
+          - `sbom-complete.json` - All dependencies (including dev/test)
+
+          **Scan for vulnerabilities:**
+          ```bash
+          # Using Trivy
+          trivy sbom sbom-runtime.json
+
+          # Using Grype
+          grype sbom:sbom-runtime.json
+          ```
+
           ### 📋 Changes
 
           See [CHANGELOG.md](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/blob/main/CHANGELOG.md) for full details.
@@ -207,7 +241,13 @@ jobs:
             echo "  - Certificate: \`${file}.pem\`" >> $GITHUB_STEP_SUMMARY
           done
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### SBOM (Software Bill of Materials)" >> $GITHUB_STEP_SUMMARY
+          for sbom in sbom-*.json; do
+            echo "- 📋 \`$sbom\`" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Security" >> $GITHUB_STEP_SUMMARY
           echo "- 🔐 Signed with Sigstore/Cosign" >> $GITHUB_STEP_SUMMARY
           echo "- 🔗 SLSA Level 3 Provenance" >> $GITHUB_STEP_SUMMARY
+          echo "- 📋 CycloneDX SBOM included" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Keyless signing (certificate transparency)" >> $GITHUB_STEP_SUMMARY

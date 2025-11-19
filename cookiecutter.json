@@ -72,6 +72,8 @@
   "include_gitleaks": ["yes", "no"],
   "include_fuzzing": ["no", "yes"],
   "include_codecov": ["yes", "no"],
+  "include_sonarcloud": ["no", "yes"],
+  "sonarcloud_organization": "your-org",
   "include_renovate": ["yes", "no"],
 
   "_comment_security": "Enhanced Security (from pp-security-master analysis)",
@@ -82,6 +84,15 @@
   "_comment_dev": "Development Environment",
   "include_nox": ["yes", "no"],
   "include_docker": ["no", "yes"],
+
+  "_comment_monitoring": "Monitoring and Observability",
+  "include_sentry": ["no", "yes"],
+  "include_health_checks": ["yes", "no"],
+
+  "_comment_performance": "Performance and Scalability",
+  "include_background_jobs": ["no", "arq", "celery"],
+  "include_caching": ["no", "yes"],
+  "include_load_testing": ["no", "yes"],
 
   "_comment_community": "Community Files",
   "use_reuse_licensing": ["yes", "no"],
