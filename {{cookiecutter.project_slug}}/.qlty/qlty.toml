@@ -167,6 +167,138 @@ plugins = ["yamllint"]
 file_patterns = ["mkdocs.yml", "**/mkdocs.yml"]
 
 # ============================================================================
+# GitHub Actions Workflow Linting - Actionlint
+# ============================================================================
+# Actionlint validates GitHub Actions workflow files for syntax errors,
+# best practices, and common mistakes.
+[[plugin]]
+name = "actionlint"
+version = "latest"
+
+# Run on pre-commit and build
+triggers = ["pre-commit", "build"]
+
+{% if cookiecutter.include_docker == "yes" -%}
+# ============================================================================
+# Dockerfile Linting - Hadolint
+# ============================================================================
+# Hadolint checks Dockerfiles for best practices and common errors.
+# Helps ensure secure and efficient container images.
+[[plugin]]
+name = "hadolint"
+version = "latest"
+
+# Run on pre-push and build (can be slow)
+triggers = ["pre-push", "build"]
+{% endif -%}
+
+# ============================================================================
+# Code Formatting - Prettier
+# ============================================================================
+# Prettier formats JSON, YAML, Markdown, and other files consistently.
+# Complements Ruff for non-Python files.
+[[plugin]]
+name = "prettier"
+version = "latest"
+config_files = [".prettierrc", ".prettierrc.json", ".prettierrc.yml", "prettier.config.js"]
+
+# Run on pre-commit (fast)
+triggers = ["pre-commit", "ide"]
+
+# Only run on file types Prettier handles better than other tools
+[[plugin.file_pattern]]
+include = ["*.json", "*.md", "*.yml", "*.yaml"]
+exclude = ["package-lock.json", "poetry.lock", "uv.lock"]
+
+# ============================================================================
+# Advanced Static Analysis - Semgrep
+# ============================================================================
+# Semgrep performs semantic code analysis to find complex security issues,
+# bugs, and anti-patterns that simple linters miss.
+{% if cookiecutter.include_security_scanning == "yes" -%}
+[[plugin]]
+name = "semgrep"
+version = "latest"
+config_files = [".semgrep.yml", ".semgrep.yaml"]
+
+# Run on pre-push and build (can be slow)
+triggers = ["pre-push", "build"]
+
+# Use community rulesets for Python security and best practices
+[[plugin.config]]
+rules = [
+    "p/python",           # Python best practices
+    "p/security-audit",   # Security auditing
+    "p/owasp-top-ten",   # OWASP Top 10 vulnerabilities
+    "p/django",          # Django-specific rules (if using Django)
+]
+{% endif -%}
+
+# ============================================================================
+# Additional Secrets Detection - TruffleHog
+# ============================================================================
+# TruffleHog complements Gitleaks by using entropy analysis and regex
+# patterns to find secrets that might be missed by traditional scanners.
+{% if cookiecutter.include_security_scanning == "yes" -%}
+[[plugin]]
+name = "trufflehog"
+version = "latest"
+
+# Run on every commit (critical for security)
+triggers = ["pre-commit", "pre-push", "build"]
+{% endif -%}
+
+# ============================================================================
+# Shell Script Linting - Shellcheck
+# ============================================================================
+# Shellcheck analyzes shell scripts for common errors, portability issues,
+# and best practices violations.
+[[plugin]]
+name = "shellcheck"
+version = "latest"
+config_files = [".shellcheckrc"]
+
+# Run on pre-commit (fast)
+triggers = ["pre-commit", "ide"]
+
+{% if cookiecutter.include_docker == "yes" -%}
+# ============================================================================
+# Container Security - Trivy
+# ============================================================================
+# Trivy scans container images, filesystems, and git repositories for
+# vulnerabilities, misconfigurations, and secrets.
+[[plugin]]
+name = "trivy"
+version = "latest"
+
+# Run on pre-push and build (requires network, can be slow)
+triggers = ["pre-push", "build"]
+
+# Scan for vulnerabilities, secrets, and misconfigurations
+[[plugin.config]]
+scan_types = ["vuln", "secret", "config"]
+severity = ["CRITICAL", "HIGH", "MEDIUM"]
+{% endif -%}
+
+# ============================================================================
+# Infrastructure as Code Security - Checkov
+# ============================================================================
+# Checkov scans IaC files (Terraform, CloudFormation, Kubernetes, Docker)
+# for security and compliance issues.
+{% if cookiecutter.include_docker == "yes" -%}
+[[plugin]]
+name = "checkov"
+version = "latest"
+
+# Run on pre-push and build
+triggers = ["pre-push", "build"]
+
+# Focus on Docker and Kubernetes configs
+[[plugin.config]]
+frameworks = ["dockerfile", "docker_compose", "kubernetes"]
+{% endif -%}
+
+# ============================================================================
 # Code Quality Metrics - Maintainability and Complexity
 # ============================================================================
 # Qlty's built-in code smell detection for identifying complex,
