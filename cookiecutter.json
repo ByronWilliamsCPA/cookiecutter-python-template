@@ -61,15 +61,11 @@
   "code_coverage_target": "80",
   "docstring_coverage_target": "85",
 
-  "_comment_tools": "Development Tools",
+  "_comment_tools": "Development Tools (Ruff, Mypy, Bandit always included for Python projects)",
   "use_pre_commit": ["yes", "no"],
-  "use_ruff": ["yes", "no"],
-  "use_mypy": ["yes", "no"],
 
-  "_comment_cicd": "CI/CD Configuration",
+  "_comment_cicd": "CI/CD Configuration (Gitleaks, OSV Scanner, Semgrep, TruffleHog always included for security)",
   "include_github_actions": ["yes", "no"],
-  "include_security_scanning": ["yes", "no"],
-  "include_gitleaks": ["yes", "no"],
   "include_fuzzing": ["no", "yes"],
   "include_codecov": ["yes", "no"],
   "include_sonarcloud": ["no", "yes"],

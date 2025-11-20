@@ -31,7 +31,6 @@ test_patterns = [
     "**/*_test.py",
 ]
 
-{% if cookiecutter.use_ruff == "yes" -%}
 # ============================================================================
 # Python Linting and Formatting - Ruff
 # ============================================================================
@@ -46,9 +45,7 @@ config_files = ["pyproject.toml", "ruff.toml", ".ruff.toml"]
 
 # Run on every trigger (fast enough for all workflows)
 triggers = ["pre-commit", "pre-push", "ide", "build"]
-{% endif -%}
 
-{% if cookiecutter.use_mypy == "yes" -%}
 # ============================================================================
 # Python Type Checking - Mypy
 # ============================================================================
@@ -68,9 +65,7 @@ triggers = ["pre-push", "build"]
 [[exclude]]
 plugins = ["mypy"]
 file_patterns = ["tests/**/*.py", "**/*_test.py", "**/test_*.py"]
-{% endif -%}
 
-{% if cookiecutter.include_security_scanning == "yes" -%}
 # ============================================================================
 # Security Scanning - Bandit
 # ============================================================================
@@ -89,9 +84,7 @@ triggers = ["pre-push", "build"]
 [[exclude]]
 plugins = ["bandit"]
 file_patterns = ["tests/**/*.py", "**/*_test.py", "**/test_*.py"]
-{% endif -%}
 
-{% if cookiecutter.include_gitleaks == "yes" -%}
 # ============================================================================
 # Secrets Detection - Gitleaks
 # ============================================================================
@@ -103,9 +96,7 @@ version = "latest"
 
 # Run on every commit (critical for security)
 triggers = ["pre-commit", "pre-push", "build"]
-{% endif -%}
 
-{% if cookiecutter.include_security_scanning == "yes" -%}
 # ============================================================================
 # Dependency Vulnerability Scanning - OSV Scanner
 # ============================================================================
@@ -118,7 +109,6 @@ package_file = "requirements.txt"
 
 # Run on pre-push and build (requires network access)
 triggers = ["pre-push", "build"]
-{% endif -%}
 
 # ============================================================================
 # Markdown Linting - Markdownlint
@@ -215,7 +205,6 @@ exclude = ["package-lock.json", "poetry.lock", "uv.lock"]
 # ============================================================================
 # Semgrep performs semantic code analysis to find complex security issues,
 # bugs, and anti-patterns that simple linters miss.
-{% if cookiecutter.include_security_scanning == "yes" -%}
 [[plugin]]
 name = "semgrep"
 version = "latest"
@@ -232,21 +221,18 @@ rules = [
     "p/owasp-top-ten",   # OWASP Top 10 vulnerabilities
     "p/django",          # Django-specific rules (if using Django)
 ]
-{% endif -%}
 
 # ============================================================================
 # Additional Secrets Detection - TruffleHog
 # ============================================================================
 # TruffleHog complements Gitleaks by using entropy analysis and regex
 # patterns to find secrets that might be missed by traditional scanners.
-{% if cookiecutter.include_security_scanning == "yes" -%}
 [[plugin]]
 name = "trufflehog"
 version = "latest"
 
 # Run on every commit (critical for security)
 triggers = ["pre-commit", "pre-push", "build"]
-{% endif -%}
 
 # ============================================================================
 # Shell Script Linting - Shellcheck
@@ -359,21 +345,17 @@ file_complexity.threshold = 750
 # ============================================================================
 # Adjust severity levels for specific rules based on file location
 
-{% if cookiecutter.use_mypy == "yes" -%}
 # Lower severity for type hints in test files
 [[triage]]
 match.plugins = ["mypy"]
 match.file_patterns = ["tests/**/*.py"]
 set.level = "low"
-{% endif -%}
 
-{% if cookiecutter.include_security_scanning == "yes" -%}
 # High severity for security issues in production code
 [[triage]]
 match.plugins = ["bandit"]
 match.file_patterns = ["src/**/*.py"]
 set.level = "high"
-{% endif -%}
 
 # ============================================================================
 # Custom Rules - Organization-Specific Standards
