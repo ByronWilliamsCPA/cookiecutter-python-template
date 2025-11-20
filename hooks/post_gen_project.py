@@ -270,12 +270,15 @@ def render_workflow_templates() -> None:
             content = workflow_file.read_text()
             original_content = content
 
-            # Replace all {{cookiecutter.* }} variations (with/without spaces)
+            # Replace all cookiecutter variable patterns (with/without spaces)
             for key, value in context.items():
                 # Handle various spacing patterns
-                content = content.replace(f"{{{{ cookiecutter.{key} }}}}", value)
-                content = content.replace(f"{{{{cookiecutter.{key}}}}}", value)
-                content = content.replace(f"{{{{  cookiecutter.{key}  }}}}", value)
+                pattern1 = "{{" + "{{ cookiecutter." + key + " }}}}"
+                pattern2 = "{{" + "{{cookiecutter." + key + "}}}}"
+                pattern3 = "{{" + "{{  cookiecutter." + key + "  }}}}"
+                content = content.replace(pattern1, value)
+                content = content.replace(pattern2, value)
+                content = content.replace(pattern3, value)
 
             # Only write if changes were made
             if content != original_content:
@@ -438,20 +441,27 @@ def print_success_message() -> None:
     if use_pre_commit:
         print("\n  3. Install pre-commit hooks:")
         print("     uv run pre-commit install")
+        print("\n  4. Install Qlty CLI for unified code quality:")
+        print("     curl https://qlty.sh | bash")
+        print("     # Or on Windows: powershell -c \"iwr https://qlty.sh | iex\"")
 
-    print("\n  4. Run tests:")
+    print("\n  5. Run tests:")
     print("     uv run pytest -v")
 
+    if use_pre_commit:
+        print("\n  6. Verify code quality setup:")
+        print("     qlty check")
+
     if use_mkdocs:
-        print("\n  5. Build documentation:")
+        print("\n  7. Build documentation:")
         print("     uv run mkdocs build")
 
-    print("\n  6. Initialize git (if not done automatically):")
+    print("\n  8. Initialize git (if not done automatically):")
     print("     git init")
     print("     git add .")
     print("     git commit -m 'Initial commit'")
 
-    print("\n  7. Create GitHub repository:")
+    print("\n  9. Create GitHub repository:")
     print(f"     gh repo create {project_slug} --public --source=.")
 
     # Add next steps for optional features

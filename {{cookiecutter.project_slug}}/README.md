@@ -209,13 +209,19 @@ uv sync --all-extras
 # Setup pre-commit hooks
 uv run pre-commit install
 
+# Install Qlty CLI for unified code quality checks
+curl https://qlty.sh | bash
+
 # Run tests
 uv run pytest -v
 
 # Run with coverage
 uv run pytest --cov={{cookiecutter.project_slug}} --cov-report=html
 
-# Run all quality checks
+# Run all quality checks (using Qlty)
+qlty check
+
+# Or use pre-commit
 uv run pre-commit run --all-files
 ```
 
@@ -223,12 +229,14 @@ uv run pre-commit run --all-files
 
 All code must meet these requirements:
 
-- **Formatting**: Ruff ({{cookiecutter.code_coverage_target}} char limit)
+- **Formatting**: Ruff (88 char limit)
 - **Linting**: Ruff with comprehensive rules
 - **Type Checking**: MyPy strict mode
 - **Testing**: Pytest with {{cookiecutter.code_coverage_target}}%+ coverage
 - **Security**: Bandit + dependency scanning
 - **Documentation**: Docstrings on all public APIs
+
+**Unified Quality Tool**: This project uses [Qlty](https://qlty.sh) to consolidate all quality checks into a single fast tool. See [`.qlty/qlty.toml`](.qlty/qlty.toml) for configuration.
 
 ### Running Tests
 
@@ -246,7 +254,39 @@ uv run pytest --cov={{cookiecutter.project_slug}} --cov-report=term-missing
 uv run pytest -n auto
 ```
 
-### Quality Checks
+### Quality Checks with Qlty
+
+**Recommended**: Use Qlty CLI for unified code quality checks.
+
+```bash
+# Run all quality checks (fast!)
+qlty check
+
+# Run checks on only changed files (fastest)
+qlty check --filter=diff
+
+# Run specific plugins only
+qlty check --plugin ruff --plugin mypy
+
+# Auto-format code
+qlty fmt
+
+# View current configuration
+qlty config show
+```
+
+**Qlty runs all these tools in a single pass:**
+
+- Ruff (linting + formatting)
+- Mypy (type checking)
+- Bandit (security scanning)
+- Gitleaks (secrets detection)
+- Markdownlint (markdown linting)
+- Yamllint (YAML linting)
+- OSV Scanner (dependency vulnerabilities)
+- Code complexity and maintainability analysis
+
+### Individual Tool Commands (if needed)
 
 ```bash
 # Format code
@@ -261,8 +301,8 @@ uv run mypy src
 # Security scanning
 uv run bandit -r src
 
-# Check dependencies
-uv run safety check
+# Dependency vulnerabilities
+qlty check --plugin osv_scanner
 ```
 
 ## Project Structure

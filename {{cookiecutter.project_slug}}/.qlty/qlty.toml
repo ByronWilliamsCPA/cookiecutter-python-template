@@ -1,0 +1,358 @@
+# Qlty Configuration for {{ cookiecutter.project_name }}
+# This configuration consolidates code quality tools into a unified workflow.
+# Replaces individual pre-commit hooks with a single qlty check command.
+
+config_version = "0"
+
+# File patterns to completely exclude from all analysis
+exclude_patterns = [
+    "*.log",
+    "**/__pycache__/**",
+    "**/*.pyc",
+    "**/*.pyo",
+    "**/.pytest_cache/**",
+    "**/.mypy_cache/**",
+    "**/.ruff_cache/**",
+    "**/node_modules/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/*.egg-info/**",
+    "**/data/**",
+    "**/models/**",
+    "**/.git/**",
+]
+
+# Patterns to identify test files for enhanced analysis
+test_patterns = [
+    "**/tests/**",
+    "**/test_*.py",
+    "**/*_test.py",
+]
+
+{% if cookiecutter.use_ruff == "yes" -%}
+# ============================================================================
+# Python Linting and Formatting - Ruff
+# ============================================================================
+# Ruff is an extremely fast Python linter and code formatter written in Rust.
+# It replaces Flake8, Black, isort, pyupgrade, and more.
+# Configuration: pyproject.toml [tool.ruff] section
+[[plugin]]
+name = "ruff"
+version = "latest"
+package_file = "pyproject.toml"
+config_files = ["pyproject.toml", "ruff.toml", ".ruff.toml"]
+
+# Run on every trigger (fast enough for all workflows)
+triggers = ["pre-commit", "pre-push", "ide", "build"]
+{% endif -%}
+
+{% if cookiecutter.use_mypy == "yes" -%}
+# ============================================================================
+# Python Type Checking - Mypy
+# ============================================================================
+# Mypy is a static type checker for Python that helps catch type errors
+# before runtime. Essential for maintaining type safety in Python code.
+# Configuration: pyproject.toml [tool.mypy] section
+[[plugin]]
+name = "mypy"
+version = "latest"
+package_file = "pyproject.toml"
+config_files = ["pyproject.toml", "mypy.ini", ".mypy.ini"]
+
+# Mypy can be slow, so run on pre-push and build only
+triggers = ["pre-push", "build"]
+
+# Exclude test files from strict type checking
+[[exclude]]
+plugins = ["mypy"]
+file_patterns = ["tests/**/*.py", "**/*_test.py", "**/test_*.py"]
+{% endif -%}
+
+{% if cookiecutter.include_security_scanning == "yes" -%}
+# ============================================================================
+# Security Scanning - Bandit
+# ============================================================================
+# Bandit is a security linter that finds common security issues in Python code.
+# Configuration: pyproject.toml [tool.bandit] section
+[[plugin]]
+name = "bandit"
+version = "latest"
+package_file = "pyproject.toml"
+config_files = ["pyproject.toml", ".bandit"]
+
+# Run on pre-push and build (can be slow)
+triggers = ["pre-push", "build"]
+
+# Exclude test files (they often have test-specific patterns that trigger false positives)
+[[exclude]]
+plugins = ["bandit"]
+file_patterns = ["tests/**/*.py", "**/*_test.py", "**/test_*.py"]
+{% endif -%}
+
+{% if cookiecutter.include_gitleaks == "yes" -%}
+# ============================================================================
+# Secrets Detection - Gitleaks
+# ============================================================================
+# Gitleaks detects hardcoded secrets like passwords, API keys, and tokens
+# in your codebase and git history.
+[[plugin]]
+name = "gitleaks"
+version = "latest"
+
+# Run on every commit (critical for security)
+triggers = ["pre-commit", "pre-push", "build"]
+{% endif -%}
+
+{% if cookiecutter.include_security_scanning == "yes" -%}
+# ============================================================================
+# Dependency Vulnerability Scanning - OSV Scanner
+# ============================================================================
+# OSV Scanner checks your dependencies for known security vulnerabilities
+# using Google's Open Source Vulnerabilities database.
+[[plugin]]
+name = "osv_scanner"
+version = "latest"
+package_file = "requirements.txt"
+
+# Run on pre-push and build (requires network access)
+triggers = ["pre-push", "build"]
+{% endif -%}
+
+# ============================================================================
+# Markdown Linting - Markdownlint
+# ============================================================================
+# Markdownlint enforces consistent markdown formatting and best practices.
+# Configuration: .markdownlint.json or .markdownlint.yaml
+[[plugin]]
+name = "markdownlint"
+version = "latest"
+config_files = [".markdownlint.json", ".markdownlint.yaml", ".markdownlint.yml"]
+
+# Run on pre-commit (fast)
+triggers = ["pre-commit", "ide"]
+
+# Disable problematic rules (matching current pre-commit config)
+# MD013: Line length (handled by prettier/editors)
+# MD033: Inline HTML (needed for advanced formatting)
+# MD041: First line in file should be a top level heading
+[[plugin.rule]]
+id = "MD013"
+enabled = false
+
+[[plugin.rule]]
+id = "MD033"
+enabled = false
+
+[[plugin.rule]]
+id = "MD041"
+enabled = false
+
+# ============================================================================
+# YAML Linting - yamllint
+# ============================================================================
+# Yamllint validates YAML files for syntax errors and style issues.
+[[plugin]]
+name = "yamllint"
+version = "latest"
+config_files = [".yamllint", ".yamllint.yaml", ".yamllint.yml"]
+
+# Run on pre-commit (fast)
+triggers = ["pre-commit", "ide"]
+
+# Exclude mkdocs.yml (uses custom !ENV tags that yamllint doesn't understand)
+[[exclude]]
+plugins = ["yamllint"]
+file_patterns = ["mkdocs.yml", "**/mkdocs.yml"]
+
+# ============================================================================
+# Code Quality Metrics - Maintainability and Complexity
+# ============================================================================
+# Qlty's built-in code smell detection for identifying complex,
+# hard-to-maintain code patterns.
+
+[smells]
+# Mode: comment (add PR comments) vs block (fail CI)
+mode = "comment"
+
+# Boolean logic complexity
+[smells.boolean_logic]
+enabled = true
+threshold = 5  # Max boolean operators in a single expression
+
+# Nested control flow (if/for/while nesting)
+[smells.nested_control_flow]
+enabled = true
+threshold = 4  # Max nesting depth
+
+# Function parameters
+[smells.function_parameters]
+enabled = true
+threshold = 7  # Max parameters per function
+
+# Return statements
+[smells.return_statements]
+enabled = true
+threshold = 5  # Max return statements per function
+
+# File complexity
+[smells.file_complexity]
+enabled = true
+threshold = 500  # Max lines of code per file
+
+# Function complexity (cyclomatic complexity)
+[smells.function_complexity]
+enabled = true
+threshold = 15  # Max cyclomatic complexity per function
+
+# ============================================================================
+# Python-Specific Code Quality Configuration
+# ============================================================================
+# Override smell thresholds for Python to match our coding standards
+
+[language.python.smells]
+# Python allows more complex functions due to decorators and context managers
+function_complexity.threshold = 20
+
+# Python's comprehensions can have complex boolean logic
+boolean_logic.threshold = 6
+
+# Allow larger Python files for models, views, etc.
+file_complexity.threshold = 750
+
+# ============================================================================
+# Triage Rules - Customize Issue Severity
+# ============================================================================
+# Adjust severity levels for specific rules based on file location
+
+{% if cookiecutter.use_mypy == "yes" -%}
+# Lower severity for type hints in test files
+[[triage]]
+match.plugins = ["mypy"]
+match.file_patterns = ["tests/**/*.py"]
+set.level = "low"
+{% endif -%}
+
+{% if cookiecutter.include_security_scanning == "yes" -%}
+# High severity for security issues in production code
+[[triage]]
+match.plugins = ["bandit"]
+match.file_patterns = ["src/**/*.py"]
+set.level = "high"
+{% endif -%}
+
+# ============================================================================
+# Custom Rules - Organization-Specific Standards
+# ============================================================================
+
+# Prohibit print statements in production code (use logging instead)
+[[custom_rule]]
+id = "no-print-statements"
+pattern = "\\bprint\\s*\\("
+message = "Use structured logging instead of print() statements"
+severity = "medium"
+file_patterns = ["src/**/*.py"]
+exclude_patterns = ["tests/**/*.py", "scripts/**/*.py"]
+
+# Prohibit TODO without issue tracking
+[[custom_rule]]
+id = "todo-with-ticket"
+pattern = "(?i)#\\s*TODO(?!.*#\\d+)"
+message = "TODO comments must reference an issue number (e.g., TODO #123)"
+severity = "low"
+file_patterns = ["**/*.py", "**/*.md"]
+
+{% if cookiecutter.use_decimal_precision == "yes" -%}
+# Prohibit float for financial calculations
+[[custom_rule]]
+id = "no-float-for-money"
+pattern = "\\bfloat\\s*\\([^)]*(?:price|amount|total|balance|cost|fee|rate|value)"
+message = "Use Decimal type for financial calculations, not float"
+severity = "high"
+file_patterns = ["src/**/*.py"]
+{% endif -%}
+
+# Ensure proper exception handling (no bare except)
+[[custom_rule]]
+id = "no-bare-except"
+pattern = "except\\s*:"
+message = "Avoid bare except: clauses. Catch specific exceptions or use Exception"
+severity = "medium"
+file_patterns = ["src/**/*.py"]
+
+# ============================================================================
+# Quality Gates - Minimum Standards
+# ============================================================================
+# These gates are enforced in CI and prevent merges that violate standards
+
+[gates]
+# Code coverage minimum (matches CI configuration)
+{% if cookiecutter.include_codecov == "yes" -%}
+coverage_minimum = {{ cookiecutter.code_coverage_target }}
+coverage_target = 90
+{% endif -%}
+
+# Cyclomatic complexity limit
+max_cyclomatic_complexity = 20
+
+# Cognitive complexity limit
+max_cognitive_complexity = 25
+
+# Maintainability score (A-F scale)
+min_maintainability_score = "B"
+
+# Maximum number of high-severity issues allowed
+max_high_severity_issues = 0
+
+# Maximum number of medium-severity issues allowed
+max_medium_severity_issues = 5
+
+# ============================================================================
+# Performance and Caching
+# ============================================================================
+
+# Cache analysis results for unchanged files
+cache_enabled = true
+
+# Run analysis in parallel for better performance
+parallel_analysis = true
+
+# Maximum number of parallel workers (auto-detect by default)
+# max_workers = 4
+
+# ============================================================================
+# Integration Settings
+# ============================================================================
+
+# Upload results to Qlty Cloud for team-wide visibility
+{% if cookiecutter.github_org_or_user != "williaby" and cookiecutter.github_org_or_user != cookiecutter.github_username -%}
+# Note: Set QLTY_TOKEN environment variable or use `qlty auth login`
+upload_enabled = true
+{% else -%}
+# Upload disabled by default. Enable in CI by setting QLTY_TOKEN
+upload_enabled = false
+{% endif -%}
+
+# Generate detailed reports for CI
+report_enabled = true
+
+# Report format (json, sarif, markdown)
+report_format = "sarif"
+
+# ============================================================================
+# Documentation and Maintenance
+# ============================================================================
+# This configuration is maintained as part of the project template.
+#
+# To update plugins:
+#   qlty plugins update
+#
+# To see the full merged configuration:
+#   qlty config show
+#
+# To validate this configuration:
+#   qlty config validate
+#
+# For more information:
+#   https://docs.qlty.sh/qlty-toml

@@ -1,13 +1,22 @@
 # Pre-commit hooks configuration
 # See https://pre-commit.com for more information
+#
+# This configuration uses Qlty CLI for unified code quality checks.
+# Qlty consolidates linting, formatting, type checking, and security scanning
+# into a single fast tool. See .qlty/qlty.toml for detailed configuration.
+#
+# Installation: curl https://qlty.sh | bash
+# Documentation: https://docs.qlty.sh
 {% if cookiecutter.use_pre_commit == "yes" %}
 ci:
   autoupdate_schedule: monthly
   autofix_prs: true
-  skip: [validate-front-matter]  # Skip local-only hooks
+  skip: [validate-front-matter, qlty-check]  # Skip local-only hooks
 
 repos:
-  # General file checks
+  # ============================================================================
+  # Fast File Checks (Lightweight, run on every commit)
+  # ============================================================================
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
@@ -34,48 +43,36 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
         stages: [pre-commit]
-{% if cookiecutter.include_gitleaks == "yes" %}
-  # Secrets detection with Gitleaks
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.0
-    hooks:
-      - id: gitleaks
-{% endif %}
-{% if cookiecutter.use_ruff == "yes" %}
-  # Python linting and formatting with Ruff
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.4
-    hooks:
-      - id: ruff
-        args: ['--fix', '--exit-non-zero-on-fix']
-      - id: ruff-format
-{% endif %}
-{% if cookiecutter.use_mypy == "yes" %}
-  # Python type checking with MyPy
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-      - id: mypy
-        additional_dependencies:
-          - pydantic>=2.0.0
-        args: ['--ignore-missing-imports', '--python-version={{ cookiecutter.python_version }}']
-        exclude: ^tests/.*
-{% endif %}
-  # Markdown linting
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.38.0
-    hooks:
-      - id: markdownlint
-        args: ['--fix', '--disable', 'MD013', 'MD033', 'MD041']
 
-  # YAML linting
-  - repo: https://github.com/adrienverge/yamllint
-    rev: v1.33.0
+  # ============================================================================
+  # Qlty Unified Quality Checks
+  # ============================================================================
+  # Qlty runs all quality tools in a single pass:
+  # - Ruff (linting + formatting)
+  # - Mypy (type checking)
+  # - Bandit (security scanning)
+  # - Gitleaks (secrets detection)
+  # - Markdownlint (markdown linting)
+  # - Yamllint (YAML linting)
+  # - OSV Scanner (dependency vulnerabilities)
+  # - Code smells and complexity analysis
+  #
+  # Configure via .qlty/qlty.toml
+  - repo: local
     hooks:
-      - id: yamllint
-        args: ['-d', '{extends: default, rules: {line-length: {max: 120}}}']
+      - id: qlty-check
+        name: Qlty Code Quality Check
+        entry: qlty check --filter=diff
+        language: system
+        types: [file]
+        pass_filenames: false
+        stages: [pre-commit]
+        verbose: true
+
 {% if cookiecutter.use_mkdocs == "yes" %}
-  # Documentation front matter validation
+  # ============================================================================
+  # Custom Documentation Validation
+  # ============================================================================
   - repo: local
     hooks:
       - id: validate-front-matter
@@ -84,30 +81,21 @@ repos:
         language: system
         files: ^docs/.*\.md$
         pass_filenames: false
+        stages: [pre-commit]
 {% endif %}
-  # Python docstring coverage with interrogate
+
+  # ============================================================================
+  # Python Docstring Coverage
+  # ============================================================================
+  # Interrogate ensures all Python code has proper docstrings
+  # Target: {{ cookiecutter.docstring_coverage_target }}% coverage
   - repo: https://github.com/econchick/interrogate
     rev: 1.7.0
     hooks:
       - id: interrogate
         args: ['-v', '-c', 'pyproject.toml', 'src/']
         pass_filenames: false
-{% if cookiecutter.include_security_scanning == "yes" %}
-  # Security scanning with Bandit
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.6
-    hooks:
-      - id: bandit
-        args: ['-c', 'pyproject.toml']
-        additional_dependencies: ['bandit[toml]']
-        exclude: 'tests/.*'
-
-  # Dependency scanning with pip-audit (UV-compatible)
-  - repo: https://github.com/pypa/pip-audit
-    rev: v2.7.3
-    hooks:
-      - id: pip-audit
-        args: ['--desc', 'on', '--skip-editable']
+        stages: [pre-commit]
 {% endif %}
 # Exclude patterns
 exclude: |

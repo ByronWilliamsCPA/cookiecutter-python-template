@@ -48,14 +48,12 @@ uv sync --all-extras,ml
 # Setup pre-commit hooks (REQUIRED)
 uv run pre-commit install
 
+# Install Qlty CLI for unified code quality checks (REQUIRED)
+curl https://qlty.sh | bash
+
 # Verify installation
 uv run pytest -v
-{%- if cookiecutter.use_ruff == "yes" %}
-uv run ruff check src tests
-{%- endif %}
-{%- if cookiecutter.use_mypy == "yes" %}
-uv run mypy src
-{%- endif %}
+qlty check
 {%- endif %}
 ```
 
@@ -114,27 +112,25 @@ git checkout -b docs/documentation-update
 Before committing, ensure all quality checks pass:
 
 ```bash
-{%- if cookiecutter.use_ruff == "yes" %}
-# Format code
-uv run ruff format src tests
+# Run all quality checks with Qlty (RECOMMENDED - fast and comprehensive)
+qlty check
 
-# Lint code
-uv run ruff check --fix src tests
-{%- endif %}
+# Or run checks on only changed files (fastest)
+qlty check --filter=diff
 
-{%- if cookiecutter.use_mypy == "yes" %}
-# Type checking
-uv run mypy src
+# Auto-format code
+qlty fmt
+
+{%- if cookiecutter.use_pre_commit == "yes" %}
+# Or run all pre-commit hooks manually
+uv run pre-commit run --all-files
 {%- endif %}
 
 # Run tests with coverage
 uv run pytest --cov={{cookiecutter.project_slug}} --cov-report=term-missing
-
-{%- if cookiecutter.use_pre_commit == "yes" %}
-# Run all pre-commit hooks manually
-uv run pre-commit run --all-files
-{%- endif %}
 ```
+
+**Note**: Qlty consolidates all quality tools (Ruff, MyPy, Bandit, Markdownlint, etc.) into a single fast CLI. See [`.qlty/qlty.toml`](.qlty/qlty.toml) for configuration.
 
 ## Code Quality Standards
 
