@@ -1,299 +1,55 @@
-# {% raw %}{{ cookiecutter.project_name }}{% endraw %} - CI Pipeline
-# Main CI workflow with UV dependency management and comprehensive testing
-#
-# CI FOCUS: Code Quality & Testing
-# This workflow focuses on code quality, formatting, and comprehensive testing.
-# Security scanning has been consolidated in security-analysis.yml workflow.
-#
-# QUALITY CHECKS (This Workflow):
-#   - {% if cookiecutter.use_mypy == "yes" %}MyPy: Strict type checking{% endif %}
-#   - {% if cookiecutter.use_ruff == "yes" %}Ruff: Enhanced linting and formatting{% endif %}
-#   - Type Hints: Validates | union syntax has future annotations
-#   - Pytest: Comprehensive test suite with {{ cookiecutter.code_coverage_target }}%+ coverage
-#
-# SECURITY SCANS (See security-analysis.yml):
-#   - {% if cookiecutter.include_security_scanning == "yes" %}Bandit: Python static security analysis{% endif %}
-#   - {% if cookiecutter.include_security_scanning == "yes" %}Safety: Python dependency CVE scanning{% endif %}
-#   - {% if cookiecutter.include_security_scanning == "yes" %}CodeQL: Advanced security analysis{% endif %}
-#
-# This separation improves CI performance by ~10-12 minutes per PR
-
-name: CI
+# CI Pipeline - Calls Org-Level Reusable Workflow
+# This is a lightweight caller workflow that invokes the organization's
+# shared Python CI workflow for consistency across all projects.
+{% if cookiecutter.include_github_actions == "yes" -%}
+name: CI Pipeline
 
 on:
-  workflow_dispatch:  # Manual trigger for testing
-  pull_request:
-    branches:
-      - main
-      - develop
-      - 'feature/**'
   push:
-    branches:
-      - main
-      - develop
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
 
-permissions:
-  contents: read        # For checkout
-  pull-requests: write  # For PR comments
-  checks: write         # For check runs
-
+# Cancel in-progress runs for same PR/branch
 concurrency:
-  group: ci-{% raw %}${{  github.ref  }}{% endraw %}
+  group: {% raw %}${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}{% endraw %}
   cancel-in-progress: true
 
-env:
-  CI_ENVIRONMENT: true
-  UV_CACHE_DIR: ~/.cache/uv
-  {% if cookiecutter.use_mypy == "yes" %}MYPY_CACHE_DIR: ~/.cache/mypy{% endif %}
-
 jobs:
-  # Setup and dependency caching
-  setup-optimized:
-    name: Setup with UV Caching
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    outputs:
-      uv-hash: {% raw %}${{  steps.cache-key.outputs.uv-hash  }}{% endraw %}
-      pyproject-hash: {% raw %}${{  steps.cache-key.outputs.pyproject-hash  }}{% endraw %}
-    steps:
-      - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          egress-policy: audit
+  ci:
+    name: CI
+    uses: {{ cookiecutter.github_org_or_user }}/.github/.github/workflows/python-ci.yml@main
+    with:
+      # Python versions to test
+      python-versions: '["{{ cookiecutter.python_version }}"]'
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      # Coverage settings
+      coverage-threshold: {{ cookiecutter.code_coverage_target }}
+      source-directory: 'src'
+      test-directory: 'tests'
 
-      - name: Generate cache keys
-        id: cache-key
-        run: |
-          echo "uv-hash={% raw %}${{  hashFiles('**/uv.lock')  }}{% endraw %}" >> $GITHUB_OUTPUT
-          echo "pyproject-hash={% raw %}${{  hashFiles('**/pyproject.toml')  }}{% endraw %}" >> $GITHUB_OUTPUT
+      # Quality checks
+      {% if cookiecutter.use_mypy == "yes" -%}
+      run-mypy: true
+      mypy-strict: true
+      {% else -%}
+      run-mypy: false
+      {% endif -%}
 
-      - name: Set up Python {% raw %}{{ cookiecutter.python_version }}{% endraw %}
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
-        with:
-          python-version: '{% raw %}{{ cookiecutter.python_version }}{% endraw %}'
+      {% if cookiecutter.use_ruff == "yes" -%}
+      run-ruff: true
+      {% else -%}
+      run-ruff: false
+      {% endif -%}
 
-      - name: Install UV
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
+    {% if cookiecutter.include_codecov == "yes" -%}
+    secrets:
+      CODECOV_TOKEN: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
+    {% endif -%}
 
-      # Optimized caching strategy
-      - name: Cache UV dependencies
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: |
-            .venv
-            ~/.cache/uv
-          key: py-deps-{% raw %}${{  runner.os  }}{% endraw %}-{% raw %}${{  steps.cache-key.outputs.uv-hash  }}{% endraw %}
-          restore-keys: |
-            py-deps-{% raw %}${{  runner.os  }}{% endraw %}-
-
-      - name: Install dependencies
-        run: |
-          uv sync --no-interaction --all-extras
-
-      - name: Dependency validation
-        run: |
-          echo "🔍 Validating core dependencies..."
-          uv run python -c "
-          import sys
-          required_deps = ['pydantic', 'structlog']
-          print('✅ Core Dependencies:')
-          for dep in required_deps:
-              try:
-                  mod = __import__(dep)
-                  version = getattr(mod, '__version__', 'unknown')
-                  print(f'  ✅ {dep} ({version}): OK')
-              except ImportError as e:
-                  print(f'  ❌ {dep}: FAILED - {e}')
-                  sys.exit(1)
-          print('✅ All core dependencies validated')
-          "
-
-      - name: Clean up disk space
-        run: |
-          echo "🧹 Cleaning up disk space..."
-          uv cache clean 2>/dev/null || true
-          sudo apt-get clean 2>/dev/null || true
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc 2>/dev/null || true
-
-  # Comprehensive testing
-  test:
-    name: Test Suite (Python {% raw %}${{  matrix.python-version  }}{% endraw %})
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: setup-optimized
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-      fail-fast: false
-
-    steps:
-      - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Set up Python {% raw %}${{  matrix.python-version  }}{% endraw %}
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
-        with:
-          python-version: {% raw %}${{  matrix.python-version  }}{% endraw %}
-
-      - name: Install UV
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Restore dependency cache
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: |
-            .venv
-            ~/.cache/uv
-          key: py-deps-{% raw %}${{  runner.os  }}{% endraw %}-{% raw %}${{  needs.setup-optimized.outputs.uv-hash  }}{% endraw %}
-          restore-keys: |
-            py-deps-{% raw %}${{  runner.os  }}{% endraw %}-
-
-      - name: Install dependencies
-        run: |
-          uv sync --no-interaction --all-extras
-
-      # Run comprehensive test suite
-      - name: Run test suite
-        run: |
-          echo "🧪 Running test suite..."
-          uv run pytest -v \
-            --cov=src \
-            --cov-report=xml:coverage.xml \
-            --cov-report=term-missing \
-            --cov-report=html:htmlcov \
-            --cov-fail-under={{ cookiecutter.code_coverage_target }} \
-            --junitxml=junit.xml \
-            -o junit_family=xunit2 \
-            --tb=short \
-            --maxfail=10 \
-            tests/
-        env:
-          CI_ENVIRONMENT: true
-
-      - name: Upload test artifacts
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: test-results-{% raw %}${{  matrix.python-version  }}{% endraw %}
-          path: |
-            junit.xml
-            coverage.xml
-            htmlcov/
-
-  # Quality checks
-  quality-checks:
-    name: Quality Checks
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    needs: setup-optimized
-    steps:
-      - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Set up Python {% raw %}{{ cookiecutter.python_version }}{% endraw %}
-        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
-        with:
-          python-version: '{% raw %}{{ cookiecutter.python_version }}{% endraw %}'
-
-      - name: Install UV
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Restore dependency cache
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: |
-            .venv
-            ~/.cache/uv
-          key: py-deps-{% raw %}${{  runner.os  }}{% endraw %}-{% raw %}${{  needs.setup-optimized.outputs.uv-hash  }}{% endraw %}
-          restore-keys: |
-            py-deps-{% raw %}${{  runner.os  }}{% endraw %}-
-
-      - name: Install dependencies
-        run: |
-          uv sync --no-interaction --all-extras
-{% if cookiecutter.use_mypy == "yes" %}
-      - name: Type checking with MyPy
-        run: |
-          echo "🔍 Running strict type checking..."
-          uv run mypy src --config-file=pyproject.toml --cache-dir={% raw %}${{  env.MYPY_CACHE_DIR  }}{% endraw %}
-{% endif %}
-{% if cookiecutter.use_ruff == "yes" %}
-      - name: Code formatting validation
-        run: |
-          echo "🧹 Validating code formatting..."
-          uv run ruff format --check
-
-      - name: Linting with enhanced rules
-        run: |
-          echo "🔧 Running enhanced linting..."
-          uv run ruff check . --config=pyproject.toml
-
-      - name: Type hint syntax validation
-        run: |
-          echo "🔍 Checking for | union syntax with future annotations..."
-          uv run python scripts/check_type_hints.py --src-dir=src
-{% endif %}
-
-  # Success validation
-  ci-success:
-    name: CI Success Gate
-    runs-on: ubuntu-latest
-    needs: [setup-optimized, test, quality-checks]
-    if: always()
-    steps:
-      - name: Validate CI Results
-        run: |
-          if [[ "{% raw %}${{  needs.setup-optimized.result  }}{% endraw %}" == "success" && \
-                "{% raw %}${{  needs.test.result  }}{% endraw %}" == "success" && \
-                "{% raw %}${{  needs.quality-checks.result  }}{% endraw %}" == "success" ]]; then
-            echo "✅ CI Pipeline - All Checks Passed"
-            echo "🎯 Code quality validated"
-            {% if cookiecutter.include_security_scanning == "yes" %}echo "🔒 Security scans and quality checks completed"{% endif %}
-            echo "✅ Ready for deployment"
-          else
-            echo "❌ CI Pipeline Failed"
-            echo "setup-optimized: {% raw %}${{  needs.setup-optimized.result  }}{% endraw %}"
-            echo "test: {% raw %}${{  needs.test.result  }}{% endraw %}"
-            echo "quality-checks: {% raw %}${{  needs.quality-checks.result  }}{% endraw %}"
-            exit 1
-          fi
-
-  # Required status check for branch protection
-  ci-gate:
-    name: CI Gate
-    runs-on: ubuntu-latest
-    needs: [setup-optimized, test, quality-checks]
-    if: always()
-    steps:
-      - name: CI Gate
-        run: |
-          if [[ "{% raw %}${{  needs.setup-optimized.result  }}{% endraw %}" == "success" && \
-                "{% raw %}${{  needs.test.result  }}{% endraw %}" == "success" && \
-                "{% raw %}${{  needs.quality-checks.result  }}{% endraw %}" == "success" ]]; then
-            echo "✅ CI Gate - Production Ready"
-            echo "✅ Code quality standards met"
-            echo "⚡ Performance validated"
-          else
-            echo "❌ CI Gate - Quality Standards Not Met"
-            echo "🚫 Cannot proceed to production deployment"
-            exit 1
-          fi
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+{% endif -%}
