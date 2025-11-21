@@ -5,7 +5,6 @@ with structured logging integration.
 """
 
 import sys
-from typing import Any
 
 import click
 
@@ -77,8 +76,8 @@ def config(ctx: click.Context) -> None:
         logger.info("Retrieving configuration")
 
         click.echo("Current Configuration:")
-        click.echo(f"  Project: {{ cookiecutter.project_name }}")
-        click.echo(f"  Version: {{ cookiecutter.version }}")
+        click.echo("  Project: {{ cookiecutter.project_name }}")
+        click.echo("  Version: {{ cookiecutter.version }}")
         click.echo(f"  Debug: {debug}")
         click.echo(f"  Log Level: {settings.log_level}")
 

@@ -26,16 +26,15 @@ import argparse
 import json
 import os
 import sys
-from typing import Dict, List, Optional, Tuple
+from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
-from urllib.error import HTTPError, URLError
 
 
 class SonarQubeClient:
     """Simple SonarQube API client."""
 
-    def __init__(self, host_url: str, token: str, org: Optional[str] = None):
+    def __init__(self, host_url: str, token: str, org: str | None = None):
         self.host_url = host_url.rstrip("/")
         self.token = token
         self.org = org
@@ -44,7 +43,7 @@ class SonarQubeClient:
             "Content-Type": "application/json",
         }
 
-    def _make_request(self, endpoint: str, params: Optional[Dict] = None) -> Dict:
+    def _make_request(self, endpoint: str, params: dict | None = None) -> dict:
         """Make HTTP request to SonarQube API."""
         url = urljoin(self.host_url, endpoint)
 
@@ -65,14 +64,14 @@ class SonarQubeClient:
             print(f"URL Error: {e.reason}", file=sys.stderr)
             sys.exit(2)
 
-    def get_quality_gate_status(self, project_key: str) -> Dict:
+    def get_quality_gate_status(self, project_key: str) -> dict:
         """Get quality gate status for a project."""
         return self._make_request(
             "/api/qualitygates/project_status",
             {"projectKey": project_key}
         )
 
-    def get_measures(self, project_key: str, metrics: List[str]) -> Dict:
+    def get_measures(self, project_key: str, metrics: list[str]) -> dict:
         """Get project measures for specified metrics."""
         return self._make_request(
             "/api/measures/component",
@@ -82,7 +81,7 @@ class SonarQubeClient:
             }
         )
 
-    def get_issues(self, project_key: str, severities: Optional[List[str]] = None) -> Dict:
+    def get_issues(self, project_key: str, severities: list[str] | None = None) -> dict:
         """Get project issues filtered by severity."""
         params = {"componentKeys": project_key}
         if severities:
@@ -140,8 +139,8 @@ class LLMGovernanceMapper:
 
 
 def format_report(
-    quality_gate_status: Dict,
-    issues: Dict,
+    quality_gate_status: dict,
+    issues: dict,
     rad_tags: int,
     llm_tags: int
 ) -> str:
@@ -305,7 +304,7 @@ def main():
     print(f"SonarQube URL: {args.host_url}")
     if args.org:
         print(f"Organization: {args.org}")
-    print("")
+    print()
 
     # Get quality gate status
     qg_status = client.get_quality_gate_status(args.project_key)

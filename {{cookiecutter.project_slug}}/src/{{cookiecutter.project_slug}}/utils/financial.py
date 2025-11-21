@@ -1,4 +1,4 @@
-"""Financial utilities module.
+"""Financial utilities module."""
 
 {% if cookiecutter.use_decimal_precision == "yes" -%}
 CRITICAL: Always use Decimal for financial calculations to avoid floating-point errors.

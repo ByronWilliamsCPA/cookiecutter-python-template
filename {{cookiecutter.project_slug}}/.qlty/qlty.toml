@@ -161,12 +161,14 @@ file_patterns = ["mkdocs.yml", "**/mkdocs.yml"]
 # ============================================================================
 # Actionlint validates GitHub Actions workflow files for syntax errors,
 # best practices, and common mistakes.
-[[plugin]]
-name = "actionlint"
-version = "latest"
-
-# Run on pre-commit and build
-triggers = ["pre-commit", "build"]
+# NOTE: Disabled due to installation issues in generated projects.
+# Re-enable by uncommenting once actionlint is installed in your environment.
+#[[plugin]]
+#name = "actionlint"
+#version = "latest"
+#
+## Run on pre-commit and build
+#triggers = ["pre-commit", "build"]
 
 {% if cookiecutter.include_docker == "yes" -%}
 # ============================================================================

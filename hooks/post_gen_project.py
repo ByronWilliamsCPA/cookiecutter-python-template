@@ -570,6 +570,28 @@ def print_success_message() -> None:
     print("=" * 60 + "\n")
 
 
+def run_code_fixes() -> None:
+    """Run automatic code fixes on generated project.
+
+    Applies Ruff auto-fix to clean up code quality issues in the generated project.
+    This ensures projects start with clean, properly formatted code.
+    """
+    print("\n🔧 Running automatic code fixes...")
+
+    # Check if uv is available (it should be from template generation)
+    if not shutil.which("uv"):
+        print("  ℹ Skipping code fixes (uv not found)")
+        return
+
+    # Run Ruff auto-fix
+    print("  • Fixing linting issues with Ruff...")
+    success = run_command(["uv", "run", "ruff", "check", "--fix", "."], check=False)
+    if success:
+        print("  ✓ Ruff auto-fix completed")
+    else:
+        print("  ℹ Ruff auto-fix completed with some issues (review manually)")
+
+
 def main() -> None:
     """Run post-generation tasks."""
     print("\n🚀 Running post-generation setup...")
@@ -578,6 +600,7 @@ def main() -> None:
         cleanup_conditional_files()
         render_workflow_templates()  # Fix unrendered Jinja2 variables in workflows
         create_initial_directories()
+        run_code_fixes()  # Auto-fix code quality issues before git init
         initialize_git()
         setup_claude_subtree()  # Add Claude standards via git subtree
         setup_pre_commit()
