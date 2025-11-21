@@ -69,7 +69,7 @@ def setup_branch_protection(
     """Configure branch protection rules for a repository.
 
     Sets up OpenSSF-recommended branch protection including:
-    - Required status checks (CI Gate, Security Analysis)
+    - Required status checks (CI Pipeline, Security Scan, PR Validation)
     - Required pull request reviews
     - Admin enforcement
     - Linear history requirement
@@ -116,12 +116,24 @@ def setup_branch_protection(
 
     # Branch protection configuration
     # See: https://docs.github.com/en/rest/branches/branch-protection
+    #
+    # Status check names for reusable workflows follow the pattern:
+    #   "Workflow Name / Job Name"
+    #
+    # Our workflow structure:
+    #   - ci.yml -> calls reusable python-ci.yml
+    #   - security-analysis.yml -> calls reusable python-security-analysis.yml
+    #   - pr-validation.yml -> standalone workflow
     protection = {
         "required_status_checks": {
             "strict": True,
             "contexts": [
-                "CI Gate",  # From ci.yml workflow
-                "Security Analysis",  # From security-analysis.yml
+                # CI workflow (calls org-level python-ci.yml reusable workflow)
+                "CI / CI Pipeline",
+                # Security Analysis workflow (calls org-level reusable workflow)
+                "Security Analysis / Security Scan",
+                # PR Validation workflow (standalone - validates lock files)
+                "PR Validation / Validate Lock File Integrity",
             ],
         },
         "enforce_admins": True,

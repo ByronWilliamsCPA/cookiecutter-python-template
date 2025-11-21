@@ -114,7 +114,7 @@ Enforced branch protection rules prevent unauthorized changes.
 
 **Protection rules**:
 
-- ✅ Required status checks (CI Gate, Security Analysis)
+- ✅ Required status checks (CI / CI Pipeline, Security Analysis / Security Scan, PR Validation)
 - ✅ Required pull request reviews (1 approval)
 - ✅ Code owner reviews required
 - ✅ Dismiss stale reviews
@@ -187,7 +187,7 @@ Comprehensive static analysis on every commit.
 
 - **Ruff**: Python linting with security rules
 - **Bandit**: Python security issue detection
-- **MyPy**: Type safety (prevents entire classes of bugs)
+- **BasedPyright**: Type safety (prevents entire classes of bugs)
 - **CodeQL**: Advanced semantic code analysis
 
 **Workflow**: `.github/workflows/security-analysis.yml`
@@ -231,7 +231,7 @@ mutmut show
 | Signed-Releases | 10/10 | ✅ Cosign + SLSA |
 | Branch-Protection | 10/10 | ✅ Setup script provided |
 | Token-Permissions | 10/10 | ✅ Scoped permissions |
-| SAST | 10/10 | ✅ Ruff + Bandit + MyPy |
+| SAST | 10/10 | ✅ Ruff + Bandit + BasedPyright |
 | Fuzzing | 10/10 | ✅ ClusterFuzzLite |
 | Vulnerabilities | 9/10 | ✅ Safety + OSV-Scanner |
 | Dependency-Update | 10/10 | ✅ Renovate |
@@ -287,7 +287,7 @@ The template meets 44/46 passing-level criteria:
 - ✅ Automated build system (UV)
 - ✅ Automated test suite (pytest)
 - ✅ New functionality testing policy
-- ✅ Compiler warnings (Ruff + MyPy)
+- ✅ Compiler warnings (Ruff + BasedPyright)
 
 **Security** (5/5):
 
@@ -299,7 +299,7 @@ The template meets 44/46 passing-level criteria:
 
 **Analysis** (3/3):
 
-- ✅ Static code analysis (Ruff, Bandit, MyPy)
+- ✅ Static code analysis (Ruff, Bandit, BasedPyright)
 - ✅ Dynamic analysis (Hypothesis, pytest)
 - ✅ Memory safety (Python is memory-safe)
 
