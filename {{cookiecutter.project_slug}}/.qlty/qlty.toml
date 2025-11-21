@@ -47,23 +47,24 @@ config_files = ["pyproject.toml", "ruff.toml", ".ruff.toml"]
 triggers = ["pre-commit", "pre-push", "ide", "build"]
 
 # ============================================================================
-# Python Type Checking - Mypy
+# Python Type Checking - BasedPyright
 # ============================================================================
-# Mypy is a static type checker for Python that helps catch type errors
-# before runtime. Essential for maintaining type safety in Python code.
-# Configuration: pyproject.toml [tool.mypy] section
+# BasedPyright is a stricter fork of Pyright that provides faster type checking
+# than MyPy (3-5x faster) with enhanced type inference and stricter analysis.
+# Configuration: pyproject.toml [tool.basedpyright] section
+# Reference: https://docs.basedpyright.com
 [[plugin]]
-name = "mypy"
+name = "pyright"
 version = "latest"
 package_file = "pyproject.toml"
-config_files = ["pyproject.toml", "mypy.ini", ".mypy.ini"]
+config_files = ["pyproject.toml", "pyrightconfig.json"]
 
-# Mypy can be slow, so run on pre-push and build only
-triggers = ["pre-push", "build"]
+# Pyright is fast enough to run on pre-commit
+triggers = ["pre-commit", "pre-push", "build"]
 
 # Exclude test files from strict type checking
 [[exclude]]
-plugins = ["mypy"]
+plugins = ["pyright"]
 file_patterns = ["tests/**/*.py", "**/*_test.py", "**/test_*.py"]
 
 # ============================================================================
@@ -349,7 +350,7 @@ file_complexity.threshold = 750
 
 # Lower severity for type hints in test files
 [[triage]]
-match.plugins = ["mypy"]
+match.plugins = ["pyright"]
 match.file_patterns = ["tests/**/*.py"]
 set.level = "low"
 

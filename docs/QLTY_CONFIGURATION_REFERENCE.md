@@ -25,11 +25,11 @@ triggers = ["pre-commit", "pre-push", "ide", "build"]
 ```toml
 # ALWAYS INCLUDED - No conditionals
 [[plugin]]
-name = "mypy"
+name = "pyright"
 version = "latest"
 package_file = "pyproject.toml"
-config_files = ["pyproject.toml", "mypy.ini", ".mypy.ini"]
-triggers = ["pre-push", "build"]  # Slower, so not on every commit
+config_files = ["pyproject.toml", "pyrightconfig.json"]
+triggers = ["pre-commit", "pre-push", "build"]  # BasedPyright is fast enough for pre-commit
 ```
 
 ```toml
@@ -173,7 +173,7 @@ triggers = ["pre-push", "build"]
 **Core Python Quality (3):**
 
 - ✅ Ruff (linting + formatting)
-- ✅ Mypy (type checking)
+- ✅ BasedPyright (type checking)
 - ✅ Bandit (security linting)
 
 **Security & Secrets (4):**
@@ -246,7 +246,7 @@ This shows what Qlty would run without actually executing the checks.
 **Removed Variables** (tools now always included):
 
 - ~~`use_ruff`~~ - Ruff is always included
-- ~~`use_mypy`~~ - Mypy is always included
+- ~~`use_basedpyright`~~ - BasedPyright is always included
 - ~~`include_security_scanning`~~ - Bandit, OSV Scanner, Semgrep, TruffleHog always included
 - ~~`include_gitleaks`~~ - Gitleaks is always included
 
@@ -257,7 +257,7 @@ This shows what Qlty would run without actually executing the checks.
 #### Python Quality (3)
 
 1. **Ruff** - Fast linting and formatting (replaces Black, Flake8, isort, pyupgrade)
-2. **Mypy** - Static type checking
+2. **BasedPyright** - Static type checking (3-5x faster than MyPy)
 3. **Bandit** - Python security linter
 
 #### Security & Secrets (4)

@@ -11,7 +11,7 @@
 ### Current Status: ⚠️ **90% Compliant with Google Standards**
 
 **Strengths:**
-- ✅ Comprehensive type checking (Mypy strict mode)
+- ✅ Comprehensive type checking (BasedPyright strict mode)
 - ✅ Google-style docstring enforcement
 - ✅ Security scanning (7 tools)
 - ✅ Modern Python best practices
@@ -53,17 +53,17 @@
 #### Google Requirements
 - Type hints required for all public APIs
 - Gradual typing allowed for legacy code
-- Type checking with tools like mypy
+- Type checking with tools like BasedPyright
 
 #### Our Implementation
 ```toml
-[tool.mypy]
-disallow_untyped_defs = true          # ✅ Stricter than Google
-disallow_incomplete_defs = true       # ✅ Enforces complete type coverage
-check_untyped_defs = true             # ✅ Validates partially-typed code
-warn_return_any = true                # ✅ Catches loose Any returns
-strict_equality = true                # ✅ Type-safe equality checks
-strict_optional = true                # ✅ Strict None handling
+[tool.basedpyright]
+typeCheckingMode = "strict"           # ✅ Stricter than Google's gradual typing
+strictListInference = true            # ✅ Strict list type inference
+strictDictionaryInference = true      # ✅ Strict dict type inference
+strictSetInference = true             # ✅ Strict set type inference
+strictParameterNoneValue = true       # ✅ Strict None handling
+analyzeUnannotatedFunctions = true    # ✅ Validates partially-typed code
 ```
 
 **Status:** ✅ **EXCEEDS Google Standards** (strict mode vs. gradual typing)
@@ -394,7 +394,7 @@ config_files = ["pylintrc"]
 | Category | Status | Score | Notes |
 |----------|--------|-------|-------|
 | **Linting** | ⚠️ Partial | 85% | Ruff vs. Pylint |
-| **Type Hints** | ✅ Exceeds | 110% | Strict mypy mode |
+| **Type Hints** | ✅ Exceeds | 110% | Strict BasedPyright mode |
 | **Docstrings** | ✅ Exceeds | 105% | 85% coverage + Google style |
 | **Formatting** | ⚠️ Mostly | 90% | 88 vs. 80 char line length |
 | **Imports** | ✅ Meets | 100% | isort via Ruff |
@@ -519,7 +519,7 @@ config_files = ["pylintrc"]
 **Current State:** Our template provides **excellent code quality standards** that meet or exceed industry best practices and achieve **90% compliance** with Google's Python Style Guide.
 
 **Key Strengths:**
-- ✅ Modern, fast tooling (Ruff + Mypy)
+- ✅ Modern, fast tooling (Ruff + BasedPyright)
 - ✅ Strict type checking (exceeds Google requirements)
 - ✅ Comprehensive security coverage (7 tools)
 - ✅ Excellent documentation enforcement
@@ -528,7 +528,7 @@ config_files = ["pylintrc"]
 **Strategic Decisions:**
 1. **Ruff vs. Pylint**: Ruff's speed and coverage justify deviation from Google's Pylint mandate
 2. **88 vs. 80 char lines**: Industry is moving to 88; acceptable tradeoff for readability
-3. **Strict mypy**: Our stricter typing actually exceeds Google's gradual typing approach
+3. **Strict BasedPyright**: Our stricter typing actually exceeds Google's gradual typing approach
 
 **For Strict Google Compliance:**
 Implement Priority 1 actions (complexity limits + headers) to reach **95%+ compliance** while maintaining modern tooling advantages.
