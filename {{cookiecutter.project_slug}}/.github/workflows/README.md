@@ -15,9 +15,10 @@ This project uses **org-level reusable workflows** for consistency and maintaina
 │  │                                    │ │
 │  │ • ci.yml                           │ │
 │  │ • security-analysis.yml            │ │
+│  │ • release.yml                      │ │
+│  │ • sbom.yml                         │ │
 │  │ • docs.yml                         │ │
 │  │ • publish-pypi.yml                 │ │
-│  │ • release.yml                      │ │
 │  └───────────────────────────────────┘ │
 │              │                          │
 │              │ uses:                    │
@@ -36,9 +37,10 @@ This project uses **org-level reusable workflows** for consistency and maintaina
 │  │                                    │ │
 │  │ • python-ci.yml                    │ │
 │  │ • python-security-analysis.yml     │ │
+│  │ • python-release.yml               │ │
+│  │ • python-sbom.yml                  │ │
 │  │ • python-docs.yml                  │ │
 │  │ • python-publish-pypi.yml          │ │
-│  │ • python-release.yml               │ │
 │  └───────────────────────────────────┘ │
 └─────────────────────────────────────────┘
 ```
@@ -52,7 +54,7 @@ Comprehensive CI with:
 - Multi-version Python testing ({{ cookiecutter.python_version }})
 - UV dependency management
 - Ruff linting and formatting
-- MyPy type checking (strict mode)
+- BasedPyright type checking (strict mode)
 - Pytest with {{ cookiecutter.code_coverage_target }}%+ coverage{% if cookiecutter.include_codecov == "yes" %}
 - Codecov integration{% endif %}
 
@@ -117,6 +119,19 @@ Release automation with:
 
 ---
 
+### SBOM & Security Scan (`sbom.yml`)
+**Calls**: `{{ cookiecutter.github_org_or_user }}/.github/.github/workflows/python-sbom.yml@main`
+
+Software Bill of Materials and vulnerability scanning:
+- CycloneDX SBOM generation
+- Trivy vulnerability scanning
+- License compliance checking
+- SARIF upload to GitHub Security tab
+
+**Triggers**: Push/PR affecting pyproject.toml or uv.lock, weekly schedule, manual dispatch
+
+---
+
 ## Benefits of Org-Level Reusable Workflows
 
 ### ✅ **Consistency**
@@ -153,7 +168,7 @@ jobs:
     with:
       python-versions: '["3.10", "3.11", "3.12"]'  # Test multiple versions
       coverage-threshold: 85                        # Higher threshold
-      mypy-strict: true                             # Strict type checking
+      basedpyright-strict: true                      # Strict type checking
 ```
 
 ---

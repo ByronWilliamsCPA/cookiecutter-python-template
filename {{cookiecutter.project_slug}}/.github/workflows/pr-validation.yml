@@ -1,0 +1,130 @@
+{%- if cookiecutter.include_github_actions == "yes" %}
+# PR Validation for {{ cookiecutter.project_name }}
+# Validates dependency changes and requirements synchronization
+#
+# This workflow ensures that when uv.lock changes, the requirements files
+# are properly updated to maintain compatibility with pip-based deployments.
+
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-requirements:
+    name: Validate Requirements Sync
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Full history for branch comparison
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "{{ cookiecutter.python_version }}"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Check if uv.lock changed
+        id: uv-changed
+        run: |
+          # Get the base branch for comparison
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+
+          # Check if uv.lock has changes
+          if git diff --name-only "origin/${BASE_BRANCH}...HEAD" | grep -q "uv.lock"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "uv.lock has changes in this PR"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "uv.lock unchanged in this PR"
+          fi
+
+      - name: Validate requirements.txt sync
+        if: steps.uv-changed.outputs.changed == 'true'
+        run: |
+          echo "uv.lock has changed, validating requirements.txt sync..."
+
+          # Generate requirements from current uv.lock
+          ./scripts/generate_requirements.sh
+
+          # Check if generated files match committed files
+          if ! git diff --exit-code requirements*.txt; then
+            echo "::error::Requirements files are out of sync with uv.lock"
+            echo "::error::This PR modifies uv.lock but the requirements files don't match."
+            echo "::error::Please run './scripts/generate_requirements.sh' and commit the updated requirements files."
+            echo ""
+            echo "Files that need to be updated:"
+            git diff --name-only requirements*.txt
+            echo ""
+            echo "To fix this issue:"
+            echo "1. Run: ./scripts/generate_requirements.sh"
+            echo "2. Review and commit the updated requirements files"
+            echo "3. Push the changes to this PR branch"
+            exit 1
+          else
+            echo "Requirements files are properly synchronized with uv.lock"
+          fi
+
+      - name: Skip validation (no uv.lock changes)
+        if: steps.uv-changed.outputs.changed == 'false'
+        run: |
+          echo "uv.lock unchanged - requirements validation skipped"
+          echo "No dependency changes detected in this PR."
+
+  validate-lockfile:
+    name: Validate Lock File Integrity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "{{ cookiecutter.python_version }}"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Verify lock file is up to date
+        run: |
+          echo "Checking if uv.lock is up to date with pyproject.toml..."
+
+          # This will fail if uv.lock is out of sync with pyproject.toml
+          uv sync --frozen --dry-run
+
+          echo "Lock file is valid and up to date"
+
+      - name: Check for security advisories
+        run: |
+          echo "Checking dependencies for known vulnerabilities..."
+
+          # Use pip-audit for vulnerability scanning
+          uv tool run pip-audit --requirement <(uv export --format requirements-txt --no-hashes) || {
+            echo "::warning::Security vulnerabilities found in dependencies"
+            echo "Review the output above and update dependencies if needed"
+          }
+{%- else %}
+# PR Validation workflow - NOT CONFIGURED
+# To enable this workflow, set include_github_actions to "yes" in cookiecutter.json
+{%- endif %}

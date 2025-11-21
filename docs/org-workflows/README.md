@@ -1,0 +1,201 @@
+# Organization-Level Reusable Workflows
+
+This directory contains **reference implementations** of reusable GitHub Actions workflows that should be deployed to your organization's `.github` repository.
+
+## Overview
+
+The cookiecutter template generates "thin caller" workflows that invoke these shared workflows. This pattern provides:
+
+- **Consistency**: All projects use the same CI/CD logic
+- **Maintainability**: Update once, benefit everywhere
+- **Simplicity**: Generated projects have minimal workflow files
+
+## Setup Instructions
+
+### 1. Create Organization `.github` Repository
+
+If you don't have one already, create a repository named `.github` in your organization:
+
+```bash
+# In your GitHub organization
+# Create repo: ORG/.github
+```
+
+### 2. Deploy Reusable Workflows
+
+Copy the workflow files from this directory to your org's `.github` repository:
+
+```
+ORG/.github/
+  .github/
+    workflows/
+      python-ci.yml        # From: docs/org-workflows/python-ci.yml
+      python-release.yml   # From: docs/org-workflows/python-release.yml
+      python-sbom.yml      # From: docs/org-workflows/python-sbom.yml
+      python-docs.yml      # Already exists (for MkDocs)
+      python-publish-pypi.yml  # Already exists (for PyPI)
+      python-security-analysis.yml  # Already exists (for security)
+```
+
+### 3. Configure Secrets (Organization Level)
+
+Set up organization-level secrets for all workflows to use:
+
+```bash
+# Required secrets (configure in org settings > Secrets and variables > Actions)
+SONAR_TOKEN       # For SonarCloud integration
+CODECOV_TOKEN     # For Codecov coverage uploads
+```
+
+## Workflow Reference
+
+### python-ci.yml
+
+**Purpose**: Comprehensive CI pipeline with quality checks and LLM governance.
+
+**Features**:
+- Ruff formatting and linting
+- BasedPyright type checking
+- Unit, integration, and security tests
+- Coverage reporting (optional Codecov)
+- Bandit security scanning
+- Safety dependency scanning
+- LLM assumption tag verification
+- Optional SonarCloud quality gate
+
+**Inputs**:
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `python-version` | string | `3.12` | Python version |
+| `coverage-threshold` | number | `80` | Minimum coverage % |
+| `source-directory` | string | `src` | Source code directory |
+| `test-directory` | string | `tests` | Test directory |
+| `enable-sonarcloud` | boolean | `false` | Enable SonarCloud |
+| `sonarcloud-organization` | string | `""` | SonarCloud org |
+| `sonarcloud-project-key` | string | `""` | SonarCloud project key |
+| `enable-codecov` | boolean | `false` | Enable Codecov |
+| `run-integration-tests` | boolean | `true` | Run integration tests |
+| `run-security-tests` | boolean | `true` | Run security tests |
+| `fail-on-llm-tags` | boolean | `false` | Fail on LLM debt tags |
+
+**Secrets**:
+| Secret | Required | Description |
+|--------|----------|-------------|
+| `SONAR_TOKEN` | If SonarCloud enabled | SonarCloud token |
+| `CODECOV_TOKEN` | If Codecov enabled | Codecov token |
+
+---
+
+### python-release.yml
+
+**Purpose**: Automated release pipeline with semantic versioning or manual tag-based releases.
+
+**Features**:
+- Pre-release testing
+- Semantic versioning with python-semantic-release
+- Manual tag-based releases
+- PyPI publishing with OIDC trusted publishing
+- GitHub Release creation
+
+**Inputs**:
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `python-version` | string | `3.12` | Python version |
+| `coverage-threshold` | number | `80` | Minimum coverage % |
+| `source-directory` | string | `src` | Source code directory |
+| `semantic-release` | boolean | `true` | Use semantic release |
+| `force-release` | string | `""` | Force release type |
+| `publish-to-pypi` | boolean | `true` | Publish to PyPI |
+| `pypi-package-name` | string | `""` | PyPI package name |
+| `pypi-url` | string | `https://upload.pypi.org/legacy/` | PyPI URL |
+| `run-tests` | boolean | `true` | Run pre-release tests |
+
+**Outputs**:
+| Output | Description |
+|--------|-------------|
+| `released` | Whether a release was created |
+| `version` | The released version |
+| `tag` | The release tag |
+
+---
+
+### python-sbom.yml
+
+**Purpose**: Software Bill of Materials generation and vulnerability scanning.
+
+**Features**:
+- CycloneDX SBOM generation
+- Trivy vulnerability scanning
+- License compliance checking
+- SARIF upload to GitHub Security tab
+
+**Inputs**:
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `python-version` | string | `3.12` | Python version |
+| `fail-on-vulnerabilities` | boolean | `true` | Fail on CRITICAL/HIGH |
+| `severity-threshold` | string | `CRITICAL,HIGH` | Severity levels |
+| `artifact-retention-days` | number | `90` | Days to retain SBOMs |
+| `forbidden-licenses` | string | JSON array | Forbidden SPDX licenses |
+| `fail-on-forbidden-licenses` | boolean | `false` | Fail on forbidden licenses |
+
+## Caller Workflow Pattern
+
+Projects generated by this template use thin caller workflows:
+
+```yaml
+# Example: .github/workflows/ci.yml in generated project
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  ci:
+    uses: ORG/.github/.github/workflows/python-ci.yml@main
+    with:
+      python-version: '3.12'
+      coverage-threshold: 80
+      enable-sonarcloud: true
+      sonarcloud-organization: 'my-org'
+      sonarcloud-project-key: 'my-org_my-project'
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+```
+
+## Updating Workflows
+
+When you update these reusable workflows:
+
+1. **Test changes** in the org `.github` repository
+2. **All projects automatically get updates** on their next workflow run
+3. **No changes needed** in individual project repositories
+
+## Versioning
+
+Use Git tags for workflow versioning:
+
+```yaml
+# Reference specific version
+uses: ORG/.github/.github/workflows/python-ci.yml@v1.0.0
+
+# Reference latest on main
+uses: ORG/.github/.github/workflows/python-ci.yml@main
+```
+
+## Troubleshooting
+
+### Workflow not found
+
+Ensure the path is correct: `ORG/.github/.github/workflows/workflow-name.yml`
+
+### Permission errors
+
+Ensure caller workflows have appropriate `permissions` block and the reusable workflow has `workflow_call` trigger.
+
+### Secrets not available
+
+Organization secrets must be configured at the org level, or passed explicitly from caller workflows using `secrets: inherit` or explicit secret mapping.

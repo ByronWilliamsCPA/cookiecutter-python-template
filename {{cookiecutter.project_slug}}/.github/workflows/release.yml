@@ -1,7 +1,60 @@
-# Release - Calls Org-Level Reusable Workflow
+# Release Workflow - Calls Org-Level Reusable Workflow
 # This is a lightweight caller workflow that invokes the organization's
-# shared release workflow with SLSA provenance and signed artifacts.
-{% if cookiecutter.include_github_actions == "yes" -%}
+# shared Python release workflow.
+#
+# Features:
+#   - Pre-release testing
+#   - Semantic versioning (if enabled) or manual tag-based releases
+#   - PyPI publishing with OIDC trusted publishing
+#   - GitHub Release creation
+{%- if cookiecutter.include_github_actions == "yes" %}
+{%- if cookiecutter.include_semantic_release == "yes" %}
+name: Semantic Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: 'Force release type (leave empty for auto)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - patch
+          - minor
+          - major
+          - prerelease
+
+# Prevent concurrent releases
+concurrency:
+  group: release-{% raw %}${{ github.ref }}{% endraw %}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    name: Release Pipeline
+    uses: {{ cookiecutter.github_org_or_user }}/.github/.github/workflows/python-release.yml@main
+    with:
+      python-version: '{{ cookiecutter.python_version }}'
+      coverage-threshold: {{ cookiecutter.code_coverage_target }}
+      source-directory: 'src'
+      semantic-release: true
+      force-release: {% raw %}${{ github.event.inputs.force_release || '' }}{% endraw %}
+      publish-to-pypi: true
+      pypi-package-name: '{{ cookiecutter.pypi_package_name }}'
+      run-tests: true
+{%- else %}
 name: Release
 
 on:
@@ -15,17 +68,28 @@ on:
         required: true
         type: string
 
-jobs:
-  release:
-    name: Create Release
-    uses: {{ cookiecutter.github_org_or_user }}/.github/.github/workflows/python-release.yml@main
-    with:
-      python-version: '{{ cookiecutter.python_version }}'
-      tag: {% raw %}${{ github.event.inputs.tag || github.ref_name }}{% endraw %}
+# Prevent concurrent releases
+concurrency:
+  group: release-{% raw %}${{ github.ref }}{% endraw %}
+  cancel-in-progress: false
 
 permissions:
   contents: write
   packages: write
-  id-token: write  # Required for SLSA provenance
+  id-token: write
   attestations: write
-{% endif -%}
+
+jobs:
+  release:
+    name: Release Pipeline
+    uses: {{ cookiecutter.github_org_or_user }}/.github/.github/workflows/python-release.yml@main
+    with:
+      python-version: '{{ cookiecutter.python_version }}'
+      coverage-threshold: {{ cookiecutter.code_coverage_target }}
+      source-directory: 'src'
+      semantic-release: false
+      publish-to-pypi: true
+      pypi-package-name: '{{ cookiecutter.pypi_package_name }}'
+      run-tests: true
+{%- endif %}
+{%- endif %}
