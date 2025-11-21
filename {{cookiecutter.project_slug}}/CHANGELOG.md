@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial project structure with Poetry package management
 - Pydantic v2 JSON schema validation
 - Structured logging with structlog and rich console output
-- Pre-commit hooks (Ruff format, Ruff lint, MyPy, Bandit, Safety)
+- Pre-commit hooks (Ruff format, Ruff lint, BasedPyright, Bandit, Safety)
 - Comprehensive test suite with pytest
 - GitHub Actions CI/CD pipeline with quality gates
 - CLI tool foundation
@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - pytest test framework with coverage reporting
 - GitHub issue tracking and templates
 - Automated dependency security scanning (Safety, Bandit)
-- Code quality enforcement (Ruff, MyPy)
+- Code quality enforcement (Ruff, BasedPyright)
 - CI/CD pipeline with multiple quality gates
 
 ### Security

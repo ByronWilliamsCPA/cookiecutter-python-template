@@ -57,7 +57,7 @@ uv run pytest -v
 uv run ruff check .
 
 # Run type checking
-uv run mypy src/
+uv run basedpyright src/
 ```
 
 ---
@@ -324,7 +324,7 @@ This project enforces:
 
 - **{{ cookiecutter.code_coverage_target }}%+ test coverage** (enforced via pytest-cov)
 - **Zero linting errors** (enforced via Ruff)
-- **Type safety** (enforced via MyPy)
+- **Type safety** (enforced via BasedPyright)
 - **Security scanning** (enforced via Bandit, Safety)
 
 ### Project Structure

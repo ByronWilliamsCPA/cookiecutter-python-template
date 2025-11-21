@@ -103,7 +103,7 @@ All configuration files have been created in `/home/user/cookiecutter-python-tem
   - **compliance**: Run all compliance checks (REUSE, SBOM, scan)
   - **test**: Run tests across Python 3.10-3.14
   - **lint**: Run Ruff linting and type hint checks across Python 3.10-3.14
-  - **typecheck**: Run MyPy type checking across Python 3.10-3.14
+  - **typecheck**: Run BasedPyright type checking across Python 3.10-3.14
 - **Features**:
   - Uses nox-uv for fast virtual environment creation
   - UV as the default venv backend for all sessions

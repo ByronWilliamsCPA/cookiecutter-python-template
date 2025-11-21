@@ -357,16 +357,17 @@ This ensures Ruff:
 - Flags usage of deprecated or removed features
 - Applies version-appropriate optimizations
 
-### MyPy (Type Checker)
+### BasedPyright (Type Checker)
 
 Configured to match your Python version:
 
 ```toml
-[tool.mypy]
-python_version = "{{ cookiecutter.python_version }}"  # 3.11, 3.12, or 3.13
+[tool.basedpyright]
+pythonVersion = "{{ cookiecutter.python_version }}"  # 3.11, 3.12, or 3.13
+typeCheckingMode = "strict"
 ```
 
-This ensures MyPy:
+This ensures BasedPyright:
 
 - Uses correct type semantics for your version
 - Validates compatibility with your target version
