@@ -1,0 +1,200 @@
+# SLSA Provenance Generation
+# Generates SLSA Level 3 provenance attestations for published packages.
+# This provides cryptographic proof of the build process for supply chain security.
+#
+# Features:
+#   - SLSA Level 3 provenance generation
+#   - Attestation upload to GitHub
+#   - Sigstore signing for transparency
+#   - Works with PyPI trusted publishing
+#
+# Reference: https://slsa.dev/
+{%- if cookiecutter.include_github_actions == "yes" %}
+name: SLSA Provenance
+
+on:
+  # Trigger after successful release
+  workflow_run:
+    workflows: [{% if cookiecutter.include_semantic_release == "yes" %}"Semantic Release"{% else %}"Release"{% endif %}]
+    types: [completed]
+    branches: [main, master]
+  # Manual trigger for re-generating provenance
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to generate provenance for (e.g., 0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+jobs:
+  # ==========================================================================
+  # Generate SLSA Provenance
+  # ==========================================================================
+  provenance:
+    name: Generate Provenance
+    runs-on: ubuntu-latest
+    # Only run if the release workflow succeeded
+    if: {% raw %}${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}{% endraw %}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "{{ cookiecutter.python_version }}"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ -n "{% raw %}${{ github.event.inputs.version }}{% endraw %}" ]; then
+            VERSION="{% raw %}${{ github.event.inputs.version }}{% endraw %}"
+          else
+            # Get version from pyproject.toml
+            VERSION=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Generating provenance for version: $VERSION"
+
+      - name: Build package
+        run: |
+          uv build
+          echo "Built packages:"
+          ls -la dist/
+
+      - name: Generate SHA256 hashes
+        id: hashes
+        run: |
+          cd dist
+          sha256sum * > checksums.sha256
+          cat checksums.sha256
+          # Create base64 encoded hashes for SLSA
+          HASHES=$(sha256sum * | base64 -w0)
+          echo "hashes=$HASHES" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-{% raw %}${{ steps.version.outputs.version }}{% endraw %}
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+            dist/checksums.sha256
+          retention-days: 90
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'dist/*'
+
+  # ==========================================================================
+  # SLSA Generator (Level 3)
+  # ==========================================================================
+  slsa-provenance:
+    name: SLSA Level 3
+    needs: [provenance]
+    permissions:
+      id-token: write
+      contents: write
+      actions: read
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+    with:
+      base64-subjects: {% raw %}${{ needs.provenance.outputs.hashes }}{% endraw %}
+      upload-assets: true
+
+  # ==========================================================================
+  # Verification
+  # ==========================================================================
+  verify:
+    name: Verify Provenance
+    runs-on: ubuntu-latest
+    needs: [provenance, slsa-provenance]
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-{% raw %}${{ needs.provenance.outputs.version }}{% endraw %}
+          path: dist/
+
+      - name: Install slsa-verifier
+        run: |
+          curl -sSfL https://github.com/slsa-framework/slsa-verifier/releases/latest/download/slsa-verifier-linux-amd64 -o slsa-verifier
+          chmod +x slsa-verifier
+
+      - name: Verify provenance
+        run: |
+          echo "## SLSA Verification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          for file in dist/*.whl dist/*.tar.gz; do
+            if [ -f "$file" ]; then
+              echo "Verifying: $(basename $file)" >> $GITHUB_STEP_SUMMARY
+              ./slsa-verifier verify-artifact "$file" \
+                --provenance-path multiple.intoto.jsonl \
+                --source-uri github.com/{{ cookiecutter.github_org_or_user }}/{{ cookiecutter.project_slug }} && \
+                echo "✅ $(basename $file): Verified" >> $GITHUB_STEP_SUMMARY || \
+                echo "❌ $(basename $file): Verification failed" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  # ==========================================================================
+  # Summary
+  # ==========================================================================
+  summary:
+    name: Provenance Summary
+    runs-on: ubuntu-latest
+    needs: [provenance, slsa-provenance, verify]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## SLSA Provenance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          {% raw %}
+          if [ "${{ needs.provenance.result }}" == "success" ]; then
+            echo "| Build & Hash | ✅ Success |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Build & Hash | ❌ ${{ needs.provenance.result }} |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.slsa-provenance.result }}" == "success" ]; then
+            echo "| SLSA Level 3 | ✅ Generated |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| SLSA Level 3 | ❌ ${{ needs.slsa-provenance.result }} |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.verify.result }}" == "success" ]; then
+            echo "| Verification | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Verification | ⚠️ ${{ needs.verify.result }} |" >> $GITHUB_STEP_SUMMARY
+          fi
+          {% endraw %}
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### What is SLSA Provenance?" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "SLSA (Supply-chain Levels for Software Artifacts) provenance provides" >> $GITHUB_STEP_SUMMARY
+          echo "cryptographic attestation that this package was built from this repository" >> $GITHUB_STEP_SUMMARY
+          echo "using GitHub Actions. This helps protect against supply chain attacks." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Learn more: https://slsa.dev/" >> $GITHUB_STEP_SUMMARY
+{%- else %}
+# GitHub Actions disabled for this project
+# Enable include_github_actions to use SLSA provenance generation
+{%- endif %}

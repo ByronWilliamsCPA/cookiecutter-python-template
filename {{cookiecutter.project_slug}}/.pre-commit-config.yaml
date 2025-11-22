@@ -11,7 +11,7 @@
 ci:
   autoupdate_schedule: monthly
   autofix_prs: true
-  skip: [validate-front-matter, qlty-check, trufflehog]  # Skip local-only hooks
+  skip: [validate-front-matter, qlty-check, trufflehog, darglint]  # Skip local-only hooks
 
 repos:
   # ============================================================================
@@ -145,6 +145,22 @@ repos:
         args: ['-v', '-c', 'pyproject.toml', 'src/']
         pass_filenames: false
         stages: [pre-commit]
+
+  # ============================================================================
+  # Docstring Argument Validation
+  # ============================================================================
+  # Darglint validates that docstring arguments match function signatures
+  # Configuration in pyproject.toml [tool.darglint]
+  - repo: local
+    hooks:
+      - id: darglint
+        name: Darglint docstring validation
+        entry: uv run darglint
+        language: system
+        types: [python]
+        stages: [pre-commit]
+        exclude: ^(tests|scripts|benchmarks|tools)/
+
 # Exclude patterns
 exclude: |
   (?x)^(
