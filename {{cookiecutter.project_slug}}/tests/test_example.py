@@ -1,4 +1,4 @@
-"""Example tests demonstrating best practices for My Python Project.
+"""Example tests demonstrating best practices for {{ cookiecutter.project_name }}.
 
 This module shows:
 - Unit test structure and naming conventions
@@ -260,7 +260,7 @@ class TestCLI:
 
         assert result.exit_code == 0
         assert "Current Configuration:" in result.output
-        assert "Project: My Python Project" in result.output
+        assert "Project: {{ cookiecutter.project_name }}" in result.output
         assert "Version: 0.1.0" in result.output
         assert "Debug: False" in result.output
         assert "Log Level:" in result.output
@@ -299,7 +299,7 @@ class TestCLI:
 
         # Should show help text successfully
         assert result.exit_code == 0
-        assert "My Python Project" in result.output
+        assert "{{ cookiecutter.project_name }}" in result.output
 
     @pytest.mark.unit
     def test_cli_debug_mode(self) -> None:
