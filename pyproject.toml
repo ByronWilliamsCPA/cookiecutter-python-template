@@ -128,7 +128,8 @@ exclude_dirs = [
     "tests",
 ]
 # Skip subprocess-related checks - acceptable in template generation hooks
-skips = ["B404", "B603"]
+# Skip B101 (assert_used) - test files use assert legitimately for pytest
+skips = ["B101", "B404", "B603"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -552,7 +552,8 @@ dict_synonyms = "Struct, NamedStruct"
 # Bandit Security Configuration
 [tool.bandit]
 exclude_dirs = ["tests", "docs", ".venv", "venv"]
-skips = []
+# Skip B101 (assert_used) - test files use assert legitimately for pytest
+skips = ["B101"]
 tests = [
     "B201",  # flask_debug_true
     "B301",  # pickle
