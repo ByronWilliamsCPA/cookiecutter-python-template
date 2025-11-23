@@ -70,6 +70,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
+          cache-local-path: ".uv-cache"
 
       - name: Install dependencies
         run: uv sync --all-extras

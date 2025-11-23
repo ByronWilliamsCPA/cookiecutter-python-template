@@ -11,6 +11,9 @@
 #
 # SonarCloud Dashboard: https://sonarcloud.io/dashboard?id={{ cookiecutter.github_org_or_user }}_{{ cookiecutter.project_slug }}
 # Documentation: https://docs.sonarsource.com/sonarqube-cloud/
+#
+# Note: This workflow requires SONAR_TOKEN secret to be configured.
+# If not configured, the workflow will skip with a helpful message.
 
 name: SonarCloud
 
@@ -31,9 +34,33 @@ permissions:
   pull-requests: write  # Required for PR decoration
 
 jobs:
+  # Check if SONAR_TOKEN is configured before running analysis
+  check-secrets:
+    name: Check Configuration
+    runs-on: ubuntu-latest
+    outputs:
+      has-token: {% raw %}${{ steps.check.outputs.has-token }}{% endraw %}
+    steps:
+      - name: Check for SONAR_TOKEN
+        id: check
+        run: |
+          if [ -n "{% raw %}${{ secrets.SONAR_TOKEN }}{% endraw %}" ]; then
+            echo "has-token=true" >> $GITHUB_OUTPUT
+            echo "::notice::SONAR_TOKEN is configured. SonarCloud analysis will run."
+          else
+            echo "has-token=false" >> $GITHUB_OUTPUT
+            echo "::warning::SONAR_TOKEN is not configured. Skipping SonarCloud analysis."
+            echo "To enable SonarCloud:"
+            echo "1. Create a project at https://sonarcloud.io"
+            echo "2. Generate a token at https://sonarcloud.io/account/security"
+            echo "3. Add SONAR_TOKEN as a repository secret"
+          fi
+
   sonarcloud:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
+    needs: check-secrets
+    if: {% raw %}needs.check-secrets.outputs.has-token == 'true'{% endraw %}
     timeout-minutes: 15
 
     steps:
