@@ -96,10 +96,10 @@ def cleanup_conditional_files() -> None:
     if "{{ cookiecutter.include_contributing_guide }}" == "no":
         remove_file(Path("CONTRIBUTING.md"))
 
-    # Remove codecov config if not needed
-    # Note: Codecov workflow is now integrated into CI workflow (org-level reusable)
+    # Remove codecov config and workflow if not needed
     if "{{ cookiecutter.include_codecov }}" == "no":
         remove_file(Path("codecov.yml"))
+        remove_file(Path(".github/workflows/codecov.yml"))
 
     # Remove SonarCloud if not needed
     if "{{ cookiecutter.include_sonarcloud }}" == "no":
@@ -126,6 +126,7 @@ def cleanup_conditional_files() -> None:
         remove_file(Path("docker-compose.yml"))
         remove_file(Path("docker-compose.prod.yml"))
         remove_file(Path(".dockerignore"))
+        remove_file(Path(".github/workflows/container-security.yml"))
 
     # Remove health check endpoints if not needed or if no API framework
     if (
