@@ -91,7 +91,13 @@ SPDX-FileCopyrightText = "2025 {{cookiecutter.author_name}}"
 [[annotations]]
 path = [
     ".claude/settings.local.json",
+    ".claude/**/*.json",  # Claude configuration files
     ".clusterfuzzlite/**",
+    ".sonarlint/**",  # SonarLint IDE configuration
+    ".qlty/**",  # Qlty configuration
+    ".coderabbit.yaml",  # CodeRabbit AI review configuration
+    ".vscode/**",  # VS Code settings
+    ".idea/**",  # IntelliJ/PyCharm settings
     "concept.txt",
     "image_reference_sets.txt",
     "overrides/**",
@@ -99,6 +105,13 @@ path = [
     "validate_workflows.sh",
     "scripts/**/*.sh",  # Shell scripts for automation
     "tmp_cleanup/**/*.txt",  # Temporary text files
+    "tmp_cleanup/.gitkeep",  # Directory placeholder
+    "sonar-project.properties",  # SonarCloud/SonarQube configuration
+    "codemeta.json",  # CodeMeta software metadata
+    ".zenodo.json",  # Zenodo DOI metadata
+    "Makefile",  # Build automation
+    "justfile",  # Just command runner
+    "Taskfile.yml",  # Task runner configuration
 ]
 SPDX-License-Identifier = "CC0-1.0"
 SPDX-FileCopyrightText = "2025 {{cookiecutter.author_name}}"

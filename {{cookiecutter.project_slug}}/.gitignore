@@ -274,10 +274,13 @@ weights/
 notebooks/.ipynb_checkpoints/
 
 # Project-specific ignores
-tmp_cleanup/
-.tmp-*
 results/
 output/
+
+# Temporary reference files (anti-compaction strategy)
+# Keep the directory, but ignore .tmp-* files inside it
+tmp_cleanup/.tmp-*
+!tmp_cleanup/.gitkeep
 
 {% if cookiecutter.include_sonarcloud == "yes" -%}
 # SonarCloud
