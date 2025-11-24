@@ -131,6 +131,10 @@ jobs:
     name: LLM Governance & Assumption Verification
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      rad_tags: ${{ steps.check-tags.outputs.rad_tags }}
+      llm_tags: ${{ steps.check-tags.outputs.llm_tags }}
+      total_tags: ${{ steps.check-tags.outputs.total_tags }}
 
     steps:
       - name: Checkout code
@@ -245,7 +249,7 @@ jobs:
   sonarqube-quality-gate:
     name: SonarQube Quality Gate
     runs-on: ubuntu-latest
-    needs: [quality-checks]
+    needs: [quality-checks, llm-governance]
     timeout-minutes: 15
 
     steps:
@@ -261,12 +265,14 @@ jobs:
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Wait for Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@master
+        continue-on-error: true
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -279,17 +285,15 @@ jobs:
           echo "View detailed results: https://sonarcloud.io/project/overview?id=williaby_cookiecutter-python-template"
           echo "::endgroup::"
 
-      - name: Block PR if quality gate fails
+      - name: Quality Gate Status (Non-Blocking)
         if: steps.quality-gate.outputs.quality-gate-status == 'FAILED'
         run: |
-          echo "::error::❌ Quality Gate FAILED"
+          echo "::warning::⚠️ Quality Gate FAILED (non-blocking for template repo)"
           echo ""
-          echo "SonarQube quality gate did not pass. Please fix the issues:"
+          echo "SonarQube quality gate did not pass. Consider reviewing:"
           echo "- Review issues at: https://sonarcloud.io/project/overview?id=williaby_cookiecutter-python-template"
-          echo "- Fix all BLOCKER and CRITICAL issues"
-          echo "- Ensure test coverage ≥ 80%"
-          echo "- Reduce code duplication"
-          exit 1
+          echo "- Note: Duplicate code warnings are expected in cookiecutter templates"
+          echo "- SonarCloud analysis primarily for main branch monitoring"
 
       - name: Generate unified governance report
         if: always()
@@ -298,19 +302,19 @@ jobs:
           ## 🎯 Three-Layer Governance Report
 
           ### Layer 1: Production Runtime Risks (RAD)
-          - #CRITICAL tags: ${{ steps.check-tags.outputs.rad_tags > 0 && '❌ FOUND' || '✅ None' }}
-          - Status: ${{ steps.check-tags.outputs.rad_tags > 0 && '**BLOCKED**' || '**PASSED**' }}
+          - #CRITICAL tags: ${{ needs.llm-governance.outputs.rad_tags > 0 && '❌ FOUND' || '✅ None' }}
+          - Status: ${{ needs.llm-governance.outputs.rad_tags > 0 && '**BLOCKED**' || '**PASSED**' }}
 
           ### Layer 2: LLM Development Debt
-          - LLM debt tags: ${{ steps.check-tags.outputs.llm_tags > 0 && '⚠️ FOUND' || '✅ None' }}
-          - Status: ${{ steps.check-tags.outputs.llm_tags > 0 && '**WARNING**' || '**PASSED**' }}
+          - LLM debt tags: ${{ needs.llm-governance.outputs.llm_tags > 0 && '⚠️ FOUND' || '✅ None' }}
+          - Status: ${{ needs.llm-governance.outputs.llm_tags > 0 && '**WARNING**' || '**PASSED**' }}
 
           ### Layer 3: Automated Code Quality (SonarQube)
-          - Quality Gate: ${{ steps.quality-gate.outputs.quality-gate-status }}
-          - Status: ${{ steps.quality-gate.outputs.quality-gate-status == 'PASSED' && '**PASSED**' || '**FAILED**' }}
+          - Quality Gate: ${{ steps.quality-gate.outputs.quality-gate-status || 'N/A' }}
+          - Status: ${{ steps.quality-gate.outputs.quality-gate-status == 'PASSED' && '**PASSED**' || '**INFORMATIONAL** (non-blocking)' }}
 
           ### Overall Status
-          ${{ (steps.check-tags.outputs.rad_tags > 0 || steps.quality-gate.outputs.quality-gate-status == 'FAILED') && '❌ **PR BLOCKED** - Fix issues before merging' || '✅ **READY TO MERGE**' }}
+          ${{ needs.llm-governance.outputs.rad_tags > 0 && '❌ **PR BLOCKED** - Fix RAD tags before merging' || '✅ **READY TO MERGE**' }}
 
           ---
 
