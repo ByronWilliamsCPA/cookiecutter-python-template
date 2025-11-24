@@ -348,13 +348,13 @@ jobs:
           cd /tmp
           cookiecutter --no-input /home/runner/work/cookiecutter-python-template/cookiecutter-python-template
           echo "✓ Template generated successfully"
-          ls -la my_project/
+          ls -la my_python_project/
           echo "::endgroup::"
 
       - name: Validate generated project structure
         run: |
           echo "::group::Structure Validation"
-          cd /tmp/my_project
+          cd /tmp/my_python_project
 
           # Check key files exist
           test -f README.md || { echo "::error::README.md missing"; exit 1; }
@@ -369,7 +369,7 @@ jobs:
       - name: Check for LLM governance in generated project
         run: |
           echo "::group::LLM Governance Validation"
-          cd /tmp/my_project
+          cd /tmp/my_python_project
 
           if grep -q "LLM Development Governance" CLAUDE.md; then
             echo "✓ LLM Governance section found in CLAUDE.md"
