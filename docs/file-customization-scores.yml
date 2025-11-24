@@ -50,8 +50,9 @@ files:
   pyproject.toml:
     score: 4
     reason: "Dependencies, metadata, and tool config vary per project"
-    in_standards: false
-    notes: "Complex file - may need section-based approach"
+    in_standards: true
+    baseline_file: ".standards/pyproject.toml.baseline"
+    notes: "Tool configs in baseline; project metadata/deps preserved"
 
   CHANGELOG.md:
     score: 5
@@ -102,8 +103,9 @@ files:
   mkdocs.yml:
     score: 4
     reason: "Navigation, plugins, and site config vary"
-    in_standards: false
-    notes: "Consider nav.baseline.yml pattern"
+    in_standards: true
+    baseline_file: ".standards/mkdocs.yml.baseline"
+    notes: "Theme/plugins/extensions in baseline; nav preserved"
 
   codecov.yml:
     score: 2
@@ -564,16 +566,6 @@ cruft_skip_list:
 # Files with score 3-4 that might benefit from .standards/ system
 # Monitor these for consistent feedback
 standards_candidates:
-  - file: pyproject.toml
-    score: 4
-    barrier: "Complex multi-section file"
-    notes: "May need section-based merge approach"
-
-  - file: mkdocs.yml
-    score: 4
-    barrier: "Navigation is highly project-specific"
-    notes: "May need nav-only baseline"
-
   - file: .pre-commit-config.yaml
     score: 3
     barrier: "Version pinning complicates baseline"
@@ -605,3 +597,13 @@ files_with_baselines:
     baseline: ".standards/env.example.baseline"
     implemented: "2024-11-24"
     notes: "Standard environment variables"
+
+  - file: pyproject.toml
+    baseline: ".standards/pyproject.toml.baseline"
+    implemented: "2024-11-24"
+    notes: "Tool configs (Ruff, pytest, coverage, etc.)"
+
+  - file: mkdocs.yml
+    baseline: ".standards/mkdocs.yml.baseline"
+    implemented: "2024-11-24"
+    notes: "Theme, plugins, markdown extensions"

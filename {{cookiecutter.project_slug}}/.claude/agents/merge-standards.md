@@ -19,6 +19,8 @@ This agent helps merge updated baseline standards from `.standards/` into the pr
 | `.standards/README.baseline.md` | `README.md` | Badge + section copy |
 | `.standards/template_feedback.baseline.md` | `docs/template_feedback.md` | Format only |
 | `.standards/env.example.baseline` | `.env.example` | Variable addition |
+| `.standards/pyproject.toml.baseline` | `pyproject.toml` | Tool config merge |
+| `.standards/mkdocs.yml.baseline` | `mkdocs.yml` | Theme/plugin merge |
 
 ## Merge Strategy
 
@@ -59,6 +61,36 @@ This agent helps merge updated baseline standards from `.standards/` into the pr
 2. **Update comments/documentation** for existing variables
 3. **PRESERVE all project-specific variables** added by user
 4. **PRESERVE any custom values** that differ from baseline defaults
+
+### For pyproject.toml
+
+1. **Compare [tool.*] sections** between baseline and project file
+2. **Merge NEW rule selections** in [tool.ruff.lint] select list
+3. **Add NEW ignore patterns** if they make sense for the project
+4. **Update per-file-ignores** if new directory patterns added
+5. **Add NEW pytest markers** from baseline
+6. **Update coverage exclusion patterns** if improved
+7. **PRESERVE project-specific settings**:
+   - `known-first-party` in isort (project package name)
+   - Custom markers specific to the project
+   - Project-specific coverage paths
+   - Any `[project]` or `[project.dependencies]` sections
+8. **NEVER touch** `[project]`, `[build-system]`, or dependency sections
+
+### For mkdocs.yml
+
+1. **Compare theme configuration** for new features
+2. **Add NEW theme.features** entries from baseline
+3. **Update plugin configurations** if options improved
+4. **Add NEW markdown extensions** from baseline
+5. **Update extension options** if enhanced
+6. **PRESERVE project-specific content**:
+   - Entire `nav:` section (navigation is 100% project-specific)
+   - `site_name`, `site_description`, `site_author`
+   - `site_url`, `repo_url`, `repo_name`
+   - Custom social links and analytics
+   - Any project-specific plugins (blog, tags, etc.)
+7. **NEVER touch** site metadata or navigation structure
 
 ## Merge Process
 

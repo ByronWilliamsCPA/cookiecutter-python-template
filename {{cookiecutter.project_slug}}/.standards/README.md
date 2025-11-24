@@ -17,6 +17,8 @@ This directory contains **baseline versions** of files that require project-spec
 | `README.baseline.md` | `README.md` | Badge templates and standard sections |
 | `template_feedback.baseline.md` | `docs/template_feedback.md` | Feedback format and submission instructions |
 | `env.example.baseline` | `.env.example` | Standard environment variables |
+| `pyproject.toml.baseline` | `pyproject.toml` | Tool configs (Ruff, pytest, coverage, etc.) |
+| `mkdocs.yml.baseline` | `mkdocs.yml` | Theme, plugins, markdown extensions |
 
 ## Merging Updates
 
