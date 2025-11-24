@@ -93,7 +93,6 @@ path = [
     ".claude/settings.local.json",
     ".claude/**/*.json",  # Claude configuration files
     ".claude/**/*.md",  # Claude documentation files
-    ".claude/standard/**",  # Claude baseline standards
     ".clusterfuzzlite/**",
     ".sonarlint/**",  # SonarLint IDE configuration
     ".qlty/**",  # Qlty configuration
