@@ -711,8 +711,7 @@ def ensure_trailing_newlines() -> None:
         should_process = (
             filepath.suffix.lower() in text_extensions
             or filepath.name in dotfiles
-            or filepath.name.startswith(".")
-            and filepath.suffix in text_extensions
+            or (filepath.name.startswith(".") and filepath.suffix in text_extensions)
         )
 
         if not should_process:
