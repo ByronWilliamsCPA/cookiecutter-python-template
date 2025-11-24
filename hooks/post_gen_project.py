@@ -171,9 +171,11 @@ def cleanup_conditional_files() -> None:
     if "{{ cookiecutter.include_load_testing }}" == "no":
         remove_dir(Path("tests/load"))
 
-    # Remove fuzzing workflow if not needed
+    # Remove fuzzing files and workflow if not needed
     if "{{ cookiecutter.include_fuzzing }}" == "no":
         remove_file(Path(".github/workflows/cifuzzy.yml"))
+        remove_dir(Path(".clusterfuzzlite"))
+        remove_dir(Path("fuzz"))
 
     # Remove GitHub Actions workflows if not needed
     if "{{ cookiecutter.include_github_actions }}" == "no":
@@ -695,7 +697,7 @@ def ensure_trailing_newlines() -> None:
     }
 
     fixed_count = 0
-    project_root = Path(".")
+    project_root = Path()
 
     for filepath in project_root.rglob("*"):
         if not filepath.is_file():
@@ -709,8 +711,7 @@ def ensure_trailing_newlines() -> None:
         should_process = (
             filepath.suffix.lower() in text_extensions
             or filepath.name in dotfiles
-            or filepath.name.startswith(".")
-            and filepath.suffix in text_extensions
+            or (filepath.name.startswith(".") and filepath.suffix in text_extensions)
         )
 
         if not should_process:

@@ -156,4 +156,4 @@ If fuzzing discovers a security vulnerability:
 
 1. **DO NOT** commit crash samples to the repository
 2. Report to {{cookiecutter.author_email}}
-3. See [Security Policy](https://github.com/williaby/.github/blob/main/SECURITY.md)
+3. See [Security Policy](https://github.com/{{cookiecutter.github_org_or_user}}/.github/blob/main/SECURITY.md)

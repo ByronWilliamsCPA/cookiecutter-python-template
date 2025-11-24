@@ -29,8 +29,13 @@ allowed:
 
   # Documentation
   - front_matter
+  - api
   - api_reference
   - reference
+  - home
+  - overview
+  - configuration
+  - usage
   - taxonomy
   - coverage
   - guide
