@@ -1,6 +1,11 @@
-# Security Analysis - Calls Org-Level Reusable Workflow
-# This is a lightweight caller workflow that invokes the organization's
-# shared Python security analysis workflow with CodeQL, Bandit, Safety, and OSV.
+# Security Analysis Workflow
+# Runs security scans including Bandit, Safety, and dependency checks.
+#
+# Features:
+#   - Bandit static analysis for Python
+#   - Safety dependency vulnerability scanning
+#   - Weekly scheduled scans
+{% if cookiecutter.include_github_actions == "yes" -%}
 name: Security Analysis
 
 on:
@@ -18,6 +23,13 @@ concurrency:
   group: {% raw %}${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}{% endraw %}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+{% if cookiecutter.use_org_workflows == "yes" -%}
+# Uses org-level reusable workflow
 jobs:
   security:
     name: Security Scan
@@ -25,19 +37,47 @@ jobs:
     with:
       source-directory: 'src'
       python-version: '{{ cookiecutter.python_version }}'
-
-      # Fail settings
       fail-on-high: true
       fail-on-medium: false
-
-      # Enable all security tools
       run-codeql: true
       run-dependency-review: true
       run-bandit: true
       run-safety: true
       run-osv: true
+{% else -%}
+# Standalone security workflow
+jobs:
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-permissions:
-  contents: read
-  security-events: write
-  pull-requests: write
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install {{ cookiecutter.python_version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run Bandit security scan
+        run: uv run bandit -r src/ -c pyproject.toml -f json -o bandit-report.json || true
+
+      - name: Run Safety dependency check
+        run: uv run safety check --output json > safety-report.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+          retention-days: 30
+{% endif -%}
+{% endif -%}

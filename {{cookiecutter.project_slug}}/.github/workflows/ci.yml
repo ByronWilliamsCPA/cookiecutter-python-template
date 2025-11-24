@@ -1,13 +1,10 @@
-# CI/CD Pipeline - Calls Org-Level Reusable Workflow
-# This is a lightweight caller workflow that invokes the organization's
-# shared Python CI workflow with LLM governance integration.
+# CI/CD Pipeline
+# Runs tests, linting, type checking, and security scans.
 #
 # Features:
 #   - Standard quality checks (tests, linting, type checking)
-#   - LLM governance and assumption tag verification
-#   - Optional SonarCloud integration
-#   - Optional Codecov integration
 #   - Security scanning (Bandit, Safety)
+#   - Optional SonarCloud/Codecov integration
 {% if cookiecutter.include_github_actions == "yes" -%}
 name: CI
 
@@ -29,6 +26,8 @@ permissions:
   pull-requests: write
   checks: write
 
+{% if cookiecutter.use_org_workflows == "yes" -%}
+# Uses org-level reusable workflow
 jobs:
   ci:
     name: CI Pipeline
@@ -60,4 +59,49 @@ jobs:
       {%- if cookiecutter.include_codecov == "yes" %}
       CODECOV_TOKEN: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
       {%- endif %}
+{% else -%}
+# Standalone CI workflow
+jobs:
+  test:
+    name: Test (Python {{ cookiecutter.python_version }})
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install {{ cookiecutter.python_version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run tests with coverage
+        run: |
+          uv run pytest -v --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under={{ cookiecutter.code_coverage_target }}
+
+      - name: Run type checker
+        run: uv run basedpyright src/
+
+      - name: Run linter
+        run: uv run ruff check src/ tests/
+
+      - name: Run security scan (Bandit)
+        run: uv run bandit -r src/ -c pyproject.toml
+
+      {%- if cookiecutter.include_codecov == "yes" %}
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
+      {%- endif %}
+{% endif -%}
 {% endif -%}

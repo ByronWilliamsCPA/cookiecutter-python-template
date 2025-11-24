@@ -1,6 +1,10 @@
-# Documentation - Calls Org-Level Reusable Workflow
-# This is a lightweight caller workflow that invokes the organization's
-# shared Python documentation workflow for MkDocs builds and deployments.
+# Documentation Workflow
+# Builds and deploys MkDocs documentation to GitHub Pages.
+#
+# Features:
+#   - MkDocs Material theme build
+#   - GitHub Pages deployment on push to main
+#   - PR preview builds
 {% if cookiecutter.use_mkdocs == "yes" and cookiecutter.include_github_actions == "yes" -%}
 name: Documentation
 
@@ -17,6 +21,13 @@ on:
       - 'mkdocs.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write  # For GitHub Pages deployment
+  pages: write
+  id-token: write
+
+{% if cookiecutter.use_org_workflows == "yes" -%}
+# Uses org-level reusable workflow
 jobs:
   docs:
     name: Build & Deploy Docs
@@ -24,9 +35,34 @@ jobs:
     with:
       python-version: '{{ cookiecutter.python_version }}'
       deploy-to-pages: {% raw %}${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}{% endraw %}
+{% else -%}
+# Standalone documentation workflow
+jobs:
+  docs:
+    name: Build & Deploy Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-permissions:
-  contents: write  # For GitHub Pages deployment
-  pages: write
-  id-token: write
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install {{ cookiecutter.python_version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Build documentation
+        run: uv run mkdocs build --strict
+
+      - name: Deploy to GitHub Pages
+        if: {% raw %}${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}{% endraw %}
+        run: uv run mkdocs gh-deploy --force
+{% endif -%}
 {% endif -%}

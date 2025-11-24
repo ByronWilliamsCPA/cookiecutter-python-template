@@ -1,8 +1,6 @@
 # OpenSSF Scorecard for {{ cookiecutter.project_name }}
 # Security posture assessment and supply chain security validation.
 #
-# This is a thin caller to the org-level reusable workflow.
-#
 # Dashboard: https://securityscorecards.dev/viewer/?uri=github.com/{{ cookiecutter.github_org_or_user }}/{{ cookiecutter.project_slug }}
 # Documentation: https://github.com/ossf/scorecard
 {%- if cookiecutter.include_github_actions == "yes" %}
@@ -25,6 +23,8 @@ permissions:
   id-token: write
   actions: read
 
+{% if cookiecutter.use_org_workflows == "yes" -%}
+# Uses org-level reusable workflow
 jobs:
   scorecard:
     name: Scorecard Analysis
@@ -33,6 +33,37 @@ jobs:
       publish-results: true
       upload-sarif: true
       artifact-retention-days: 5
+{% else -%}
+# Standalone OpenSSF Scorecard workflow
+jobs:
+  scorecard:
+    name: Scorecard Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run OpenSSF Scorecard
+        uses: ossf/scorecard-action@v2.4.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+
+      - name: Upload Scorecard results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scorecard-results
+          path: results.sarif
+          retention-days: 5
+{% endif -%}
 {%- else %}
 # GitHub Actions disabled for this project
 # Enable include_github_actions to use OpenSSF Scorecard
