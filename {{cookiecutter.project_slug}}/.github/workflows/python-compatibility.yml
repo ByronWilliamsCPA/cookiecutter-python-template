@@ -1,8 +1,12 @@
 # Python Compatibility Matrix Testing for {{ cookiecutter.project_name }}
 # Tests the project across multiple Python versions and operating systems.
 #
-# This is a thin caller to the org-level reusable workflow.
 {%- if cookiecutter.include_github_actions == "yes" %}
+{%- if cookiecutter.use_org_workflows == "yes" %}
+# This is a thin caller to the org-level reusable workflow.
+{%- else %}
+# Standalone implementation for Python compatibility testing.
+{%- endif %}
 name: Python Compatibility
 
 on:
@@ -34,6 +38,7 @@ permissions:
   contents: read
 
 jobs:
+{%- if cookiecutter.use_org_workflows == "yes" %}
   compatibility:
     name: Python Compatibility Matrix
     uses: {{ cookiecutter.github_org_or_user }}/.github/.github/workflows/python-compatibility.yml@main
@@ -48,6 +53,59 @@ jobs:
       fail-fast: false
       timeout-minutes: 30
     secrets: inherit
+{%- else %}
+  test:
+    name: {% raw %}Python ${{ matrix.python-version }} on ${{ matrix.os }}{% endraw %}
+    runs-on: {% raw %}${{ matrix.os }}{% endraw %}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+        os: [ubuntu-latest]
+        include:
+          - os: macos-latest
+            python-version: '3.12'
+          - os: windows-latest
+            python-version: '3.12'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python {% raw %}${{ matrix.python-version }}{% endraw %}
+        run: uv python install {% raw %}${{ matrix.python-version }}{% endraw %}
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+
+      - name: Run tests
+        run: |
+          uv run pytest tests/ -v --tb=short -x \
+            --ignore=tests/integration \
+            --ignore=tests/load \
+            -m "not slow and not integration"
+
+  summary:
+    name: Compatibility Summary
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          if [[ "{% raw %}${{ needs.test.result }}{% endraw %}" != "success" ]]; then
+            echo "::error::Some compatibility tests failed"
+            exit 1
+          fi
+          echo "All compatibility tests passed!"
+{%- endif %}
 {%- else %}
 # GitHub Actions disabled for this project
 # Enable include_github_actions to use Python compatibility testing
