@@ -70,15 +70,16 @@ jobs:
 
       - name: Check for hardcoded values
         run: |
-          ! grep -r "williaby\|PromptCraft" \
-            --include="*.md" \
-            --include="*.py" \
-            --include="*.sh" \
-            --exclude-dir="{{cookiecutter.project_slug}}" \
-            --exclude-dir=".git" \
-            --exclude-dir="docs-reference" \
-            . || (echo "❌ Found hardcoded values" && exit 1)
-          echo "✓ No hardcoded values found"
+          # Only check template files (not root repo files)
+          # Root files (README.md, CLAUDE.md, sonar-project.properties) can have williaby references
+          if [ -d "{{cookiecutter.project_slug}}" ]; then
+            ! grep -r "williaby\|PromptCraft" \
+              --include="*.md" \
+              --include="*.py" \
+              --include="*.sh" \
+              "{{cookiecutter.project_slug}}" || (echo "❌ Found hardcoded values in template files" && exit 1)
+          fi
+          echo "✓ No hardcoded values found in template files"
 
       - name: Cleanup
         if: always()
