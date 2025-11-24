@@ -1,0 +1,49 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: {{ cookiecutter.project_name }}
+Upstream-Contact: {{ cookiecutter.author_name }} <{{ cookiecutter.author_email }}>
+Source: {{ cookiecutter.repo_url }}
+
+# Configuration files (no comment syntax support)
+Files: *.json *.yaml *.yml *.toml .gitignore .gitattributes .env.example .dockerignore
+Copyright: {{ cookiecutter.copyright_year }} {{ cookiecutter.author_name }}
+License: MIT
+
+# Lock files and generated files
+Files: uv.lock poetry.lock package-lock.json requirements*.txt
+Copyright: {{ cookiecutter.copyright_year }} {{ cookiecutter.author_name }}
+License: CC0-1.0
+
+# Documentation files
+Files: *.md docs/**/*.md
+Copyright: {{ cookiecutter.copyright_year }} {{ cookiecutter.author_name }}
+License: CC-BY-4.0
+
+# GitHub/CI configuration
+Files: .github/**/*
+Copyright: {{ cookiecutter.copyright_year }} {{ cookiecutter.author_name }}
+License: CC0-1.0
+
+# IDE and tool configuration
+Files: .vscode/**/* .idea/**/* .qlty/**/*
+Copyright: {{ cookiecutter.copyright_year }} {{ cookiecutter.author_name }}
+License: CC0-1.0
+
+# Docker files
+Files: Dockerfile* docker-compose*.yml
+Copyright: {{ cookiecutter.copyright_year }} {{ cookiecutter.author_name }}
+License: MIT
+
+# MkDocs overrides (empty directory placeholder)
+Files: overrides/**/*
+Copyright: {{ cookiecutter.copyright_year }} {{ cookiecutter.author_name }}
+License: MIT
+
+# Fuzz testing corpus (if any)
+Files: fuzz/**/*
+Copyright: {{ cookiecutter.copyright_year }} {{ cookiecutter.author_name }}
+License: MIT
+
+# Sonar configuration
+Files: sonar-project.properties
+Copyright: {{ cookiecutter.copyright_year }} {{ cookiecutter.author_name }}
+License: CC0-1.0

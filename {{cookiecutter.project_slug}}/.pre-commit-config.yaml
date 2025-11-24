@@ -162,11 +162,15 @@ repos:
     hooks:
       - id: validate-front-matter
         name: Validate documentation front matter
-        entry: uv run python tools/validate_front_matter.py docs
-        language: system
+        entry: python tools/validate_front_matter.py docs
+        language: python
         files: ^docs/.*\.md$
         pass_filenames: false
         stages: [pre-commit]
+        additional_dependencies:
+          - python-frontmatter>=1.1.0
+          - pydantic>=2.0
+          - ruamel.yaml>=0.18
 {% endif %}
 
   # ============================================================================
@@ -179,6 +183,7 @@ repos:
     hooks:
       - id: interrogate
         args: ['-v', '-c', 'pyproject.toml', 'src/']
+        language_version: python{{ cookiecutter.python_version }}
         pass_filenames: false
         stages: [pre-commit]
 

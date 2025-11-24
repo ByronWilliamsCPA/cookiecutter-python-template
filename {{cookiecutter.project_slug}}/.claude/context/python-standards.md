@@ -64,7 +64,7 @@ except Exception:  # Too broad
 ## Testing Standards
 
 ### Test Organization
-```
+```text
 tests/
 ├── unit/           # Fast, isolated tests (<1s each)
 ├── integration/    # Service integration tests

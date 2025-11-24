@@ -20,17 +20,17 @@
 ## CI/CD Status
 
 {%- if cookiecutter.include_github_actions == "yes" %}
-[![CI Pipeline](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/ci.yml?query=branch%3Amaster)
-[![Security Analysis](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/security-analysis.yml/badge.svg?branch=master)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/security-analysis.yml?query=branch%3Amaster)
+[![CI Pipeline](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/ci.yml?query=branch%3Amain)
+[![Security Analysis](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/security-analysis.yml/badge.svg?branch=main)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/security-analysis.yml?query=branch%3Amain)
 {%- endif %}
 {%- if cookiecutter.use_mkdocs == "yes" and cookiecutter.include_github_actions == "yes" %}
-[![Documentation](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/docs.yml/badge.svg?branch=master)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/docs.yml?query=branch%3Amaster)
+[![Documentation](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/docs.yml?query=branch%3Amain)
 {%- endif %}
 {%- if cookiecutter.include_fuzzing == "yes" %}
-[![ClusterFuzzLite](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/cifuzzy.yml/badge.svg?branch=master)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/cifuzzy.yml?query=branch%3Amaster)
+[![ClusterFuzzLite](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/cifuzzy.yml/badge.svg?branch=main)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/cifuzzy.yml?query=branch%3Amain)
 {%- endif %}
 {%- if cookiecutter.include_github_actions == "yes" %}
-[![SBOM & Security Scan](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/sbom.yml/badge.svg?branch=master)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/sbom.yml?query=branch%3Amaster)
+[![SBOM & Security Scan](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/sbom.yml/badge.svg?branch=main)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/sbom.yml?query=branch%3Amain)
 [![PR Validation](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/pr-validation.yml/badge.svg)](https://github.com/{{cookiecutter.github_org_or_user}}/{{cookiecutter.project_slug}}/actions/workflows/pr-validation.yml)
 {%- endif %}
 {%- if cookiecutter.include_semantic_release == "yes" and cookiecutter.include_github_actions == "yes" %}
@@ -108,10 +108,7 @@ pipx install uv
 git clone {{cookiecutter.repo_url}}.git
 cd {{cookiecutter.project_slug}}
 
-# Install dependencies
-uv sync
-
-# Install with dev tools (recommended)
+# Install dependencies (includes dev tools - REQUIRED for development)
 uv sync --all-extras
 
 {%- if cookiecutter.include_ml_dependencies == "yes" %}

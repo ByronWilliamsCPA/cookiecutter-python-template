@@ -33,10 +33,14 @@ Compliance Sessions:
 """
 
 import nox
-import nox_uv
 
-# Use nox-uv for faster environment creation
-nox_uv.register()
+# nox-uv is imported but not explicitly registered.
+# In nox-uv 0.6.x+, registration happens automatically when using
+# nox.options.default_venv_backend = "uv"
+try:
+    import nox_uv  # noqa: F401 - Required for uv backend support
+except ImportError:
+    pass  # nox-uv is optional; falls back to standard venv
 
 # Default sessions and options
 nox.options.sessions = ["test", "lint", "docs"]

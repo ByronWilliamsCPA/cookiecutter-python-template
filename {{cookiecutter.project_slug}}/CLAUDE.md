@@ -115,7 +115,7 @@ When working on this project, always suggest appropriate security measures:
 
 ### Using Planning Documents
 
-```
+```text
 # Load context for a task
 Load from project-vision.md sections 2-3 and adr/adr-001-*.md,
 then implement [feature] per tech-spec.md section [X].
@@ -203,7 +203,7 @@ docker build -t {{cookiecutter.project_slug}} .  # Build production image
 
 ## Project Structure
 
-```
+```text
 src/{{cookiecutter.project_slug}}/
 ├── __init__.py              # Package initialization
 {% if cookiecutter.include_cli == "yes" -%}
@@ -396,7 +396,7 @@ pre-commit install --install-hooks   # Reinstall
 ### UV Lock Issues
 ```bash
 uv lock                          # Regenerate lock
-uv sync                          # Reinstall dependencies
+uv sync --all-extras             # Reinstall dependencies (includes dev tools)
 ```
 
 ### BasedPyright Type Errors
