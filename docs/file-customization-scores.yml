@@ -1,0 +1,582 @@
+# File Customization Score Tracking
+# =================================
+# This file tracks which template-generated files are likely to be customized
+# by downstream projects. Use this to determine which files should be managed
+# via the .standards/ two-part system.
+#
+# Scoring System (1-5):
+#   1 - Never edited: Config/tooling files that work as-is
+#   2 - Rarely edited: May need minor tweaks for edge cases
+#   3 - Sometimes edited: Projects may add sections or modify behavior
+#   4 - Often edited: Most projects customize these significantly
+#   5 - Always edited: Every project must customize (project-specific content)
+#
+# Threshold Logic:
+#   - Score >= 4: Should be in .standards/ with baseline files
+#   - Score 3: Monitor feedback, candidate for .standards/
+#   - Score <= 2: Safe to update directly via cruft
+#
+# Last Updated: 2024-11-24
+# Feedback Source: /home/byron/dev/.claude/template_feedback/
+
+version: 1
+score_threshold: 4  # Files at or above this score use .standards/ system
+
+files:
+  # ===================
+  # Core Project Files
+  # ===================
+  CLAUDE.md:
+    score: 5
+    reason: "Every project customizes with project-specific standards"
+    in_standards: true
+    baseline_file: ".standards/CLAUDE.baseline.md"
+    notes: "Primary development guidance document"
+
+  REUSE.toml:
+    score: 5
+    reason: "SPDX paths are completely project-specific"
+    in_standards: true
+    baseline_file: ".standards/REUSE.baseline.toml"
+    notes: "Licensing declarations vary per project structure"
+
+  README.md:
+    score: 5
+    reason: "Project description, features, and usage are unique"
+    in_standards: false
+    notes: "Consider adding README.baseline.md in future"
+
+  pyproject.toml:
+    score: 4
+    reason: "Dependencies, metadata, and tool config vary per project"
+    in_standards: false
+    notes: "Complex file - may need section-based approach"
+
+  CHANGELOG.md:
+    score: 5
+    reason: "Entirely project-specific release history"
+    in_standards: false
+    notes: "No baseline needed - fully project content"
+
+  CONTRIBUTING.md:
+    score: 3
+    reason: "May add project-specific contribution guidelines"
+    in_standards: false
+    notes: "Monitor for patterns requiring baseline"
+
+  LICENSE:
+    score: 2
+    reason: "Usually unchanged unless license type changes"
+    in_standards: false
+    notes: "Set during template generation"
+
+  # ===================
+  # Configuration Files
+  # ===================
+  .env.example:
+    score: 4
+    reason: "Projects add their own environment variables"
+    in_standards: false
+    notes: "Consider .env.baseline.example"
+
+  .gitignore:
+    score: 3
+    reason: "Projects may add custom ignore patterns"
+    in_standards: false
+    notes: "Monitor feedback"
+
+  .gitattributes:
+    score: 1
+    reason: "Standard git attributes rarely changed"
+    in_standards: false
+    notes: ""
+
+  .pre-commit-config.yaml:
+    score: 3
+    reason: "Projects may add/remove hooks"
+    in_standards: false
+    notes: "Monitor feedback - could become baseline"
+
+  mkdocs.yml:
+    score: 4
+    reason: "Navigation, plugins, and site config vary"
+    in_standards: false
+    notes: "Consider nav.baseline.yml pattern"
+
+  codecov.yml:
+    score: 2
+    reason: "Coverage thresholds may be adjusted"
+    in_standards: false
+    notes: ""
+
+  renovate.json:
+    score: 2
+    reason: "Update schedules may be customized"
+    in_standards: false
+    notes: ""
+
+  # ===================
+  # Documentation
+  # ===================
+  docs/index.md:
+    score: 5
+    reason: "Project-specific landing page"
+    in_standards: false
+    notes: ""
+
+  docs/guides/overview.md:
+    score: 5
+    reason: "Project overview content"
+    in_standards: false
+    notes: ""
+
+  docs/guides/usage.md:
+    score: 5
+    reason: "Project-specific usage documentation"
+    in_standards: false
+    notes: ""
+
+  docs/guides/configuration.md:
+    score: 4
+    reason: "Configuration docs vary per project"
+    in_standards: false
+    notes: ""
+
+  docs/api-reference.md:
+    score: 3
+    reason: "API reference structure may be customized"
+    in_standards: false
+    notes: ""
+
+  docs/development/architecture.md:
+    score: 4
+    reason: "Project architecture documentation"
+    in_standards: false
+    notes: ""
+
+  docs/development/code-quality.md:
+    score: 2
+    reason: "Quality standards mostly consistent"
+    in_standards: false
+    notes: ""
+
+  docs/development/contributing.md:
+    score: 2
+    reason: "Usually follows standard pattern"
+    in_standards: false
+    notes: ""
+
+  docs/development/testing.md:
+    score: 2
+    reason: "Testing docs usually standard"
+    in_standards: false
+    notes: ""
+
+  docs/template_feedback.md:
+    score: 5
+    reason: "Project accumulates feedback - never overwrite"
+    in_standards: false
+    notes: "Added to cruft skip list"
+
+  docs/_data/tags.yml:
+    score: 3
+    reason: "Projects may add custom documentation tags"
+    in_standards: false
+    notes: "Monitor feedback"
+
+  docs/_data/owners.yml:
+    score: 4
+    reason: "Team ownership is project-specific"
+    in_standards: false
+    notes: ""
+
+  docs/planning/*:
+    score: 4
+    reason: "Planning docs are project-specific"
+    in_standards: false
+    notes: "Glob pattern for all planning docs"
+
+  docs/ADRs/*:
+    score: 5
+    reason: "Architecture decisions are project-specific"
+    in_standards: false
+    notes: "Template provides structure only"
+
+  docs/PROJECT_SETUP.md:
+    score: 2
+    reason: "Setup instructions usually standard"
+    in_standards: false
+    notes: ""
+
+  docs/OPENSSF_COMPLIANCE.md:
+    score: 2
+    reason: "Compliance guidance standard"
+    in_standards: false
+    notes: ""
+
+  docs/PYTHON_COMPATIBILITY.md:
+    score: 1
+    reason: "Python version docs standard"
+    in_standards: false
+    notes: ""
+
+  # ===================
+  # Source Code
+  # ===================
+  src/*/**.py:
+    score: 5
+    reason: "All source code is project-specific"
+    in_standards: false
+    notes: "Template provides structure only"
+
+  tests/**.py:
+    score: 5
+    reason: "All tests are project-specific"
+    in_standards: false
+    notes: "Template provides examples"
+
+  # ===================
+  # GitHub Configuration
+  # ===================
+  .github/CODEOWNERS:
+    score: 4
+    reason: "Team ownership is project-specific"
+    in_standards: false
+    notes: ""
+
+  .github/PULL_REQUEST_TEMPLATE.md:
+    score: 3
+    reason: "May add project-specific checklist items"
+    in_standards: false
+    notes: "Monitor feedback"
+
+  .github/ISSUE_TEMPLATE/*.yml:
+    score: 2
+    reason: "Issue templates usually standard"
+    in_standards: false
+    notes: ""
+
+  .github/dependabot.yml:
+    score: 2
+    reason: "Update schedules may vary"
+    in_standards: false
+    notes: ""
+
+  .github/copilot-instructions.md:
+    score: 3
+    reason: "May add project-specific Copilot guidance"
+    in_standards: false
+    notes: "Monitor feedback"
+
+  # ===================
+  # GitHub Workflows
+  # ===================
+  .github/workflows/ci.yml:
+    score: 2
+    reason: "CI usually standard but may add steps"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/release.yml:
+    score: 2
+    reason: "Release workflow usually standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/docs.yml:
+    score: 1
+    reason: "Docs build workflow rarely changed"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/pr-validation.yml:
+    score: 1
+    reason: "PR validation standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/security-analysis.yml:
+    score: 1
+    reason: "Security scanning standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/codecov.yml:
+    score: 1
+    reason: "Coverage workflow standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/reuse.yml:
+    score: 1
+    reason: "REUSE workflow standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/sbom.yml:
+    score: 1
+    reason: "SBOM workflow standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/scorecard.yml:
+    score: 1
+    reason: "Security scorecard standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/slsa-provenance.yml:
+    score: 1
+    reason: "SLSA provenance standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/python-compatibility.yml:
+    score: 1
+    reason: "Python version testing standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/mutation-testing.yml:
+    score: 1
+    reason: "Mutation testing standard"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/publish-pypi.yml:
+    score: 2
+    reason: "PyPI publishing may have custom steps"
+    in_standards: false
+    notes: ""
+
+  .github/workflows/README.md:
+    score: 1
+    reason: "Workflow docs standard"
+    in_standards: false
+    notes: ""
+
+  # ===================
+  # Claude Configuration
+  # ===================
+  .claude/README.md:
+    score: 2
+    reason: "Claude setup docs standard"
+    in_standards: false
+    notes: ""
+
+  .claude/agents/*.md:
+    score: 2
+    reason: "Agent definitions usually standard"
+    in_standards: false
+    notes: "Projects may add custom agents"
+
+  .claude/commands/*.md:
+    score: 2
+    reason: "Command definitions usually standard"
+    in_standards: false
+    notes: "Projects may add custom commands"
+
+  .claude/context/*.md:
+    score: 2
+    reason: "Context files usually standard"
+    in_standards: false
+    notes: ""
+
+  .claude/skills/**/**.md:
+    score: 2
+    reason: "Skills usually standard"
+    in_standards: false
+    notes: "Projects may add custom skills"
+
+  .claude/settings.local.json.example:
+    score: 2
+    reason: "Settings example rarely changed"
+    in_standards: false
+    notes: ""
+
+  # ===================
+  # Standards Directory
+  # ===================
+  .standards/README.md:
+    score: 1
+    reason: "Instructions for standards system"
+    in_standards: false
+    notes: "Meta-file for standards system"
+
+  .standards/CLAUDE.baseline.md:
+    score: 1
+    reason: "Baseline is auto-updated by cruft"
+    in_standards: false
+    notes: "Source file for CLAUDE.md baseline"
+
+  .standards/REUSE.baseline.toml:
+    score: 1
+    reason: "Baseline is auto-updated by cruft"
+    in_standards: false
+    notes: "Source file for REUSE.toml baseline"
+
+  # ===================
+  # Tool Configuration
+  # ===================
+  .coderabbit.yaml:
+    score: 2
+    reason: "Review config usually standard"
+    in_standards: false
+    notes: ""
+
+  .markdownlint.json:
+    score: 1
+    reason: "Lint config rarely changed"
+    in_standards: false
+    notes: ""
+
+  .prettierrc:
+    score: 1
+    reason: "Format config rarely changed"
+    in_standards: false
+    notes: ""
+
+  .qlty/qlty.toml:
+    score: 2
+    reason: "Qlty config may have custom rules"
+    in_standards: false
+    notes: ""
+
+  .semgrep.yml:
+    score: 2
+    reason: "Semgrep rules may be customized"
+    in_standards: false
+    notes: ""
+
+  .shellcheckrc:
+    score: 1
+    reason: "Shell check config standard"
+    in_standards: false
+    notes: ""
+
+  .yamllint:
+    score: 1
+    reason: "YAML lint config standard"
+    in_standards: false
+    notes: ""
+
+  .mutmut_config:
+    score: 1
+    reason: "Mutation testing config standard"
+    in_standards: false
+    notes: ""
+
+  osv-scanner.toml:
+    score: 1
+    reason: "OSV scanner config standard"
+    in_standards: false
+    notes: ""
+
+  noxfile.py:
+    score: 2
+    reason: "Nox sessions may be customized"
+    in_standards: false
+    notes: ""
+
+  # ===================
+  # Misc Files
+  # ===================
+  .cruft.json:
+    score: 1
+    reason: "Cruft config auto-managed"
+    in_standards: false
+    notes: "Never manually edit"
+
+  uv.lock:
+    score: 1
+    reason: "Lock file auto-generated"
+    in_standards: false
+    notes: "Never manually edit"
+
+  CONFIG_TEMPLATES_SUMMARY.md:
+    score: 1
+    reason: "Template summary doc"
+    in_standards: false
+    notes: ""
+
+  scripts/*.py:
+    score: 2
+    reason: "Scripts usually standard"
+    in_standards: false
+    notes: ""
+
+  scripts/*.sh:
+    score: 2
+    reason: "Shell scripts usually standard"
+    in_standards: false
+    notes: ""
+
+  tools/*.py:
+    score: 2
+    reason: "Tools usually standard"
+    in_standards: false
+    notes: ""
+
+  LICENSES/*.txt:
+    score: 1
+    reason: "License text files standard"
+    in_standards: false
+    notes: ""
+
+# ===================
+# Feedback Log
+# ===================
+# Track score changes based on project feedback here:
+#
+# Format:
+#   - date: YYYY-MM-DD
+#     file: filename
+#     old_score: N
+#     new_score: N
+#     source: "Project name or PR reference"
+#     reason: "Why score changed"
+#
+feedback_log: []
+
+# ===================
+# Cruft Skip List
+# ===================
+# Files that should ALWAYS be skipped during cruft update
+# (Score 5 or designated as project-specific)
+cruft_skip_list:
+  - CLAUDE.md
+  - REUSE.toml
+  - docs/template_feedback.md
+  - README.md
+  - CHANGELOG.md
+  - src/**
+  - tests/**
+  - docs/ADRs/**
+  - docs/planning/**
+  - .github/CODEOWNERS
+
+# ===================
+# Standards Candidates
+# ===================
+# Files with score 3-4 that might benefit from .standards/ system
+# Monitor these for consistent feedback
+standards_candidates:
+  - file: pyproject.toml
+    score: 4
+    barrier: "Complex multi-section file"
+    notes: "May need section-based merge approach"
+
+  - file: .env.example
+    score: 4
+    barrier: "Simple format, low complexity"
+    notes: "Consider for next iteration"
+
+  - file: mkdocs.yml
+    score: 4
+    barrier: "Navigation is highly project-specific"
+    notes: "May need nav-only baseline"
+
+  - file: .pre-commit-config.yaml
+    score: 3
+    barrier: "Version pinning complicates baseline"
+    notes: "Monitor feedback"
