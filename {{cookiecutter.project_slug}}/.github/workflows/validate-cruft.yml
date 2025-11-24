@@ -61,7 +61,7 @@ jobs:
             echo "  cruft update # Apply changes"
             echo ""
             # Don't fail on scheduled runs or manual triggers (just warn)
-            if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            {% raw %}if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then{% endraw %}
               echo "Creating an issue to track this..."
               exit 0
             else
