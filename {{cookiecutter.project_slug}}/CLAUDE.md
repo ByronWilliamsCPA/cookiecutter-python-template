@@ -1,25 +1,13 @@
 # Claude Code Project Guidelines
 
-> **Standard Guidelines**: See [.claude/standard/claude.md](.claude/standard/claude.md) for:
-> - Universal development standards and best practices
-> - Response-Aware Development (RAD) system and assumption tagging
-> - Agent assignment patterns and workflow
-> - Security requirements and pre-commit checks
-> - Git workflow and commit conventions
+> **Baseline Standards**: [.claude/standard/claude.md](.claude/standard/claude.md)
+> *(Universal development standards from ByronWilliamsCPA/.claude repo)*
 >
-> **User Settings**: Global Claude configuration at `~/.claude/CLAUDE.md` (user-level)
+> **User Settings**: `~/.claude/CLAUDE.md` *(global user-level configuration)*
 >
-> This file contains **project-specific** configurations that extend the standard guidelines.
+> This file contains **project-specific** configurations that extend the baseline standards.
 
 ---
-
-## Project Overview
-
-**Name**: {{cookiecutter.project_name}}
-**Description**: {{cookiecutter.project_short_description}}
-**Author**: {{cookiecutter.author_name}} <{{cookiecutter.author_email}}>
-**Repository**: {{cookiecutter.repo_url}}
-**Created**: __PROJECT_CREATION_DATE__
 
 ## Template Feedback Requirement (CRITICAL)
 
@@ -35,6 +23,60 @@ This project was generated from the [cookiecutter-python-template](https://githu
    - **Priority**: Critical / High / Medium / Low
 
 This feedback will be shared with the template team to improve the cookiecutter template for future projects.
+
+---
+
+## Project-Specific Configuration
+
+### Project Overview
+
+**Name**: {{cookiecutter.project_name}}
+**Description**: {{cookiecutter.project_short_description}}
+**Author**: {{cookiecutter.author_name}} <{{cookiecutter.author_email}}>
+**Repository**: {{cookiecutter.repo_url}}
+**Created**: __PROJECT_CREATION_DATE__
+
+### Technology Stack
+
+- **Python**: {{cookiecutter.python_version}}
+- **Package Manager**: UV
+- **Code Quality**: Ruff (linter/formatter), BasedPyright (type checker)
+- **Testing**: pytest, coverage
+- **Security**: Bandit, Safety
+{% if cookiecutter.include_cli == "yes" -%}
+- **CLI Framework**: Click
+{% endif -%}
+{% if cookiecutter.use_mkdocs == "yes" -%}
+- **Documentation**: MkDocs Material
+{% endif -%}
+{% if cookiecutter.include_docker == "yes" -%}
+- **Containerization**: Docker
+{% endif -%}
+
+### Project Requirements
+
+**Coverage & Quality**:
+
+- Test coverage: Minimum {{cookiecutter.code_coverage_target}}%
+- All linters must pass: `uv run ruff check .`, `uv run basedpyright src/`
+- Security scans: `uv run bandit -r src`, `uv run safety check`
+
+{% if cookiecutter.use_decimal_precision == "yes" -%}
+**Financial Calculations** (CRITICAL):
+
+- Always use `Decimal` for money (never `float`)
+- See `src/{{cookiecutter.project_slug}}/utils/financial.py` for utilities
+- Example:
+
+  ```python
+  from decimal import Decimal
+
+  price = Decimal('19.99')
+  quantity = Decimal('3')
+  total = price * quantity  # Decimal('59.97')
+  ```
+
+{% endif -%}
 
 ---
 
@@ -68,6 +110,8 @@ git checkout -b fix/{issue-or-description}
 
 **Note**: The primary branch is `main` (not `master`).
 
+---
+
 ## Security-First Development (CRITICAL)
 
 Claude MUST adopt a security-first approach in all development:
@@ -75,6 +119,7 @@ Claude MUST adopt a security-first approach in all development:
 ### 1. Proactive Security Suggestions
 
 When working on this project, always suggest appropriate security measures:
+
 - **Dependencies**: Suggest vulnerability scanning (`safety check`, `pip-audit`)
 - **APIs**: Suggest authentication, rate limiting, input validation
 - **Data**: Suggest encryption at rest and in transit, access controls
@@ -100,11 +145,14 @@ When working on this project, always suggest appropriate security measures:
 - Type checking: strict mode (already configured)
 - Linting: no ignored rules without documented reason
 
+---
+
 ## Project Planning Documents
 
 > **First-Time Setup**: If planning documents show "Awaiting Generation", see the [Project Setup Guide](docs/PROJECT_SETUP.md#project-planning-with-claude-code).
 
 **Planning Documents** (in `docs/planning/`):
+
 - [project-vision.md](docs/planning/project-vision.md) - Problem, solution, scope, success metrics
 - [tech-spec.md](docs/planning/tech-spec.md) - Architecture, data model, APIs, security
 - [roadmap.md](docs/planning/roadmap.md) - Phased implementation plan
@@ -112,6 +160,7 @@ When working on this project, always suggest appropriate security measures:
 - [PROJECT-PLAN.md](docs/planning/PROJECT-PLAN.md) - Synthesized plan with git branches (after synthesis)
 
 **References**:
+
 - **Complete Workflow**: [Project Setup Guide](docs/PROJECT_SETUP.md#project-planning-with-claude-code)
 - **Skill Reference**: `.claude/skills/project-planning/`
 
@@ -144,45 +193,7 @@ Review this code against tech-spec.md section 6 (security).
 Review PROJECT-PLAN.md Phase 1 deliverables and update status.
 ```
 
-## Technology Stack
-
-- **Python**: {{cookiecutter.python_version}}
-- **Package Manager**: UV
-- **Code Quality**: Ruff (linter/formatter), BasedPyright (type checker)
-- **Testing**: pytest, coverage
-- **Security**: Bandit, Safety
-{% if cookiecutter.include_cli == "yes" -%}
-- **CLI Framework**: Click
-{% endif -%}
-{% if cookiecutter.use_mkdocs == "yes" -%}
-- **Documentation**: MkDocs Material
-{% endif -%}
-{% if cookiecutter.include_docker == "yes" -%}
-- **Containerization**: Docker
-{% endif -%}
-
-## Project-Specific Requirements
-
-> **Standard Requirements**: See [.claude/standard/claude.md](.claude/standard/claude.md) for universal standards
-
-**Coverage & Quality**:
-- Test coverage: Minimum {{cookiecutter.code_coverage_target}}%
-- All linters must pass: `uv run ruff check .`, `uv run basedpyright src/`
-- Security scans: `uv run bandit -r src`, `uv run safety check`
-
-{% if cookiecutter.use_decimal_precision == "yes" -%}
-**Financial Calculations** (CRITICAL):
-- Always use `Decimal` for money (never `float`)
-- See `src/{{cookiecutter.project_slug}}/utils/financial.py` for utilities
-- Example:
-  ```python
-  from decimal import Decimal
-
-  price = Decimal('19.99')
-  quantity = Decimal('3')
-  total = price * quantity  # Decimal('59.97')
-  ```
-{% endif -%}
+---
 
 ## Quick Start Commands
 
@@ -218,6 +229,8 @@ docker build -t {{cookiecutter.project_slug}} .  # Build production image
 {% endif -%}
 ```
 
+---
+
 ## Project Structure
 
 ```text
@@ -249,16 +262,20 @@ docs/                       # MkDocs documentation
 {% endif -%}
 ```
 
+---
+
 ## Code Conventions
 
 > **Standard Conventions**: See [.claude/standard/claude.md](.claude/standard/claude.md) for universal naming and style guidelines
 
 **Project-Specific Patterns**:
+
 - Configuration: Use Pydantic Settings with `.env` files
 - Logging: Structured logging via `src/{{cookiecutter.project_slug}}/utils/logging.py`
 - Error Handling: Custom exceptions in `src/{{cookiecutter.project_slug}}/core/exceptions.py`
 
 **Docstrings** (Google Style):
+
 ```python
 def process_data(input_path: str, max_rows: int = 1000) -> dict[str, Any]:
     """Process data from input file.
@@ -275,6 +292,8 @@ def process_data(input_path: str, max_rows: int = 1000) -> dict[str, Any]:
         ValueError: If file format is invalid
     """
 ```
+
+---
 
 ## Configuration Management
 
@@ -296,11 +315,14 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
+---
+
 ## Git Worktree Workflow
 
 > **Full Documentation**: See `~/.claude/CLAUDE.md` for complete worktree concepts, commands, and best practices.
 
 **Project-Specific Paths**:
+
 ```bash
 # Worktree directory for this project
 ../{{cookiecutter.project_slug}}-worktrees/
@@ -314,29 +336,37 @@ git worktree remove ../{{cookiecutter.project_slug}}-worktrees/feature-name
 
 **Remember**: Each worktree needs `uv sync --all-extras` after creation (worktrees share git but not virtualenvs).
 
+---
+
 ## Common Tasks
 
 ### Add Dependency
+
 ```bash
 uv add package-name              # Production
 uv add --dev package-name        # Development
 ```
 
 ### Update Dependencies
+
 ```bash
 uv sync --upgrade                        # All packages
 uv sync --upgrade-package package-name   # Specific package
 ```
 
 ### Run Specific Test
+
 ```bash
 uv run pytest tests/unit/test_example.py::test_function_name -v
 ```
+
+---
 
 ## CI/CD Pipeline
 
 {% if cookiecutter.include_github_actions == "yes" -%}
 **GitHub Actions Workflows**:
+
 1. **CI** (`.github/workflows/ci.yml`): Tests, linting, type checking
 2. **Security** (`.github/workflows/security-analysis.yml`): CodeQL, Bandit, Safety
 {% if cookiecutter.use_mkdocs == "yes" -%}
@@ -345,14 +375,18 @@ uv run pytest tests/unit/test_example.py::test_function_name -v
 4. **Publish** (`.github/workflows/publish-pypi.yml`): PyPI release automation
 
 **Quality Gates** (must pass):
-- ✅ All tests pass ({{cookiecutter.code_coverage_target}}% coverage)
-- ✅ Ruff linting (no errors)
-- ✅ BasedPyright type checking
-- ✅ Security scans (no high/critical)
-- ✅ Pre-commit hooks
+
+- All tests pass ({{cookiecutter.code_coverage_target}}% coverage)
+- Ruff linting (no errors)
+- BasedPyright type checking
+- Security scans (no high/critical)
+- Pre-commit hooks
 {% endif -%}
 
 {% if cookiecutter.include_coderabbit == "yes" or cookiecutter.include_linear == "yes" -%}
+
+---
+
 ## Third-Party Integrations
 
 {% if cookiecutter.include_coderabbit == "yes" -%}
@@ -363,12 +397,14 @@ CodeRabbit provides automated AI-powered code reviews on every pull request.
 **Configuration**: `.coderabbit.yaml`
 
 **Features**:
+
 - Automatic review on PR creation
 - Security vulnerability detection
 - Code quality suggestions
 - Path-specific review instructions
 
 **Commands**:
+
 ```bash
 # In PR comments:
 @coderabbitai summary      # Get high-level summary
@@ -385,13 +421,15 @@ CodeRabbit provides automated AI-powered code reviews on every pull request.
 Linear integration syncs issues between GitHub and Linear for streamlined project management.
 
 **PR Linking** (in PR description or commits):
-```
+
+```text
 Closes {{ cookiecutter.linear_team_key }}-123    # Closes issue when PR merges
 Fixes {{ cookiecutter.linear_team_key }}-456     # Same as closes
 Refs {{ cookiecutter.linear_team_key }}-789      # References without closing
 ```
 
 **Workflow**:
+
 1. Create issue in Linear
 2. Create branch from Linear (auto-named)
 3. Reference issue in commits/PR
@@ -401,9 +439,13 @@ Refs {{ cookiecutter.linear_team_key }}-789      # References without closing
 
 {% endif -%}
 {% endif -%}
+
+---
+
 ## Troubleshooting
 
 ### Pre-commit Hooks Failing
+
 ```bash
 pre-commit run --all-files           # Run manually
 pre-commit clean                     # Clean cache
@@ -411,16 +453,20 @@ pre-commit install --install-hooks   # Reinstall
 ```
 
 ### UV Lock Issues
+
 ```bash
 uv lock                          # Regenerate lock
 uv sync --all-extras             # Reinstall dependencies (includes dev tools)
 ```
 
 ### BasedPyright Type Errors
+
 ```bash
 uv run basedpyright src/  # Show type errors
 # Add `# pyright: ignore[error-code]` for specific issues
 ```
+
+---
 
 ## Performance Targets
 
@@ -430,14 +476,54 @@ uv run basedpyright src/  # Show type errors
 | CI Pipeline | <5min | All checks |
 | Code Coverage | {{cookiecutter.code_coverage_target}}% | Enforced in CI |
 
+---
+
+## Cruft Template Updates
+
+This project was created from a cookiecutter template using cruft. When updating from the template:
+
+### Safe Update Commands
+
+```bash
+# Check for available updates (dry run)
+cruft check
+
+# Update with protection for project-specific files
+cruft update --skip CLAUDE.md --skip docs/template_feedback.md
+
+# Or interactively review changes
+cruft diff
+cruft update
+```
+
+### Files to Preserve During Updates
+
+These files contain project-specific content that should NOT be overwritten:
+
+- `CLAUDE.md` - This file (contains project-specific sections)
+- `docs/template_feedback.md` - Project-specific template feedback
+- `docs/planning/*` - Project planning documents
+- `.env` - Environment configuration
+
+### Files Safe to Update
+
+These files contain baseline content that can be safely updated:
+
+- `.claude/standard/claude.md` - Baseline development standards
+- `.github/workflows/*` - CI/CD workflows (unless customized)
+- `pyproject.toml` - Dependencies and tool configuration (merge carefully)
+
+---
+
 ## Additional Resources
 
+- **Baseline Standards**: [.claude/standard/claude.md](.claude/standard/claude.md)
 - **Project README**: [README.md](README.md)
 - **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **Security Policy**: [SECURITY.md](SECURITY.md)
-- **Standard Claude Guidelines**: [.claude/standard/claude.md](.claude/standard/claude.md)
-- **UV Documentation**: https://docs.astral.sh/uv/
-- **Ruff Documentation**: https://docs.astral.sh/ruff/
+- **Template Feedback**: [docs/template_feedback.md](docs/template_feedback.md)
+- **UV Documentation**: <https://docs.astral.sh/uv/>
+- **Ruff Documentation**: <https://docs.astral.sh/ruff/>
 
 ---
 
