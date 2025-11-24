@@ -21,6 +21,23 @@
 **Repository**: {{cookiecutter.repo_url}}
 **Created**: __PROJECT_CREATION_DATE__
 
+## Template Feedback Requirement (CRITICAL)
+
+This project was generated from the [cookiecutter-python-template](https://github.com/ByronWilliamsCPA/cookiecutter-python-template) using cruft.
+
+**MANDATORY**: When working on this project, if you identify any issue that should have been addressed in the template (missing files, incorrect configurations, documentation gaps, tooling issues, etc.), you MUST:
+
+1. Add the feedback to [docs/template_feedback.md](docs/template_feedback.md)
+2. Include:
+   - **Issue**: Clear description of what's wrong or missing
+   - **Context**: How you discovered it
+   - **Suggested Fix**: What the template should do differently
+   - **Priority**: Critical / High / Medium / Low
+
+This feedback will be shared with the template team to improve the cookiecutter template for future projects.
+
+---
+
 ## Branch Workflow Requirement (CRITICAL)
 
 **NEVER work directly on the `main` branch.** Always create a feature branch before making any code changes.
