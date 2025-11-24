@@ -661,51 +661,73 @@ uv run basedpyright src/  # Show type errors
 
 ## Cruft Template Updates
 
-This project was created from a cookiecutter template using cruft.
+This project uses a **two-part standards system** for safe template updates.
 
-### CRITICAL: Always Skip CLAUDE.md
+### How It Works
 
-**Cruft cannot partially update files.** Since this CLAUDE.md contains both baseline standards AND project-specific customizations, you MUST skip it during updates:
-
-```bash
-# ALWAYS use --skip CLAUDE.md to preserve your customizations
-cruft update --skip CLAUDE.md --skip docs/template_feedback.md
+```
+┌─────────────────┐     cruft update     ┌──────────────────┐
+│   Template      │ ──────────────────► │  .standards/     │
+│   Repository    │                      │  (baselines)     │
+└─────────────────┘                      └────────┬─────────┘
+                                                  │
+                                                  │ /merge-standards
+                                                  ▼
+                                         ┌──────────────────┐
+                                         │  Root files      │
+                                         │  (customized)    │
+                                         └──────────────────┘
 ```
 
-### Safe Update Commands
+1. **Baseline files** in `.standards/` are updated automatically by cruft
+2. **Root files** (`CLAUDE.md`, `REUSE.toml`) contain your customizations
+3. **Merge agent** helps integrate baseline changes into your files
+
+### Update Workflow
 
 ```bash
-# Check for available updates (dry run)
+# 1. Check for template updates
 cruft check
 
-# View what would change
+# 2. View what would change
 cruft diff
 
-# Update with required skips (ALWAYS use this pattern)
-cruft update --skip CLAUDE.md --skip docs/template_feedback.md
+# 3. Update (baselines in .standards/ will be updated automatically)
+cruft update --skip CLAUDE.md --skip REUSE.toml --skip docs/template_feedback.md
 
-# If baseline standards changed in template, manually review and merge:
-# 1. Generate a fresh project to see new baseline
-# 2. Compare the "BASELINE DEVELOPMENT STANDARDS" section
-# 3. Manually merge any improvements into your CLAUDE.md
+# 4. Check if baselines changed
+git diff .standards/
+
+# 5. If baselines changed, merge them into your root files
+/merge-standards
+# Or ask Claude: "Merge the updated baseline standards"
 ```
 
 ### Files to ALWAYS Skip
 
-These files contain project-specific content that **will be lost** if not skipped:
+These contain project-specific customizations:
 
-- `CLAUDE.md` - **ALWAYS SKIP** - Contains project customizations
+- `CLAUDE.md` - Your project guidelines (merge from `.standards/CLAUDE.baseline.md`)
+- `REUSE.toml` - Your licensing annotations (merge from `.standards/REUSE.baseline.toml`)
 - `docs/template_feedback.md` - Project-specific template feedback
 - `docs/planning/*` - Project planning documents
 - `.env` - Environment configuration
 
-### Files Safe to Auto-Update
+### Files Auto-Updated by Cruft
 
-These can be updated automatically (not in skip list):
+- `.standards/*` - Baseline files (merge into root files after update)
+- `.github/workflows/*` - CI/CD workflows
+- `pyproject.toml` - Review changes, may need manual merge
+- Tool configs - Usually safe to update
 
-- `.github/workflows/*` - CI/CD workflows (unless heavily customized)
-- `pyproject.toml` - Review changes, may need manual merge for custom deps
-- Tool configs (`.ruff.toml`, etc.) - Usually safe to update
+### Baseline Files Reference
+
+| Baseline | Merges Into | Purpose |
+|----------|-------------|---------|
+| `.standards/CLAUDE.baseline.md` | `CLAUDE.md` | Development standards |
+| `.standards/REUSE.baseline.toml` | `REUSE.toml` | SPDX licensing |
+
+See `.standards/README.md` for detailed merge instructions.
 
 ---
 
