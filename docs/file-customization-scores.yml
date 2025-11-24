@@ -43,8 +43,9 @@ files:
   README.md:
     score: 5
     reason: "Project description, features, and usage are unique"
-    in_standards: false
-    notes: "Consider adding README.baseline.md in future"
+    in_standards: true
+    baseline_file: ".standards/README.baseline.md"
+    notes: "Badges and standard sections provided in baseline"
 
   pyproject.toml:
     score: 4
@@ -76,8 +77,9 @@ files:
   .env.example:
     score: 4
     reason: "Projects add their own environment variables"
-    in_standards: false
-    notes: "Consider .env.baseline.example"
+    in_standards: true
+    baseline_file: ".standards/env.example.baseline"
+    notes: "Standard env vars provided in baseline"
 
   .gitignore:
     score: 3
@@ -175,8 +177,9 @@ files:
   docs/template_feedback.md:
     score: 5
     reason: "Project accumulates feedback - never overwrite"
-    in_standards: false
-    notes: "Added to cruft skip list"
+    in_standards: true
+    baseline_file: ".standards/template_feedback.baseline.md"
+    notes: "Format/instructions in baseline, content preserved"
 
   docs/_data/tags.yml:
     score: 3
@@ -566,11 +569,6 @@ standards_candidates:
     barrier: "Complex multi-section file"
     notes: "May need section-based merge approach"
 
-  - file: .env.example
-    score: 4
-    barrier: "Simple format, low complexity"
-    notes: "Consider for next iteration"
-
   - file: mkdocs.yml
     score: 4
     barrier: "Navigation is highly project-specific"
@@ -580,3 +578,30 @@ standards_candidates:
     score: 3
     barrier: "Version pinning complicates baseline"
     notes: "Monitor feedback"
+
+# ===================
+# Files with Baselines (Implemented)
+# ===================
+files_with_baselines:
+  - file: CLAUDE.md
+    baseline: ".standards/CLAUDE.baseline.md"
+    implemented: "2024-11-24"
+
+  - file: REUSE.toml
+    baseline: ".standards/REUSE.baseline.toml"
+    implemented: "2024-11-24"
+
+  - file: README.md
+    baseline: ".standards/README.baseline.md"
+    implemented: "2024-11-24"
+    notes: "Badges and standard sections"
+
+  - file: docs/template_feedback.md
+    baseline: ".standards/template_feedback.baseline.md"
+    implemented: "2024-11-24"
+    notes: "Format and submission instructions"
+
+  - file: .env.example
+    baseline: ".standards/env.example.baseline"
+    implemented: "2024-11-24"
+    notes: "Standard environment variables"

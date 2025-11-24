@@ -12,10 +12,13 @@ This agent helps merge updated baseline standards from `.standards/` into the pr
 
 ## Files to Merge
 
-| Baseline (auto-updated) | Target (project-customized) |
-|------------------------|----------------------------|
-| `.standards/CLAUDE.baseline.md` | `CLAUDE.md` |
-| `.standards/REUSE.baseline.toml` | `REUSE.toml` |
+| Baseline (auto-updated) | Target (project-customized) | Merge Type |
+|------------------------|----------------------------|------------|
+| `.standards/CLAUDE.baseline.md` | `CLAUDE.md` | Section-based |
+| `.standards/REUSE.baseline.toml` | `REUSE.toml` | Annotation-based |
+| `.standards/README.baseline.md` | `README.md` | Badge + section copy |
+| `.standards/template_feedback.baseline.md` | `docs/template_feedback.md` | Format only |
+| `.standards/env.example.baseline` | `.env.example` | Variable addition |
 
 ## Merge Strategy
 
@@ -35,6 +38,27 @@ This agent helps merge updated baseline standards from `.standards/` into the pr
 2. **Update baseline annotations** from `.standards/REUSE.baseline.toml`
 3. **Preserve project-specific annotations** added by the user
 4. **Add any new baseline paths** that don't exist
+
+### For README.md
+
+1. **Copy updated badge markdown** from baseline Badge Section
+2. **Compare standard sections** (Prerequisites, Code Quality, PyStrict Rules)
+3. **Update standard sections** if template has improvements
+4. **PRESERVE all project content**: Overview, Features, custom sections
+
+### For docs/template_feedback.md
+
+1. **Update format instructions** from baseline
+2. **Update category definitions** if new categories added
+3. **Update submission instructions** if URLs changed
+4. **PRESERVE all actual feedback items** - NEVER remove user content
+
+### For .env.example
+
+1. **Add any NEW variables** from baseline that don't exist
+2. **Update comments/documentation** for existing variables
+3. **PRESERVE all project-specific variables** added by user
+4. **PRESERVE any custom values** that differ from baseline defaults
 
 ## Merge Process
 

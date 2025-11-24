@@ -14,6 +14,9 @@ This directory contains **baseline versions** of files that require project-spec
 |---------------|-----------|---------|
 | `CLAUDE.baseline.md` | `CLAUDE.md` | Development standards and guidelines |
 | `REUSE.baseline.toml` | `REUSE.toml` | SPDX licensing annotations |
+| `README.baseline.md` | `README.md` | Badge templates and standard sections |
+| `template_feedback.baseline.md` | `docs/template_feedback.md` | Feedback format and submission instructions |
+| `env.example.baseline` | `.env.example` | Standard environment variables |
 
 ## Merging Updates
 
