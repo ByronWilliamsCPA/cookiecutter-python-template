@@ -9,8 +9,6 @@ tags:
   - contributing
 ---
 
-# Contributing
-
 Thank you for your interest in contributing to {{ cookiecutter.project_name }}!
 
 ## Getting Started

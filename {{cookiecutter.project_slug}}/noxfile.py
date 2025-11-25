@@ -19,7 +19,7 @@ Code Quality Sessions:
     nox -s docstrings      # Check docstring coverage
 
 Documentation Sessions:
-    nox -s fm              # Validate and autofix front matter
+    nox -s frontmatter     # Validate and autofix front matter
     nox -s docs            # Build documentation
     nox -s serve           # Serve documentation locally
     nox -s validate        # Run all documentation validation checks
@@ -49,7 +49,7 @@ nox.options.default_venv_backend = "uv"
 
 
 @nox.session(python="{{cookiecutter.python_version}}")
-def fm(session: nox.Session) -> None:
+def frontmatter(session: nox.Session) -> None:
     """Validate and autofix front matter in documentation.
 
     This session installs the required dependencies and runs the front matter

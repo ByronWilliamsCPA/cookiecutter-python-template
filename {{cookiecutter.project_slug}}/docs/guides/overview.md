@@ -9,8 +9,6 @@ tags:
   - overview
 ---
 
-# Overview
-
 {{ cookiecutter.project_short_description }}
 
 ## Key Features

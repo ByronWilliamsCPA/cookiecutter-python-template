@@ -1,4 +1,13 @@
-# Template Feedback
+---
+title: "Template Feedback"
+schema_type: common
+status: published
+owner: core-maintainer
+purpose: "Document template issues for upstream fixes."
+tags:
+  - feedback
+  - template
+---
 
 > **Purpose**: Document issues discovered in this project that should be addressed in the [cookiecutter-python-template](https://github.com/ByronWilliamsCPA/cookiecutter-python-template).
 >

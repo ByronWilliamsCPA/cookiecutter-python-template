@@ -4,6 +4,12 @@ Provides JSON-formatted logs for production environments with rich console
 output for development. All logs include contextual information for debugging
 and monitoring.
 
+Features:
+- Rich console output for development
+- JSON-formatted logs for production
+- Correlation ID support for distributed tracing
+- Performance logging helpers
+
 Note: Module named "logging" intentionally shadows stdlib for project-specific
 configuration.
 """
@@ -29,6 +35,7 @@ def setup_logging(
     level: str = "INFO",
     json_logs: bool = False,
     include_timestamp: bool = True,
+    include_correlation: bool = True,
 ) -> None:
     """Configure structured logging for the application.
 
@@ -42,13 +49,15 @@ def setup_logging(
             use rich console formatting (development mode). Defaults to False.
         include_timestamp: Whether to include timestamps in log output.
             Defaults to True.
+        include_correlation: Whether to include correlation IDs from request
+            context in log output. Defaults to True. Requires API framework.
 
     Example:
         >>> # Development setup
         >>> setup_logging(level="DEBUG", json_logs=False)
 
-        >>> # Production setup
-        >>> setup_logging(level="INFO", json_logs=True, include_timestamp=True)
+        >>> # Production setup with correlation
+        >>> setup_logging(level="INFO", json_logs=True, include_correlation=True)
     """
     log_level = getattr(logging, level.upper(), logging.INFO)
 
@@ -86,12 +95,29 @@ def setup_logging(
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.TimeStamper(fmt="iso") if include_timestamp else noop_processor,
+        (
+            structlog.processors.TimeStamper(fmt="iso")
+            if include_timestamp
+            else noop_processor
+        ),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
     ]
 
+{% if cookiecutter.include_api_framework == "yes" %}
+    # Add correlation ID processor for request tracing
+    if include_correlation:
+        try:
+            from {{ cookiecutter.project_slug }}.middleware.correlation import (
+                correlation_context_processor,
+            )
+            # Insert after add_log_level for consistent ordering
+            processors.insert(3, correlation_context_processor)
+        except ImportError:
+            # Correlation middleware not available, skip
+            pass
+{% endif %}
     if json_logs:
         # Production: JSON logs for easy parsing and aggregation
         processors.append(structlog.processors.JSONRenderer())
@@ -132,7 +158,9 @@ def get_logger(name: str) -> BoundLogger:
     """
     # Cast to BoundLogger for type checking - structlog.get_logger returns
     # a BoundLogger when configured with stdlib LoggerFactory
-    result: BoundLogger = structlog.get_logger(name)  # pyright: ignore[reportAssignmentType]
+    result: BoundLogger = structlog.get_logger(
+        name
+    )  # pyright: ignore[reportAssignmentType]
     return result
 
 

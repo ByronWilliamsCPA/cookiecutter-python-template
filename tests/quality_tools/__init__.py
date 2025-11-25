@@ -1,0 +1,1 @@
+"""Quality tool integration tests."""

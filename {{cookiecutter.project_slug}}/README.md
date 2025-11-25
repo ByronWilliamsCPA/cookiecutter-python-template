@@ -557,6 +557,58 @@ See migration guide in docs/migration/v2.0.0.md"
 
 **Configuration:** See `[tool.semantic_release]` in `pyproject.toml` for settings.
 
+## Template Maintenance
+
+This project was generated from a cookiecutter template and is managed with cruft.
+
+### Updating from Template
+
+To sync with the latest template changes:
+
+```bash
+# Preview changes first
+cruft diff
+
+# Apply updates (recommended: use the wrapper script)
+./scripts/cruft-update.sh
+
+# Or use cruft directly (requires manual cleanup)
+cruft update
+python scripts/cleanup_conditional_files.py
+```
+
+### Important: Cruft Update Limitations
+
+**Cruft only syncs file contents** - it does NOT re-run post-generation hooks that clean up conditional files.
+
+When you change feature flags in `.cruft.json` (e.g., disabling `include_api_framework`), the corresponding files are NOT automatically removed. You must run the cleanup script:
+
+```bash
+# Check for orphaned files
+python scripts/check_orphaned_files.py
+
+# Remove orphaned files
+python scripts/cleanup_conditional_files.py
+
+# Or preview what would be removed
+python scripts/cleanup_conditional_files.py --dry-run
+```
+
+### Conditional Files
+
+Files that may need cleanup when features are disabled:
+
+| Feature | Files to Remove |
+|---------|-----------------|
+| `include_api_framework: no` | `src/*/api/`, `src/*/middleware/` |
+| `include_sentry: no` | `src/*/core/sentry.py` |
+| `include_background_jobs: no` | `src/*/jobs/` |
+| `include_caching: no` | `src/*/core/cache.py` |
+| `include_docker: no` | `Dockerfile`, `docker-compose*.yml` |
+| `use_mkdocs: no` | `mkdocs.yml`, `docs/` |
+
+The CI pipeline includes automated checks for orphaned files to prevent this issue.
+
 ## License
 
 {{cookiecutter.license}} License - see [LICENSE](LICENSE) for details.

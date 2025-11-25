@@ -424,13 +424,21 @@ src/{{cookiecutter.project_slug}}/
 {% endif -%}
 ├── core/                    # Core business logic
 │   ├── __init__.py
-│   └── config.py           # Configuration (Pydantic Settings)
+│   ├── config.py           # Configuration (Pydantic Settings)
+│   └── exceptions.py       # Centralized exception hierarchy
+{% if cookiecutter.include_api_framework == "yes" -%}
+├── middleware/              # Middleware components
+│   ├── __init__.py
+│   ├── security.py         # Security middleware (OWASP)
+│   └── correlation.py      # Request correlation/tracing
+{% else -%}
 ├── middleware/              # Middleware components
 │   └── __init__.py
+{% endif -%}
 └── utils/                   # Utilities
     ├── __init__.py
     ├── financial.py        # Financial utilities (Decimal precision)
-    └── logging.py          # Structured logging
+    └── logging.py          # Structured logging with correlation
 
 tests/
 ├── unit/                   # Unit tests
@@ -454,7 +462,140 @@ docs/                       # MkDocs documentation
 - Configuration: Use Pydantic Settings with `.env` files
 - Logging: Structured logging via `src/{{cookiecutter.project_slug}}/utils/logging.py`
 - Error Handling: Custom exceptions in `src/{{cookiecutter.project_slug}}/core/exceptions.py`
+{% if cookiecutter.include_api_framework == "yes" -%}
+- Correlation: Request tracing via `src/{{cookiecutter.project_slug}}/middleware/correlation.py`
+{% endif -%}
 
+### Exception Hierarchy
+
+Use the centralized exception hierarchy for consistent error handling:
+
+```python
+from {{ cookiecutter.project_slug }}.core.exceptions import (
+    ValidationError,
+    ResourceNotFoundError,
+    ConfigurationError,
+    AuthenticationError,
+    AuthorizationError,
+    ExternalServiceError,
+    APIError,
+    DatabaseError,
+    BusinessLogicError,
+)
+
+# Raise with context
+raise ValidationError(
+    "Invalid email format",
+    field="email",
+    value=user_input,
+)
+
+# Handle in API endpoints
+try:
+    process_data(input_data)
+except ValidationError as e:
+    return {"error": str(e), "details": e.to_dict()}
+```
+
+**Exception Types**:
+
+| Exception | Use Case |
+|-----------|----------|
+| `ConfigurationError` | Missing/invalid config |
+| `ValidationError` | Input validation failures |
+| `ResourceNotFoundError` | Missing resources (404) |
+| `AuthenticationError` | Auth failures (401) |
+| `AuthorizationError` | Permission denied (403) |
+| `ExternalServiceError` | Third-party service failures |
+| `APIError` | External API errors |
+| `DatabaseError` | Database operation errors |
+| `BusinessLogicError` | Domain rule violations |
+{% if cookiecutter.use_decimal_precision == "yes" -%}
+| `FinancialCalculationError` | Financial calculation errors |
+{% endif -%}
+
+{% if cookiecutter.include_api_framework == "yes" -%}
+### Correlation ID Patterns (Observability)
+
+Request correlation enables distributed tracing and log correlation:
+
+```python
+from fastapi import FastAPI
+from {{ cookiecutter.project_slug }}.middleware import (
+    CorrelationMiddleware,
+    get_correlation_id,
+    add_security_middleware,
+)
+
+app = FastAPI()
+
+# Add correlation middleware (should be added first)
+app.add_middleware(CorrelationMiddleware)
+
+# Add security middleware
+add_security_middleware(app)
+
+@app.get("/")
+async def root():
+    # Access correlation ID anywhere in request context
+    correlation_id = get_correlation_id()
+    return {"correlation_id": correlation_id}
+```
+
+**Supported Headers**:
+
+| Header | Purpose |
+|--------|---------|
+| `X-Correlation-ID` | Primary correlation header |
+| `X-Request-ID` | Unique request identifier |
+| `X-Trace-ID` | Distributed tracing ID |
+| `X-Span-ID` | Span ID for tracing |
+
+**Log Correlation**:
+
+Logs automatically include correlation IDs when logging is configured:
+
+```python
+from {{ cookiecutter.project_slug }}.utils.logging import setup_logging, get_logger
+
+# Enable correlation in logs
+setup_logging(level="INFO", json_logs=True, include_correlation=True)
+
+logger = get_logger(__name__)
+logger.info("Processing request")  # Includes correlation_id automatically
+```
+
+**Example JSON Log Output**:
+
+```json
+{
+  "event": "Processing request",
+  "logger": "my_module",
+  "level": "info",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "correlation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "request_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+}
+```
+
+**Background Jobs**:
+
+For background jobs without HTTP context, set correlation manually:
+
+```python
+from {{ cookiecutter.project_slug }}.middleware.correlation import (
+    set_correlation_id,
+    generate_correlation_id,
+)
+
+def process_background_job(job_id: str):
+    # Generate or use existing correlation ID
+    set_correlation_id(generate_correlation_id())
+    # All logs in this context will include the correlation ID
+    logger.info("Processing job", job_id=job_id)
+```
+
+{% endif -%}
 **Docstrings** (Google Style):
 
 ```python

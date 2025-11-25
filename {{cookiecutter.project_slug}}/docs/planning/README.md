@@ -11,8 +11,6 @@ component: Context
 source: "Project initialization"
 ---
 
-# Project Planning Documents
-
 This directory contains the essential planning documents for {{cookiecutter.project_name}}.
 
 ## Quick Start

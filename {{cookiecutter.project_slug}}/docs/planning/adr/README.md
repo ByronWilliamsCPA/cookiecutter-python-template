@@ -1,4 +1,14 @@
-# Architecture Decision Records
+---
+title: "Architecture Decision Records"
+schema_type: planning
+status: published
+owner: core-maintainer
+purpose: "Index and documentation for Architecture Decision Records."
+tags:
+  - planning
+  - architecture
+  - decisions
+---
 
 This directory contains Architecture Decision Records (ADRs) for {{ '{{cookiecutter.project_name}}' }}.
 

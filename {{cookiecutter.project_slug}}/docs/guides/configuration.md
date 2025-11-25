@@ -9,8 +9,6 @@ tags:
   - configuration
 ---
 
-# Configuration
-
 This guide covers all configuration options for {{ cookiecutter.project_name }}.
 
 ## Environment Variables
