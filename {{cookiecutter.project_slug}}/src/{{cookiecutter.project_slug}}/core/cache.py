@@ -142,7 +142,9 @@ def cached(
                 prefix = key_prefix or func.__name__
                 # Create unique key from function arguments
                 key_data = f"{args}:{sorted(kwargs.items())}"
-                key_hash = hashlib.md5(key_data.encode(), usedforsecurity=False).hexdigest()[:8]
+                key_hash = hashlib.md5(
+                    key_data.encode(), usedforsecurity=False
+                ).hexdigest()[:8]
                 cache_key = f"{prefix}:{key_hash}"
 
             try:
@@ -203,7 +205,9 @@ def cache_invalidate(key_pattern: str) -> Callable:
             try:
                 await invalidate_pattern(key_pattern)
             except RedisError as e:
-                logger.warning("cache_invalidation_failed", pattern=key_pattern, error=str(e))
+                logger.warning(
+                    "cache_invalidation_failed", pattern=key_pattern, error=str(e)
+                )
 
             return result
 

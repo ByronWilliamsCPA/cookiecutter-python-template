@@ -1,0 +1,17 @@
+{
+  "default_context": {
+    "project_name": "ML Project",
+    "project_slug": "ml_project",
+    "project_short_description": "An ML project test",
+    "author_name": "Test Author",
+    "author_email": "test@example.com",
+    "github_username": "testuser",
+    "version": "0.1.0",
+    "include_ml_dependencies": "yes",
+    "include_docker": "yes",
+    "include_nox": "yes",
+    "include_codecov": "yes",
+    "include_github_actions": "yes",
+    "use_pre_commit": "yes"
+  }
+}

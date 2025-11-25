@@ -86,7 +86,11 @@ def setup_logging(
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.TimeStamper(fmt="iso") if include_timestamp else noop_processor,
+        (
+            structlog.processors.TimeStamper(fmt="iso")
+            if include_timestamp
+            else noop_processor
+        ),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
@@ -132,7 +136,9 @@ def get_logger(name: str) -> BoundLogger:
     """
     # Cast to BoundLogger for type checking - structlog.get_logger returns
     # a BoundLogger when configured with stdlib LoggerFactory
-    result: BoundLogger = structlog.get_logger(name)  # pyright: ignore[reportAssignmentType]
+    result: BoundLogger = structlog.get_logger(
+        name
+    )  # pyright: ignore[reportAssignmentType]
     return result
 
 

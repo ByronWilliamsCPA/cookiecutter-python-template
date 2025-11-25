@@ -389,7 +389,7 @@ known-first-party = ["{{ cookiecutter.project_slug }}"]
 
 {% if cookiecutter.include_nox == "yes" -%}
 # Nox configuration
-"noxfile.py" = ["ANN", "D", "T20", "PLR", "INP", "PLC0415"]
+"noxfile.py" = ["ANN", "D", "T20", "PLR", "INP", "PLC0415", "ERA001", "SIM105"]
 {% endif -%}
 
 # Fuzz testing (Atheris harnesses have specific patterns)
@@ -407,6 +407,41 @@ known-first-party = ["{{ cookiecutter.project_slug }}"]
     "C901",   # Complexity allowed in utility scripts
     "ANN", "D", "TRY", "PLR",
     "INP",    # Not packages
+]
+
+# API health checks - Example code with template patterns
+"src/*/api/health.py" = [
+    "ERA001",  # Commented code shows implementation examples
+    "BLE001",  # Blind except in health checks for maximum resilience
+    "PLC0415", # Local imports to avoid circular dependencies
+]
+
+# Security middleware - SSRF protection with intentional patterns
+"src/*/middleware/security.py" = [
+    "S104",    # 0.0.0.0 in BLOCKED_HOSTS list is intentional
+    "BLE001",  # Blind except for URL parsing resilience
+    "PLC0415", # Local imports to avoid circular dependencies
+    "TRY300",  # Return in try block is clearer for simple cases
+    "ANN001",  # call_next typing is complex (Starlette middleware)
+    "RUF012",  # ClassVar not needed for constants
+    "C416",    # Dict comprehension is clearer than dict()
+    "SIM102",  # Nested if is more readable for security checks
+]
+
+# Financial utilities - Template documentation style
+"src/*/utils/financial.py" = [
+    "D200",    # Multi-line docstring for template documentation
+]
+
+# Logging utilities - Structlog processor interface
+"src/*/utils/logging.py" = [
+    "ARG001",  # Unused args required by structlog processor interface
+    "TC002",   # Processor needs to be runtime-available
+]
+
+# Quality gate script - Intentional URL handling
+"scripts/check_quality_gate.py" = [
+    "S310",    # URL schemes are validated before use (see nosec comment)
 ]
 
 # BasedPyright Configuration
