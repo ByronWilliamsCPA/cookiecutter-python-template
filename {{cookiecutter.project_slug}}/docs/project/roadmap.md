@@ -9,8 +9,6 @@ tags:
   - roadmap
 ---
 
-# Roadmap
-
 Development roadmap for {{ cookiecutter.project_name }}.
 
 ## Current Version

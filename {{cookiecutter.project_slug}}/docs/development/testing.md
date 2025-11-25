@@ -9,8 +9,6 @@ tags:
   - testing
 ---
 
-# Testing
-
 This guide covers the testing strategy and patterns for {{ cookiecutter.project_name }}.
 
 ## Running Tests

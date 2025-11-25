@@ -9,8 +9,6 @@ tags:
   - reference
 ---
 
-# API Reference
-
 Complete API documentation for {{ cookiecutter.project_name }}.
 
 ## Core Module

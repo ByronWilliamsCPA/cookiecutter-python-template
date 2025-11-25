@@ -75,3 +75,32 @@ jobs:
         run: |
           echo "Template changes that need to be applied:"
           cruft diff || true
+
+      - name: Check for orphaned conditional files
+        run: |
+          echo "Checking for orphaned conditional files..."
+          echo ""
+          echo "Note: Cruft update only syncs file contents - it does NOT re-run"
+          echo "post-generation hooks that clean up conditional files."
+          echo ""
+          python scripts/check_orphaned_files.py
+        continue-on-error: false
+
+      - name: Orphaned files fix instructions
+        if: failure()
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "HOW TO FIX ORPHANED FILES"
+          echo "=========================================="
+          echo ""
+          echo "Option 1 - Automated cleanup:"
+          echo "  python scripts/cleanup_conditional_files.py"
+          echo ""
+          echo "Option 2 - Manual cleanup:"
+          echo "  Delete the orphaned files/directories listed above"
+          echo ""
+          echo "After cleanup, commit the changes:"
+          echo "  git add -A"
+          echo "  git commit -m 'chore: remove orphaned conditional files'"
+          echo ""

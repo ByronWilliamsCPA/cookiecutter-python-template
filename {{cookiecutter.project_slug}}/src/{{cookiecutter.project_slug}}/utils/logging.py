@@ -105,7 +105,7 @@ def setup_logging(
         structlog.processors.UnicodeDecoder(),
     ]
 
-{% if cookiecutter.include_api_framework == "yes" -%}
+{% if cookiecutter.include_api_framework == "yes" %}
     # Add correlation ID processor for request tracing
     if include_correlation:
         try:
@@ -117,8 +117,7 @@ def setup_logging(
         except ImportError:
             # Correlation middleware not available, skip
             pass
-{% endif -%}
-
+{% endif %}
     if json_logs:
         # Production: JSON logs for easy parsing and aggregation
         processors.append(structlog.processors.JSONRenderer())
