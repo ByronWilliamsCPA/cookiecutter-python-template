@@ -511,8 +511,8 @@ markers = [
 ]
 
 # Coverage Configuration
+# Note: Coverage source is specified via pytest's --cov argument in addopts above
 [tool.coverage.run]
-source = ["src"]
 branch = true
 {% if cookiecutter.include_sonarcloud == "yes" -%}
 relative_files = true  # Required for SonarCloud in GitHub Actions
