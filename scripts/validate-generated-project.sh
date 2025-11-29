@@ -96,10 +96,11 @@ main() {
 
     if check_command python; then
         if python -c "import tomli" 2>/dev/null; then
-            if python -m tomli pyproject.toml > /dev/null 2>&1; then
+            if TOML_ERROR=$(python -m tomli pyproject.toml 2>&1); then
                 success "Valid pyproject.toml"
             else
                 error "Invalid pyproject.toml"
+                echo "$TOML_ERROR" | head -5
             fi
         else
             # Try with json.tool as fallback (won't work for TOML, but checks if file is readable)
