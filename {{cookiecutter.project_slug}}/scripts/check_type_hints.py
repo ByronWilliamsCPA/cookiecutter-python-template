@@ -265,12 +265,11 @@ def main() -> int:
         print()
         print("Run with --fix to automatically add the import")
         return 1
-    elif fixed:
+    if fixed:
         print(f"Fixed {len(fixed)} file(s)")
         return 0
-    else:
-        print("All files compliant ✓")
-        return 0
+    print("All files compliant ✓")
+    return 0
 
 
 if __name__ == "__main__":

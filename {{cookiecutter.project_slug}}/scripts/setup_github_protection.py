@@ -62,13 +62,12 @@ def enable_required_signatures(
 
     if response.status_code in (200, 201):
         return True
-    elif response.status_code == 404:
+    if response.status_code == 404:
         # Branch protection must be set up first
         print("  ⚠️  Note: Required signatures requires branch protection to be set first")
         return False
-    else:
-        print(f"  ⚠️  Could not enable required signatures: {response.status_code}")
-        return False
+    print(f"  ⚠️  Could not enable required signatures: {response.status_code}")
+    return False
 
 
 def check_existing_protection(
@@ -91,11 +90,10 @@ def check_existing_protection(
 
     if response.status_code == 200:
         return response.json()
-    elif response.status_code == 404:
+    if response.status_code == 404:
         return None
-    else:
-        print(f"⚠️  Warning: Could not check existing protection: {response.status_code}")
-        return None
+    print(f"⚠️  Warning: Could not check existing protection: {response.status_code}")
+    return None
 
 
 def setup_branch_protection(
@@ -228,19 +226,18 @@ def setup_branch_protection(
             print("    ⚠️  Required signatures not enabled (optional feature)")
 
         return True
-    elif response.status_code == 403:
-        print(f"\n❌ Error: Permission denied")
+    if response.status_code == 403:
+        print("\n❌ Error: Permission denied")
         print("  Make sure your token has 'repo' scope")
         print("  Admins: You may need to temporarily enable 'Include administrators'")
         return False
-    elif response.status_code == 404:
-        print(f"\n❌ Error: Repository or branch not found")
+    if response.status_code == 404:
+        print("\n❌ Error: Repository or branch not found")
         print(f"  Check that {owner}/{repo}:{branch} exists")
         return False
-    else:
-        print(f"\n❌ Error: {response.status_code}")
-        print(f"  Response: {response.text}")
-        return False
+    print(f"\n❌ Error: {response.status_code}")
+    print(f"  Response: {response.text}")
+    return False
 
 
 def main() -> None:
