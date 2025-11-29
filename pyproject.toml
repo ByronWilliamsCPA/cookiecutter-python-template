@@ -146,10 +146,8 @@ addopts = [
     "-v",
     "--strict-markers",
     "--strict-config",
-    "--cov=hooks",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-fail-under=80",
+    # Coverage disabled for template repo - hooks only execute during cookiecutter generation
+    # Generated projects will have their own coverage requirements
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
