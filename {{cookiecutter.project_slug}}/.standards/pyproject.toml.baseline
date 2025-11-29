@@ -158,6 +158,13 @@ ignore = [
 [tool.ruff.lint.mccabe]
 max-complexity = 10  # Google/Pylint default
 
+# Pylint Configuration (Function complexity limits)
+[tool.ruff.lint.pylint]
+max-statements = 100   # Function length hard limit
+max-branches = 12      # Nesting/branching limit
+max-nested-blocks = 4  # Explicit nesting limit
+max-returns = 6        # Return statement limit
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
