@@ -21,6 +21,7 @@ Usage:
 
 from __future__ import annotations
 
+import logging
 import time
 from collections import defaultdict
 from typing import TYPE_CHECKING
@@ -30,6 +31,8 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.responses import JSONResponse, Response
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request
@@ -180,6 +183,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next) -> Response:
         """Apply rate limiting per IP address."""
+        if request.client is None:
+            logger.warning(
+                "request.client is None - cannot determine client IP for rate limiting. "
+                "Using 'unknown' as fallback. This may occur during testing or with certain proxy configurations."
+            )
         client_ip = request.client.host if request.client else "unknown"
         current_time = time.time()
 

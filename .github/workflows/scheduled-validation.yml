@@ -1,0 +1,303 @@
+name: Scheduled Template Validation
+
+# Runs weekly to catch regressions and dependency issues
+# Provides comprehensive notifications on failures
+
+on:
+  schedule:
+    # Run every Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  contents: read
+  issues: write  # For creating issues on failure
+  pull-requests: write
+
+env:
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  # Comprehensive test suite
+  comprehensive-validation:
+    name: Full Template Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        config: [minimal, cli-app, api-service, ml-project, full-featured]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+          pip install cookiecutter pre-commit yamllint tomli
+
+      - name: Run zero-issues test suite
+        id: zero_issues
+        run: |
+          uv run pytest tests/test_zero_issues.py -v \
+            -k "${{ matrix.config }}" || \
+          uv run pytest tests/test_zero_issues.py::TestAllConfigsCombined::test_full_validation_suite[${{ matrix.config }}] -v
+        continue-on-error: true
+
+      - name: Run integration tests
+        id: integration
+        run: |
+          uv run pytest tests/integration/ -v -m integration
+        continue-on-error: true
+
+      - name: Run quality tool tests
+        id: quality_tools
+        run: |
+          uv run pytest tests/quality_tools/ -v
+        continue-on-error: true
+
+      - name: Check test results
+        run: |
+          if [ "${{ steps.zero_issues.outcome }}" != "success" ] || \
+             [ "${{ steps.integration.outcome }}" != "success" ] || \
+             [ "${{ steps.quality_tools.outcome }}" != "success" ]; then
+            echo "❌ One or more test suites failed"
+            echo "::error::Test failures detected in scheduled validation"
+            exit 1
+          fi
+
+  # Dependency audit
+  dependency-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install safety pip-audit
+
+      - name: Run Safety check
+        id: safety
+        run: |
+          pip freeze | safety check --stdin || echo "::warning::Safety found vulnerabilities"
+        continue-on-error: true
+
+      - name: Run pip-audit
+        id: pip_audit
+        run: |
+          pip-audit || echo "::warning::pip-audit found vulnerabilities"
+        continue-on-error: true
+
+      - name: Generate dependency report
+        run: |
+          echo "### Dependency Audit Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Safety Check:** ${{ steps.safety.outcome == 'success' && '✅ Passed' || '⚠️ Issues Found' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**pip-audit:** ${{ steps.pip_audit.outcome == 'success' && '✅ Passed' || '⚠️ Issues Found' }}" >> $GITHUB_STEP_SUMMARY
+
+  # Test template generation with latest tools
+  test-latest-tools:
+    name: Test with Latest Tool Versions
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install latest versions of tools
+        run: |
+          pip install --upgrade pip
+          pip install --upgrade cookiecutter black ruff mypy pytest pytest-cov bandit safety
+
+      - name: Generate test project
+        run: |
+          cookiecutter . --no-input --output-dir /tmp/latest-tools-test
+
+      - name: Validate generated project with latest tools
+        run: |
+          cd /tmp/latest-tools-test/my_python_project
+
+          # Run all quality checks
+          black --check src/ tests/ || echo "::warning::Black check failed with latest version"
+          ruff check . || echo "::warning::Ruff check failed with latest version"
+          mypy src/ --ignore-missing-imports || echo "::warning::MyPy check failed with latest version"
+
+  # Notification job
+  notify-results:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    needs: [comprehensive-validation, dependency-audit, test-latest-tools]
+    if: always()
+
+    steps:
+      - name: Check overall status
+        id: status
+        run: |
+          if [ "${{ needs.comprehensive-validation.result }}" == "failure" ] || \
+             [ "${{ needs.dependency-audit.result }}" == "failure" ] || \
+             [ "${{ needs.test-latest-tools.result }}" == "failure" ]; then
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          else
+            echo "status=passed" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate summary report
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          ## 📊 Weekly Template Validation Report
+
+          **Execution Date:** ${{ github.event.schedule || 'Manual Trigger' }}
+          **Overall Status:** ${{ steps.status.outputs.emoji }} **${{ steps.status.outputs.status }}**
+
+          ### Test Results
+
+          | Job | Status |
+          |-----|--------|
+          | Comprehensive Validation | ${{ needs.comprehensive-validation.result == 'success' && '✅ Passed' || '❌ Failed' }} |
+          | Dependency Audit | ${{ needs.dependency-audit.result == 'success' && '✅ Passed' || '❌ Failed' }} |
+          | Latest Tools Test | ${{ needs.test-latest-tools.result == 'success' && '✅ Passed' || '❌ Failed' }} |
+
+          ### Matrix Coverage
+
+          - **Python Versions:** 3.10, 3.11, 3.12, 3.13
+          - **Configurations:** minimal, cli-app, api-service, ml-project, full-featured
+          - **Total Combinations:** 20
+
+          ### Next Steps
+
+          ${{ steps.status.outputs.status == 'failed' && '⚠️ **Action Required:** Review failed tests and create fixes' || '✅ All tests passing - template is healthy' }}
+
+          ---
+
+          [View Full Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+
+      - name: Create issue on failure
+        if: steps.status.outputs.status == 'failed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🚨 Weekly Template Validation Failed';
+            const body = `## Scheduled Validation Failure
+
+            The weekly template validation has detected issues.
+
+            **Run Date:** ${new Date().toISOString().split('T')[0]}
+            **Workflow Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+
+            ### Failed Jobs
+
+            ${{ needs.comprehensive-validation.result != 'success' ? '- ❌ Comprehensive Validation\n' : '' }}
+            ${{ needs.dependency-audit.result != 'success' ? '- ❌ Dependency Audit\n' : '' }}
+            ${{ needs.test-latest-tools.result != 'success' ? '- ❌ Latest Tools Test\n' : '' }}
+
+            ### Recommended Actions
+
+            1. Review the [workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            2. Check for dependency updates or breaking changes
+            3. Run tests locally: \`uv run pytest tests/test_zero_issues.py -v\`
+            4. Fix identified issues
+            5. Close this issue once resolved
+
+            ### Context
+
+            This is an automated issue created by the scheduled validation workflow.
+            It runs every Monday at 9:00 AM UTC to catch regressions early.
+
+            ---
+            **Auto-generated by:** \`scheduled-validation.yml\`
+            `;
+
+            // Check if an issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'scheduled-validation',
+            });
+
+            const existingIssue = issues.data.find(issue => issue.title === title);
+
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: `## Update: ${new Date().toISOString().split('T')[0]}\n\n${body}`,
+              });
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['scheduled-validation', 'automated', 'bug'],
+              });
+            }
+
+      - name: Send success notification (comment on last issue)
+        if: steps.status.outputs.status == 'passed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Find the most recent scheduled-validation issue
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'scheduled-validation',
+              sort: 'created',
+              direction: 'desc',
+              per_page: 1,
+            });
+
+            if (issues.data.length > 0) {
+              const issue = issues.data[0];
+
+              // Add success comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `## ✅ Validation Passed\n\n**Date:** ${new Date().toISOString().split('T')[0]}\n\nAll scheduled validation checks passed. This issue can likely be closed.\n\n[View Workflow Run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              });
+
+              // Close the issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+              });
+            }

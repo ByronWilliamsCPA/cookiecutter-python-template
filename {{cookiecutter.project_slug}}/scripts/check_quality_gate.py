@@ -26,6 +26,7 @@ import argparse
 import json
 import os
 import sys
+from typing import Optional
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen

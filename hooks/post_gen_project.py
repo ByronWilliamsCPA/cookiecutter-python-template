@@ -5,6 +5,7 @@ Performs cleanup and setup tasks after project generation.
 Runs after all files have been created.
 """
 
+import json
 import shutil
 import subprocess  # nosec B404
 import sys
@@ -761,6 +762,46 @@ def run_code_fixes() -> None:
         print("  - Ruff auto-fix completed with some issues (review manually)")
 
 
+def add_cruft_skip_patterns() -> None:
+    """Add skip patterns to .cruft.json to exclude binary/build files from cruft diff.
+
+    This prevents "Unable to interpret changes as unicode" errors during cruft update.
+    """
+    cruft_file = Path(".cruft.json")
+    if not cruft_file.exists():
+        print("  - No .cruft.json found, skipping skip patterns")
+        return
+
+    try:
+        cruft_config = json.loads(cruft_file.read_text())
+
+        # Add skip patterns for binary and build artifacts
+        skip_patterns = [
+            ".git/",
+            ".mypy_cache/",
+            ".pytest_cache/",
+            ".ruff_cache/",
+            ".venv/",
+            "venv/",
+            ".tox/",
+            "*.pyc",
+            "__pycache__/",
+            "*.egg-info/",
+            ".coverage",
+            "htmlcov/",
+            "dist/",
+            "build/",
+            ".qlty/",
+            ".sonarlint/",
+        ]
+
+        cruft_config["skip"] = skip_patterns
+        cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
+        print(f"  ✓ Added {len(skip_patterns)} skip patterns to .cruft.json")
+    except Exception as e:
+        print(f"  - Failed to add skip patterns: {e}", file=sys.stderr)
+
+
 def main() -> None:
     """Run post-generation tasks."""
     print("\n🚀 Running post-generation setup...")
@@ -772,6 +813,7 @@ def main() -> None:
         create_initial_directories()
         run_code_fixes()  # Auto-fix code quality issues before git init
         ensure_trailing_newlines()  # Ensure all files have trailing newlines
+        add_cruft_skip_patterns()  # Add skip patterns to prevent binary file issues
         initialize_git()
         setup_claude_subtree()  # Add Claude standards via git subtree
         setup_pre_commit()
