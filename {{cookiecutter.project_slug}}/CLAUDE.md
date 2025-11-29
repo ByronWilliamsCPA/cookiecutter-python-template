@@ -180,6 +180,38 @@ When working on this project, always suggest appropriate security measures:
 - Type checking: strict mode (already configured)
 - Linting: no ignored rules without documented reason
 
+### 5. FIPS 140-2/140-3 Compliance
+
+For deployment on FIPS-enabled systems (Ubuntu LTS with fips-updates, government systems, healthcare, finance):
+
+**Prohibited algorithms** (will fail in FIPS mode):
+- MD5, MD4, SHA-1 (for security purposes)
+- DES, 3DES, RC2, RC4, Blowfish
+- Non-approved key exchange methods
+
+**Required patterns**:
+```python
+# ✗ WRONG - Will fail on FIPS systems
+import hashlib
+h = hashlib.md5(data)
+
+# ✓ CORRECT - Non-security use is allowed
+h = hashlib.md5(data, usedforsecurity=False)
+
+# ✓ CORRECT - Use FIPS-approved algorithms for security
+h = hashlib.sha256(data)
+```
+
+**Check FIPS compatibility**:
+```bash
+uv run python scripts/check_fips_compatibility.py --fix-hints
+```
+
+**Problematic packages** (need verification or replacement):
+- `bcrypt` → Use `passlib` with PBKDF2 or `argon2-cffi`
+- `pycrypto` → Use `pycryptodome` with FIPS mode
+- Verify `cryptography` version >= 3.4.6 with OpenSSL FIPS provider
+
 ---
 
 ## Code Quality Standards
