@@ -259,6 +259,10 @@ def setup_claude_subtree() -> None:
                 print("  ✓ Standard commands available")
             if (standard_dir / "skills").exists():
                 print("  ✓ Standard skills available")
+            if (standard_dir / "agents").exists():
+                print("  ✓ Standard agents available")
+            if (standard_dir / "standards").exists():
+                print("  ✓ Development standards available (git, python, security, linting)")
 
             print("\n  ✅ Claude standards integrated successfully!")
             print("\n  To update standards later, run:")

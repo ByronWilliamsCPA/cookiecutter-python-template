@@ -126,5 +126,14 @@ file_complexity.threshold = 750
 # To validate this configuration:
 #   qlty config validate
 #
+# ============================================================================
+# Duplication Detection - CPD (Copy-Paste Detector)
+# ============================================================================
+# Identifies duplicated code blocks to maintain DRY principles
+# and reduce technical debt.
+
+[[plugin]]
+name = "cpd"
+
 # For more information:
 #   https://docs.qlty.sh/qlty-toml
