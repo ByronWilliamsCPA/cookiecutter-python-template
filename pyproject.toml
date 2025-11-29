@@ -146,9 +146,9 @@ addopts = [
     "-v",
     "--strict-markers",
     "--strict-config",
-    # Coverage disabled for template repo - hooks only execute during cookiecutter generation
-    # Generated projects will have their own coverage requirements
 ]
+# Coverage disabled for template repo - hooks only execute during cookiecutter generation
+# Generated projects will have their own coverage requirements
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
