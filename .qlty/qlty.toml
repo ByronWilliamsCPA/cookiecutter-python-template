@@ -101,6 +101,11 @@ drivers = [
 [[plugin]]
 name = "trufflehog"
 
+[[plugin]]
+name = "cpd"
+# Copy-Paste Detector for identifying duplicated code
+# Helps maintain DRY principles and reduce technical debt
+
 # Skip bandit on test files - test assertions are legitimate (B101)
 [[exclude]]
 plugins = ["bandit"]
