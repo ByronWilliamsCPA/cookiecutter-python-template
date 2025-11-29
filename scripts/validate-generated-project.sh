@@ -113,7 +113,7 @@ main() {
 
     if [ -d ".github/workflows" ]; then
         if check_command yamllint; then
-            for yamlfile in .github/workflows/*.{yml,yaml} 2>/dev/null; do
+            for yamlfile in .github/workflows/*.yml .github/workflows/*.yaml; do
                 [ -e "$yamlfile" ] || continue
                 if yamllint "$yamlfile" &>/dev/null; then
                     success "Valid YAML: $yamlfile"
