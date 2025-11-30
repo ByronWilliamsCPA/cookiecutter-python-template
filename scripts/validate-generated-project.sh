@@ -128,7 +128,10 @@ main() {
                 else
                     # yamllint returns non-zero for warnings and errors
                     # Show the actual output to help debug
+                    # Temporarily disable exit-on-error for command substitution
+                    set +e
                     YAML_OUTPUT=$(yamllint "$yamlfile" 2>&1)
+                    set -e
                     # Only treat as error if it contains "error" (not just warnings)
                     if [[ "$YAML_OUTPUT" =~ [Ee]rror ]]; then
                         error "YAML errors in: $yamlfile"
