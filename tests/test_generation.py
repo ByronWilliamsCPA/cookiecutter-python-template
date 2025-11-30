@@ -112,7 +112,7 @@ class TestConfigurationVariations:
 
     @pytest.mark.parametrize(
         "config_name",
-        ["minimal", "cli-app", "api-service", "ml-project"],
+        ["minimal", "cli-app", "api-service", "ml-project", "full-featured"],
     )
     def test_predefined_configs(
         self, template_dir: Path, temp_dir: Path, configs_dir: Path, config_name: str
