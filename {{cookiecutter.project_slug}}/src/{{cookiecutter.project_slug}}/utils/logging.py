@@ -108,7 +108,7 @@ def setup_logging(
     # Add correlation ID processor for request tracing
     if include_correlation:
         try:
-            from {{ cookiecutter.project_slug }}.middleware.correlation import (
+            from {{ cookiecutter.project_slug }}.middleware.correlation import (  # noqa: PLC0415
                 correlation_context_processor,
             )
             # Insert after add_log_level for consistent ordering
