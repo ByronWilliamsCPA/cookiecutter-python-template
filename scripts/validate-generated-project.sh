@@ -18,7 +18,7 @@ WARNINGS=0
 # Functions
 error() {
     echo -e "${RED}✗${NC} $1"
-    ((ERRORS++))
+    ((ERRORS++)) || true
 }
 
 success() {
@@ -27,7 +27,7 @@ success() {
 
 warning() {
     echo -e "${YELLOW}⚠${NC} $1"
-    ((WARNINGS++))
+    ((WARNINGS++)) || true
 }
 
 info() {
