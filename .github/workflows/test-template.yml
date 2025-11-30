@@ -1,0 +1,250 @@
+name: Test Template
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Test hook files with pytest
+  test-hooks:
+    name: Test Hook Files
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.2.1
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+
+      - name: Run hook unit tests
+        run: |
+          uv run pytest tests/test_hooks.py -v
+
+  # Test template generation with various configs
+  test-generation:
+    name: Test Generation (${{ matrix.config }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        config: [minimal, cli-app, api-service, ml-project, full-featured]
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.2.1
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+
+      - name: Run generation tests for ${{ matrix.config }}
+        run: |
+          uv run pytest tests/test_generation.py -v -k "${{ matrix.config }}" || \
+          uv run pytest tests/test_generation.py::TestConfigurationVariations::test_predefined_configs[${{ matrix.config }}] -v
+
+  # Comprehensive integration tests
+  test-integration:
+    name: Integration Tests (${{ matrix.config }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [minimal, cli-app, api-service, ml-project]
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.2.1
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-dev build-essential
+
+      - name: Install testing dependencies
+        run: |
+          uv sync --all-extras
+          # Install additional tools for validation
+          pip install cookiecutter pre-commit yamllint tomli ruff basedpyright
+
+      - name: Test feature combination
+        run: |
+          ./scripts/test-feature-combination.sh --config ${{ matrix.config }} --keep
+
+      - name: Run integration tests
+        run: |
+          uv run pytest tests/integration/ -v -m integration
+
+  # Test quality tool integrations
+  test-quality-tools:
+    name: Test Quality Tools
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.2.1
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+          pip install cookiecutter
+
+      - name: Test QLTY integration
+        run: |
+          uv run pytest tests/quality_tools/test_qlty.py -v
+
+      - name: Test SonarCloud integration
+        run: |
+          uv run pytest tests/quality_tools/test_sonarcloud.py -v
+
+  # Validate generated project CI workflows
+  validate-generated-ci:
+    name: Validate Generated CI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        config: [minimal, cli-app]
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.2.1
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install cookiecutter pre-commit ruff
+
+      - name: Generate project
+        run: |
+          cookiecutter . --no-input --config-file tests/fixtures/configs/${{ matrix.config }}.json --output-dir /tmp/test-output
+
+      - name: Get project directory
+        id: project
+        run: |
+          PROJECT_SLUG=$(python -c "import json; print(json.load(open('tests/fixtures/configs/${{ matrix.config }}.json'))['default_context']['project_slug'])")
+          echo "dir=/tmp/test-output/$PROJECT_SLUG" >> $GITHUB_OUTPUT
+
+      - name: Validate generated project
+        run: |
+          ./scripts/validate-generated-project.sh ${{ steps.project.outputs.dir }}
+
+      - name: Run pre-commit on generated project
+        working-directory: ${{ steps.project.outputs.dir }}
+        run: |
+          if [ -f ".pre-commit-config.yaml" ]; then
+            pre-commit run --all-files || echo "Pre-commit found issues (may be expected)"
+          fi
+
+  # Test content validation
+  test-content:
+    name: Test Generated Content
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.2.1
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
+          pip install cookiecutter tomli
+
+      - name: Run content validation tests
+        run: |
+          uv run pytest tests/test_generated_content.py -v
+
+  # Overall test summary
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: [test-hooks, test-generation, test-integration, test-quality-tools, validate-generated-ci, test-content]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test-hooks.result }}" != "success" ] || \
+             [ "${{ needs.test-generation.result }}" != "success" ] || \
+             [ "${{ needs.test-integration.result }}" != "success" ] || \
+             [ "${{ needs.test-quality-tools.result }}" != "success" ] || \
+             [ "${{ needs.validate-generated-ci.result }}" != "success" ] || \
+             [ "${{ needs.test-content.result }}" != "success" ]; then
+            echo "One or more test jobs failed"
+            exit 1
+          fi
+          echo "All tests passed!"

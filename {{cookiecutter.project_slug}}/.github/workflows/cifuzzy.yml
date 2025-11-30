@@ -52,14 +52,14 @@ jobs:
 
       - name: Build Fuzzers
         id: build
-        uses: google/clusterfuzzlite/actions/build_fuzzers@v1
+        uses: google/clusterfuzzlite/actions/build_fuzzers@f090cc7d581f82fb0e0b04f0c9e56ff7f4a24e76 # v1
         with:
           language: python
           sanitizer: {% raw %}${{  matrix.sanitizer  }}{% endraw %}
 
       - name: Run Fuzzers
         id: run
-        uses: google/clusterfuzzlite/actions/run_fuzzers@v1
+        uses: google/clusterfuzzlite/actions/run_fuzzers@f090cc7d581f82fb0e0b04f0c9e56ff7f4a24e76 # v1
         with:
           github-token: {% raw %}${{  secrets.GITHUB_TOKEN  }}{% endraw %}
           fuzz-seconds: 600
@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@e2b3eafc8d227b0241d48be5f425d47c2d750a13 # v3.27.9
         with:
           sarif_file: results.sarif
           category: fuzzing-{% raw %}${{  matrix.sanitizer  }}{% endraw %}

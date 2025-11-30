@@ -8,11 +8,20 @@ This directory contains Claude Code configuration and standards for this project
 .claude/
 ├── README.md           # This file
 ├── claude.md           # Project-specific Claude guidelines
+├── context/            # Project-specific context files
+│   ├── python-standards.md   # Project Python conventions
+│   └── testing-patterns.md   # Project testing patterns
 └── standard/           # Standard Claude configuration (git subtree)
     ├── claude.md       # Base guidelines and standards
     ├── commands/       # Custom slash commands
     ├── skills/         # Reusable skills
-    └── agents/         # Specialized agents
+    ├── agents/         # Specialized agents
+    └── standards/      # Development standards
+        ├── git-workflow.md   # Git branching, commits, PRs
+        ├── git-worktree.md   # Git worktree workflows
+        ├── linting.md        # Multi-language linting
+        ├── python.md         # Python development standards
+        └── security.md       # Security requirements
 ```
 
 ## Standard vs Project-Specific Configuration
@@ -25,6 +34,12 @@ This directory is managed as a **git subtree** from [williaby/.claude](https://g
 - Best practices and coding guidelines
 - Reusable commands, skills, and agents
 - Security and quality requirements
+- **Development standards** (`standards/`):
+  - Git workflow and branching strategies
+  - Git worktree patterns for parallel development
+  - Multi-language linting configuration
+  - Python development best practices
+  - Security requirements and compliance
 
 **Do not edit files in `standard/` directly** - they will be overwritten when updating from the upstream repository.
 
@@ -37,6 +52,15 @@ The `claude.md` file in this directory contains **project-specific** guidelines 
 - Project-specific conventions and patterns
 - Environment setup instructions
 - Common tasks and troubleshooting
+
+### Project Context Files (`context/`)
+
+The `context/` directory contains **project-specific** reference documents:
+
+- `python-standards.md` - Project-specific Python conventions (supplements `standard/standards/python.md`)
+- `testing-patterns.md` - Project-specific testing patterns and fixtures
+
+These files extend the universal standards with project-specific examples and patterns. Edit these freely to match your project's needs.
 
 ## Updating Standard Configuration
 

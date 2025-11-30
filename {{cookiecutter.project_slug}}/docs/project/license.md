@@ -9,8 +9,6 @@ tags:
   - license
 ---
 
-# License
-
 {{ cookiecutter.project_name }} is licensed under the **{{ cookiecutter.license }}** License.
 
 ## Summary

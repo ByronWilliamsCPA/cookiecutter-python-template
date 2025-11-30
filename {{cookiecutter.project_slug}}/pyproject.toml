@@ -150,6 +150,8 @@ api = [
     "uvicorn[standard]>=0.23.0",
     "python-multipart>=0.0.18",
     "starlette>=0.49.1",
+    "sqlalchemy[asyncio]>=2.0.0",  # ORM for database operations
+    "alembic>=1.12.0",  # Database migrations
 ]
 {% endif %}
 {% if cookiecutter.include_sentry == "yes" %}
@@ -315,7 +317,14 @@ ignore = [
 
 # McCabe Complexity Configuration (Google/Pylint alignment)
 [tool.ruff.lint.mccabe]
-max-complexity = 10  # Google/Pylint default, stricter than we had
+max-complexity = 10  # Google/Pylint default
+
+# Pylint Configuration (Function complexity limits)
+[tool.ruff.lint.pylint]
+max-statements = 100   # Function length hard limit
+max-branches = 12      # Nesting/branching limit
+max-nested-blocks = 4  # Explicit nesting limit
+max-returns = 6        # Return statement limit
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -389,7 +398,7 @@ known-first-party = ["{{ cookiecutter.project_slug }}"]
 
 {% if cookiecutter.include_nox == "yes" -%}
 # Nox configuration
-"noxfile.py" = ["ANN", "D", "T20", "PLR", "INP", "PLC0415"]
+"noxfile.py" = ["ANN", "D", "T20", "PLR", "INP", "PLC0415", "ERA001", "SIM105"]
 {% endif -%}
 
 # Fuzz testing (Atheris harnesses have specific patterns)
@@ -407,6 +416,41 @@ known-first-party = ["{{ cookiecutter.project_slug }}"]
     "C901",   # Complexity allowed in utility scripts
     "ANN", "D", "TRY", "PLR",
     "INP",    # Not packages
+]
+
+# API health checks - Example code with template patterns
+"src/*/api/health.py" = [
+    "ERA001",  # Commented code shows implementation examples
+    "BLE001",  # Blind except in health checks for maximum resilience
+    "PLC0415", # Local imports to avoid circular dependencies
+]
+
+# Security middleware - SSRF protection with intentional patterns
+"src/*/middleware/security.py" = [
+    "S104",    # 0.0.0.0 in BLOCKED_HOSTS list is intentional
+    "BLE001",  # Blind except for URL parsing resilience
+    "PLC0415", # Local imports to avoid circular dependencies
+    "TRY300",  # Return in try block is clearer for simple cases
+    "ANN001",  # call_next typing is complex (Starlette middleware)
+    "RUF012",  # ClassVar not needed for constants
+    "C416",    # Dict comprehension is clearer than dict()
+    "SIM102",  # Nested if is more readable for security checks
+]
+
+# Financial utilities - Template documentation style
+"src/*/utils/financial.py" = [
+    "D200",    # Multi-line docstring for template documentation
+]
+
+# Logging utilities - Structlog processor interface
+"src/*/utils/logging.py" = [
+    "ARG001",  # Unused args required by structlog processor interface
+    "TC002",   # Processor needs to be runtime-available
+]
+
+# Quality gate script - Intentional URL handling
+"scripts/check_quality_gate.py" = [
+    "S310",    # URL schemes are validated before use (see nosec comment)
 ]
 
 # BasedPyright Configuration
@@ -511,8 +555,8 @@ markers = [
 ]
 
 # Coverage Configuration
+# Note: Coverage source is specified via pytest's --cov argument in addopts above
 [tool.coverage.run]
-source = ["src"]
 branch = true
 {% if cookiecutter.include_sonarcloud == "yes" -%}
 relative_files = true  # Required for SonarCloud in GitHub Actions

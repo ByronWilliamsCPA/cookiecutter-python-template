@@ -1,0 +1,15 @@
+{
+  "default_context": {
+    "project_name": "CLI Tool",
+    "project_slug": "cli_tool",
+    "project_short_description": "A CLI application test project",
+    "author_name": "Test Author",
+    "author_email": "test@example.com",
+    "github_username": "testuser",
+    "version": "0.1.0",
+    "include_cli": "yes",
+    "include_nox": "yes",
+    "use_pre_commit": "yes",
+    "include_github_actions": "yes"
+  }
+}

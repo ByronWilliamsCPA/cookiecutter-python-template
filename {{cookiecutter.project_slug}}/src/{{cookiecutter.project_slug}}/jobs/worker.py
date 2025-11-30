@@ -48,7 +48,9 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-async def example_background_task(ctx: dict[str, Any], user_id: str, data: dict) -> dict:
+async def example_background_task(
+    ctx: dict[str, Any], user_id: str, data: dict
+) -> dict:
     """Example background task.
 
     Args:

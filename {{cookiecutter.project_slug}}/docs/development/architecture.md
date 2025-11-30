@@ -9,8 +9,6 @@ tags:
   - architecture
 ---
 
-# Architecture
-
 This document describes the architecture and design decisions for {{ cookiecutter.project_name }}.
 
 ## Project Structure

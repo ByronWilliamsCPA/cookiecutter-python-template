@@ -1,6 +1,16 @@
-# Architecture Decision Records
+---
+title: "Architecture Decision Records"
+schema_type: planning
+status: published
+owner: core-maintainer
+purpose: "Index and documentation for Architecture Decision Records."
+tags:
+  - planning
+  - architecture
+  - decisions
+---
 
-This directory contains Architecture Decision Records (ADRs) for {{ '{{cookiecutter.project_name}}' }}.
+This directory contains Architecture Decision Records (ADRs) for {{cookiecutter.project_name}}.
 
 ## What Are ADRs?
 
@@ -27,7 +37,7 @@ Run `/plan <project description>` to generate initial ADRs alongside other plann
 
 When making a new architectural decision:
 
-```
+```text
 Create an ADR for [decision topic].
 Use template: .claude/skills/project-planning/templates/adr-template.md
 Save to: docs/planning/adr/adr-NNN-[decision-slug].md
@@ -37,7 +47,7 @@ Save to: docs/planning/adr/adr-NNN-[decision-slug].md
 
 ADRs follow this naming pattern:
 
-```
+```text
 adr-NNN-short-description.md
 
 Examples:
@@ -58,7 +68,7 @@ Create an ADR when:
 
 ## ADR Lifecycle
 
-```
+```text
 Proposed → Accepted → [Deprecated | Superseded]
 ```
 
