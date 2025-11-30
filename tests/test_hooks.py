@@ -36,8 +36,11 @@ class TestPreGenHook:
         hook_file = template_dir / "hooks" / "pre_gen_project.py"
         # Just check it doesn't raise import errors
         result = subprocess.run(
-            ["python", "-c", f"import sys; sys.path.insert(0, '{hook_file.parent}'); "
-                              "import pre_gen_project"],
+            [
+                "python",
+                "-c",
+                f"import sys; sys.path.insert(0, '{hook_file.parent}'); import pre_gen_project",
+            ],
             capture_output=True,
             text=True,
             check=False,
@@ -68,8 +71,11 @@ class TestPostGenHook:
         """Verify hook file can be imported."""
         hook_file = template_dir / "hooks" / "post_gen_project.py"
         result = subprocess.run(
-            ["python", "-c", f"import sys; sys.path.insert(0, '{hook_file.parent}'); "
-                              "import post_gen_project"],
+            [
+                "python",
+                "-c",
+                f"import sys; sys.path.insert(0, '{hook_file.parent}'); import post_gen_project",
+            ],
             capture_output=True,
             text=True,
             check=False,
@@ -91,16 +97,16 @@ class TestHookCodeQuality:
         )
         assert result.returncode == 0, f"Ruff check failed: {result.stdout}"
 
-    def test_hooks_pass_black(self, template_dir: Path) -> None:
-        """Verify hooks are formatted with black."""
+    def test_hooks_pass_ruff_format(self, template_dir: Path) -> None:
+        """Verify hooks are formatted with ruff (replaces black)."""
         hooks_dir = template_dir / "hooks"
         result = subprocess.run(
-            ["black", "--check", str(hooks_dir)],
+            ["uv", "run", "ruff", "format", "--check", str(hooks_dir)],
             capture_output=True,
             text=True,
             check=False,
         )
-        assert result.returncode == 0, f"Black formatting check failed: {result.stderr}"
+        assert result.returncode == 0, f"Ruff format check failed: {result.stderr}"
 
     @pytest.mark.slow
     def test_hooks_pass_mypy(self, template_dir: Path) -> None:
