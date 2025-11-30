@@ -7,9 +7,8 @@ rules:
     max: 120
     level: warning
 
-  # Allow duplicate keys in GitHub Actions workflows (common for matrix strategies)
-  key-duplicates:
-    forbid-duplicated-merge-keys: true
+  # Disallow duplicate keys (forbid-duplicated-merge-keys removed - not supported in all yamllint versions)
+  key-duplicates: enable
 
   # More lenient indentation for readability
   indentation:

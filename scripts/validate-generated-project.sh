@@ -132,8 +132,8 @@ main() {
                     set +e
                     YAML_OUTPUT=$(yamllint "$yamlfile" 2>&1)
                     set -e
-                    # Only treat as error if it contains "error" (not just warnings)
-                    if [[ "$YAML_OUTPUT" =~ [Ee]rror ]]; then
+                    # Check for errors (including config errors and syntax errors)
+                    if [[ "$YAML_OUTPUT" =~ [Ee]rror ]] || [[ "$YAML_OUTPUT" =~ "invalid config" ]]; then
                         error "YAML errors in: $yamlfile"
                         echo "$YAML_OUTPUT"
                     else
