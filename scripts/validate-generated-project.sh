@@ -159,8 +159,10 @@ main() {
     # 5. Template Variable Check
     info "=== Template Variable Check ==="
 
-    # Check for unreplaced Jinja2 variables
-    if grep -r "{{.*}}" --include="*.py" --include="*.md" --include="*.toml" --include="*.yml" . 2>/dev/null; then
+    # Check for unreplaced Jinja2 variables (exclude .venv, node_modules, .git)
+    if grep -r "{{.*}}" --include="*.py" --include="*.md" --include="*.toml" --include="*.yml" \
+        --exclude-dir=".venv" --exclude-dir="node_modules" --exclude-dir=".git" \
+        --exclude-dir=".tox" --exclude-dir="__pycache__" . 2>/dev/null; then
         error "Found unreplaced Jinja2 template variables"
     else
         success "No unreplaced template variables found"
