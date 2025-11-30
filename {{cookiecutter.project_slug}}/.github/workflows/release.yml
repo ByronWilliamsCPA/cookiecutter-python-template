@@ -1,5 +1,7 @@
+---
 # Release Workflow
-# Handles automated releases with semantic versioning or manual tag-based releases.
+# Handles automated releases with semantic versioning or
+# manual tag-based releases.
 #
 # Features:
 #   - Pre-release testing
@@ -10,7 +12,7 @@
 {%- if cookiecutter.include_semantic_release == "yes" %}
 name: Semantic Release
 
-on:
+"on":
   push:
     branches:
       - main
@@ -55,7 +57,7 @@ jobs:
       publish-to-pypi: true
       pypi-package-name: '{{ cookiecutter.pypi_package_name }}'
       run-tests: true
-{% else -%}
+{%- else -%}
 # Standalone release workflow
 jobs:
   test:
@@ -154,7 +156,7 @@ jobs:
       publish-to-pypi: true
       pypi-package-name: '{{ cookiecutter.pypi_package_name }}'
       run-tests: true
-{% else -%}
+{%- else -%}
 # Standalone tag-based release workflow
 jobs:
   test:
