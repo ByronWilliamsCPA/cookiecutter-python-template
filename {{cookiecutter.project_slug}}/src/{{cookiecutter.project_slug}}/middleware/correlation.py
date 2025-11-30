@@ -51,10 +51,12 @@ from contextvars import ContextVar
 from typing import TYPE_CHECKING
 
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from fastapi import Request
+    from starlette.responses import Response
     from structlog.types import EventDict, WrappedLogger
 
 # Context variables for request correlation (async-safe)
@@ -132,8 +134,8 @@ def generate_correlation_id() -> str:
 
 
 def correlation_context_processor(
-    logger: "WrappedLogger",
-    method_name: str,
+    _logger: "WrappedLogger",
+    _method_name: str,
     event_dict: "EventDict",
 ) -> "EventDict":
     """Structlog processor to add correlation context to log entries.
@@ -199,7 +201,9 @@ class CorrelationMiddleware(BaseHTTPMiddleware):
         >>> app.add_middleware(CorrelationMiddleware)
     """
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Response]
+    ) -> Response:
         """Process request with correlation ID handling.
 
         Args:

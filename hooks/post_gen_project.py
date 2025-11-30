@@ -151,9 +151,10 @@ def cleanup_conditional_files() -> None:
     if "{{ cookiecutter.include_sentry }}" == "no":
         remove_file(Path("src/{{ cookiecutter.project_slug }}/core/sentry.py"))
 
-    # Remove API security middleware if API framework not included
+    # Remove API middleware if API framework not included
     if "{{ cookiecutter.include_api_framework }}" == "no":
         remove_file(Path("src/{{ cookiecutter.project_slug }}/middleware/security.py"))
+        remove_file(Path("src/{{ cookiecutter.project_slug }}/middleware/correlation.py"))
         # Remove middleware directory if empty
         middleware_dir = Path("src/{{ cookiecutter.project_slug }}/middleware")
         if middleware_dir.exists() and not any(middleware_dir.iterdir()):
