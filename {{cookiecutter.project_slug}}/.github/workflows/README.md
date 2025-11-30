@@ -222,5 +222,5 @@ act push -j ci
 
 ---
 
-**Last Updated**: {% raw %}{{ cookiecutter.project_name }}{% endraw %} generated from template
+**Last Updated**: {{ cookiecutter.project_name }} generated from template
 **Org Workflows Version**: `@main` (auto-updates with org changes)

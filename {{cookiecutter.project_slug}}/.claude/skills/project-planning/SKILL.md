@@ -156,14 +156,12 @@ When generating, incorporate known information:
 python_version = "{{cookiecutter.python_version}}"
 project_name = "{{cookiecutter.project_name}}"
 project_slug = "{{cookiecutter.project_slug}}"
-{% raw %}
 {%- if cookiecutter.include_cli == "yes" %}
 cli_framework = "Click"
 {%- endif %}
 {%- if cookiecutter.include_docker == "yes" %}
 containerization = "Docker"
 {%- endif %}
-{% endraw %}
 ```
 
 ## Quality Checklist

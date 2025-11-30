@@ -40,14 +40,12 @@ This project was created with:
 - **Linter**: Ruff
 - **Type Checker**: BasedPyright
 - **Testing**: pytest
-{% raw %}
 {%- if cookiecutter.include_cli == "yes" %}
 - **CLI Framework**: Click
 {%- endif %}
 {%- if cookiecutter.include_docker == "yes" %}
 - **Container**: Docker
 {%- endif %}
-{% endraw %}
 
 ## What This Document Contains
 
