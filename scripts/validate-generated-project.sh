@@ -160,8 +160,10 @@ main() {
     info "=== Template Variable Check ==="
 
     # Check for unreplaced Jinja2 variables (exclude .venv, node_modules, .git)
-    # Pattern matches {{ cookiecutter.var }} but not ${{ github.var }} (GitHub Actions)
-    if grep -rE '\{\{\s*[^$]' --include="*.py" --include="*.md" --include="*.toml" --include="*.yml" \
+    # Pattern matches {{ cookiecutter.var }} or {%...%} but excludes:
+    # - ${{ github.var }} (GitHub Actions)
+    # - configuration like variable_start_string = "{{"
+    if grep -rE '\{\{\s*(cookiecutter\.|%|#)' --include="*.py" --include="*.md" --include="*.toml" --include="*.yml" \
         --exclude-dir=".venv" --exclude-dir="node_modules" --exclude-dir=".git" \
         --exclude-dir=".tox" --exclude-dir="__pycache__" . 2>/dev/null; then
         error "Found unreplaced Jinja2 template variables"
