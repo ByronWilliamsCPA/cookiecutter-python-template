@@ -213,5 +213,5 @@ jobs:
         with:
           attestations: true
 {% endif -%}
-{%- endif %}
-{%- endif %}
+{%- endif -%}
+{%- endif -%}
