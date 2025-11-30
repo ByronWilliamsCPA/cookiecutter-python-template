@@ -7,11 +7,16 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   # Test hook files with pytest
   test-hooks:
     name: Test Hook Files
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +43,8 @@ jobs:
   test-generation:
     name: Test Generation (${{ matrix.config }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -70,6 +77,8 @@ jobs:
   test-integration:
     name: Integration Tests (${{ matrix.config }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -111,6 +120,8 @@ jobs:
   test-quality-tools:
     name: Test Quality Tools
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -142,6 +153,8 @@ jobs:
   validate-generated-ci:
     name: Validate Generated CI
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         config: [minimal, cli-app]
@@ -188,6 +201,8 @@ jobs:
   test-content:
     name: Test Generated Content
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -215,6 +230,8 @@ jobs:
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: [test-hooks, test-generation, test-integration, test-quality-tools, validate-generated-ci, test-content]
     if: always()
 

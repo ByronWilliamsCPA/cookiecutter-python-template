@@ -226,18 +226,19 @@ def setup_branch_protection(
             print("    ⚠️  Required signatures not enabled (optional feature)")
 
         return True
-    if response.status_code == 403:
+    elif response.status_code == 403:
         print("\n❌ Error: Permission denied")
         print("  Make sure your token has 'repo' scope")
         print("  Admins: You may need to temporarily enable 'Include administrators'")
         return False
-    if response.status_code == 404:
+    elif response.status_code == 404:
         print("\n❌ Error: Repository or branch not found")
         print(f"  Check that {owner}/{repo}:{branch} exists")
         return False
-    print(f"\n❌ Error: {response.status_code}")
-    print(f"  Response: {response.text}")
-    return False
+    else:
+        print(f"\n❌ Error: {response.status_code}")
+        print(f"  Response: {response.text}")
+        return False
 
 
 def main() -> None:

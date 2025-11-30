@@ -51,8 +51,10 @@ fi
 # Run cruft update with any passed arguments
 echo "📥 Running cruft update..."
 echo ""
+set +e  # Temporarily disable exit on error to capture cruft result
 cruft update "$@"
 update_result=$?
+set -e  # Re-enable exit on error
 
 if [ $update_result -ne 0 ]; then
     echo ""
@@ -67,8 +69,10 @@ echo "🧹 Running conditional file cleanup..."
 echo ""
 
 if [ -f "scripts/cleanup_conditional_files.py" ]; then
+    set +e  # Temporarily disable exit on error to capture cleanup result
     python scripts/cleanup_conditional_files.py
     cleanup_result=$?
+    set -e  # Re-enable exit on error
 
     if [ $cleanup_result -ne 0 ]; then
         echo ""

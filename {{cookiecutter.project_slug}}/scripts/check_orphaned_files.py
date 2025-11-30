@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 
-def get_cruft_context() -> dict:
+def get_cruft_context() -> dict[str, str]:
     """Read cookiecutter context from .cruft.json.
 
     Returns:
@@ -94,6 +94,7 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
         ),
         ("include_renovate", "no", [Path("renovate.json")]),
         ("include_coderabbit", "no", [Path(".coderabbit.yaml")]),
+        ("include_semantic_release", "no", [Path(".github/workflows/release.yml")]),
         (
             "use_reuse_licensing",
             "no",

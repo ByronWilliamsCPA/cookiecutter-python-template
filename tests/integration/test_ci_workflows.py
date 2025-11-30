@@ -117,17 +117,26 @@ class TestGeneratedProjectCI:
 
         project_dir = generate_project(template_dir, temp_dir, minimal_config)
 
-        # Use mypy if available, basedpyright is preferred but may not be installed
+        # Use basedpyright if available (preferred), fall back to mypy
         result = subprocess.run(
-            ["mypy", "src/", "--ignore-missing-imports"],
+            ["basedpyright", "src/"],
             cwd=project_dir,
             capture_output=True,
             text=True,
             check=False,
         )
 
-        if result.returncode == 127:  # Command not found
-            pytest.skip("MyPy not available")
+        if result.returncode == 127:  # Command not found, try mypy
+            result = subprocess.run(
+                ["mypy", "src/", "--ignore-missing-imports"],
+                cwd=project_dir,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            if result.returncode == 127:  # Neither available
+                pytest.skip("Neither BasedPyright nor MyPy available")
 
         # Allow warnings but not errors
         assert "error:" not in result.stdout.lower() or result.returncode == 0, \

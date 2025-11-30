@@ -67,17 +67,27 @@ class TestFormattingAndLinting:
 
         project_dir = generate_project(template_dir, temp_dir, minimal_config)
 
+        # Try basedpyright first (preferred), fall back to mypy
         result = subprocess.run(
-            ["mypy", "src/", "--ignore-missing-imports"],
+            ["basedpyright", "src/"],
             cwd=project_dir,
             capture_output=True,
             text=True,
             check=False,
         )
 
+        if result.returncode == 127:  # basedpyright not found, try mypy
+            result = subprocess.run(
+                ["mypy", "src/", "--ignore-missing-imports"],
+                cwd=project_dir,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
         # Allow 0 (success) or 1 (warnings only, no errors)
         assert result.returncode in [0, 1] or "error" not in result.stdout.lower(), \
-            f"MyPy type checking errors detected:\n{result.stdout}\n{result.stderr}"
+            f"Type checking errors detected:\n{result.stdout}\n{result.stderr}"
 
 
 @pytest.mark.integration

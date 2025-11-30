@@ -32,7 +32,7 @@ import sys
 from pathlib import Path
 
 
-def get_cruft_context() -> dict:
+def get_cruft_context() -> dict[str, str]:
     """Read cookiecutter context from .cruft.json.
 
     Returns:
@@ -186,6 +186,11 @@ def cleanup_conditional_files(context: dict, dry_run: bool = False) -> int:
     # CodeRabbit
     if context.get("include_coderabbit") == "no":
         if remove_file(Path(".coderabbit.yaml"), dry_run):
+            removed_count += 1
+
+    # Semantic Release
+    if context.get("include_semantic_release") == "no":
+        if remove_file(Path(".github/workflows/release.yml"), dry_run):
             removed_count += 1
 
     # REUSE Licensing
