@@ -47,7 +47,8 @@ exclude_patterns = [
   "**/tmp_cleanup/**",
   # Exclude cookiecutter template directories (not actual code)
   # Note: Template files contain Jinja2 syntax that breaks parsers
-  "{{cookiecutter.project_slug}}/**",
+  # Curly braces must be escaped to avoid glob brace expansion
+  "\\{\\{cookiecutter.project_slug\\}\\}/**",
 ]
 
 test_patterns = [
