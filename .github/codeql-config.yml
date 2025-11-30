@@ -1,0 +1,17 @@
+---
+# CodeQL configuration for cookiecutter-python-template
+# Excludes template files containing Jinja2 syntax from analysis
+
+name: "CodeQL Config"
+
+# Exclude template directory - contains Jinja2 template syntax
+# that appears invalid to static analyzers before rendering
+paths-ignore:
+  - '{{cookiecutter.project_slug}}/**'
+  - '.venv/**'
+  - 'venv/**'
+  - 'node_modules/**'
+  - '.git/**'
+  - 'dist/**'
+  - 'build/**'
+  - '**/*.egg-info/**'

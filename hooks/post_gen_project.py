@@ -776,44 +776,121 @@ def run_code_fixes() -> None:
         print("  - Ruff auto-fix completed with some issues (review manually)")
 
 
+def get_cruft_skip_patterns() -> list[str]:
+    """Return the comprehensive list of skip patterns for cruft.
+
+    These patterns prevent "Unable to interpret changes as unicode" errors
+    during cruft update by excluding binary, cache, and build artifacts.
+
+    Returns:
+        List of glob patterns to skip during cruft diff operations.
+    """
+    return [
+        # Git internals (binary objects)
+        ".git",
+        ".git/*",
+        "**/.git/**",
+        # Python bytecode and caches
+        "*.pyc",
+        "**/__pycache__/**",
+        "*.egg-info/**",
+        ".mypy_cache/**",
+        ".pytest_cache/**",
+        ".ruff_cache/**",
+        ".tox/**",
+        # Virtual environments
+        ".venv/**",
+        "venv/**",
+        # Lock files (frequently change, can have binary-like content)
+        "*.lock",
+        "uv.lock",
+        "poetry.lock",
+        # Build artifacts
+        "*.whl",
+        "dist/**",
+        "build/**",
+        # Coverage and test artifacts
+        ".coverage",
+        "htmlcov/**",
+        # Database files (binary)
+        "*.db",
+        "*.sqlite",
+        "*.sqlite3",
+        # IDE and tool caches
+        ".qlty/**",
+        ".sonarlint/**",
+        ".idea/**",
+        ".vscode/**",
+        # Node modules (if any JS tooling)
+        "node_modules/**",
+        # Template-specific files that should remain project-owned
+        "CLAUDE.md",
+        "REUSE.toml",
+        "docs/template_feedback.md",
+    ]
+
+
 def add_cruft_skip_patterns() -> None:
     """Add skip patterns to .cruft.json to exclude binary/build files from cruft diff.
 
     This prevents "Unable to interpret changes as unicode" errors during cruft update.
+    These patterns ensure cruft can successfully diff and update projects without
+    encountering binary file unicode errors.
+
+    If .cruft.json doesn't exist (e.g., project generated with plain cookiecutter),
+    creates a minimal .cruft.json with skip patterns so users can adopt cruft later.
+
+    See: https://github.com/ByronWilliamsCPA/cookiecutter-python-template/issues/13
     """
+    print("\n🔧 Configuring cruft skip patterns...")
+
     cruft_file = Path(".cruft.json")
-    if not cruft_file.exists():
-        print("  - No .cruft.json found, skipping skip patterns")
-        return
+    skip_patterns = get_cruft_skip_patterns()
 
-    try:
-        cruft_config = json.loads(cruft_file.read_text())
+    if cruft_file.exists():
+        # Update existing .cruft.json (created by cruft create)
+        # Merge with existing skip patterns to preserve user customizations
+        try:
+            cruft_config = json.loads(cruft_file.read_text())
+            existing_skip = cruft_config.get("skip", [])
 
-        # Add skip patterns for binary and build artifacts
-        skip_patterns = [
-            ".git/",
-            ".mypy_cache/",
-            ".pytest_cache/",
-            ".ruff_cache/",
-            ".venv/",
-            "venv/",
-            ".tox/",
-            "*.pyc",
-            "__pycache__/",
-            "*.egg-info/",
-            ".coverage",
-            "htmlcov/",
-            "dist/",
-            "build/",
-            ".qlty/",
-            ".sonarlint/",
-        ]
+            # Normalize existing 'skip' into a list of strings
+            if isinstance(existing_skip, str):
+                existing_skip = [existing_skip]
+            elif not isinstance(existing_skip, list):
+                existing_skip = []
 
-        cruft_config["skip"] = skip_patterns
-        cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
-        print(f"  ✓ Added {len(skip_patterns)} skip patterns to .cruft.json")
-    except Exception as e:
-        print(f"  - Failed to add skip patterns: {e}", file=sys.stderr)
+            # Merge and deduplicate, preserving order with new patterns first
+            merged_skip = list(dict.fromkeys(skip_patterns + existing_skip))
+            cruft_config["skip"] = merged_skip
+
+            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
+            print(f"  ✓ Updated .cruft.json skip patterns ({len(merged_skip)} entries)")
+        except Exception as e:
+            print(f"  - Failed to update skip patterns: {e}", file=sys.stderr)
+    else:
+        # Create minimal .cruft.json for projects generated with plain cookiecutter
+        # This allows users to adopt cruft later with `cruft link`
+        try:
+            cruft_config = {
+                "template": "https://github.com/{{ cookiecutter.github_org_or_user }}/cookiecutter-python-template",
+                "commit": None,
+                "checkout": None,
+                "context": {
+                    "cookiecutter": {
+                        "project_name": "{{ cookiecutter.project_name }}",
+                        "project_slug": "{{ cookiecutter.project_slug }}",
+                        "python_version": "{{ cookiecutter.python_version }}",
+                    }
+                },
+                "directory": None,
+                "skip": skip_patterns,
+            }
+            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
+            print(f"  ✓ Created .cruft.json with {len(skip_patterns)} skip patterns")
+            print("    (Use 'cruft link' to fully connect to the template)")
+        except Exception as e:
+            print(f"  - Failed to create .cruft.json: {e}", file=sys.stderr)
 
 
 def main() -> None:

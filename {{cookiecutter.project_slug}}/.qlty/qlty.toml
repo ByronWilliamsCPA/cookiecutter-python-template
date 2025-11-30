@@ -127,13 +127,10 @@ file_complexity.threshold = 750
 #   qlty config validate
 #
 # ============================================================================
-# Duplication Detection - CPD (Copy-Paste Detector)
+# Duplication Detection
 # ============================================================================
-# Identifies duplicated code blocks to maintain DRY principles
-# and reduce technical debt.
-
-[[plugin]]
-name = "cpd"
+# Duplicate code detection is handled by the smells feature (mode="comment" above).
+# Note: CPD (Copy-Paste Detector) is not available as a qlty plugin.
 
 # For more information:
 #   https://docs.qlty.sh/qlty-toml

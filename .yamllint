@@ -1,0 +1,21 @@
+---
+# yamllint configuration for cookiecutter-python-template repository
+# Excludes template files that contain Jinja2 syntax from linting
+extends: default
+
+rules:
+  line-length:
+    max: 120
+    level: warning
+  document-start: disable
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no']
+
+# Ignore template directory - these files contain Jinja2 syntax
+# that appears invalid to YAML parsers before rendering
+ignore: |
+  {{cookiecutter.project_slug}}/
+  .venv/
+  venv/
+  node_modules/
+  .git/

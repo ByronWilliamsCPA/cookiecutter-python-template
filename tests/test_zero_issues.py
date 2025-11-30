@@ -20,24 +20,29 @@ if TYPE_CHECKING:
 class TestFormattingAndLinting:
     """Ensure generated projects pass all formatting and linting checks."""
 
-    def test_black_formatting(
+    def test_ruff_formatting(
         self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
     ) -> None:
-        """Verify Black formatter passes on generated project."""
+        """Verify Ruff formatter passes on generated project.
+
+        Note: This project uses Ruff for formatting (replaces Black).
+        Ruff format is compatible with Black but may have subtle differences.
+        """
         from tests.conftest import generate_project
 
         project_dir = generate_project(template_dir, temp_dir, minimal_config)
 
         result = subprocess.run(
-            ["black", "--check", "--diff", "src/", "tests/"],
+            ["uv", "run", "ruff", "format", "--check", "--diff", "src/", "tests/"],
             cwd=project_dir,
             capture_output=True,
             text=True,
             check=False,
         )
 
-        assert result.returncode == 0, \
-            f"Black formatting issues detected:\n{result.stdout}\n{result.stderr}"
+        assert result.returncode == 0, (
+            f"Ruff formatting issues detected:\n{result.stdout}\n{result.stderr}"
+        )
 
     def test_ruff_linting(
         self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
@@ -55,8 +60,9 @@ class TestFormattingAndLinting:
             check=False,
         )
 
-        assert result.returncode == 0, \
+        assert result.returncode == 0, (
             f"Ruff linting issues detected:\n{result.stdout}\n{result.stderr}"
+        )
 
     @pytest.mark.slow
     def test_mypy_type_checking(
@@ -86,8 +92,9 @@ class TestFormattingAndLinting:
             )
 
         # Allow 0 (success) or 1 (warnings only, no errors)
-        assert result.returncode in [0, 1] or "error" not in result.stdout.lower(), \
+        assert result.returncode in [0, 1] or "error" not in result.stdout.lower(), (
             f"Type checking errors detected:\n{result.stdout}\n{result.stderr}"
+        )
 
 
 @pytest.mark.integration
@@ -106,18 +113,30 @@ class TestPreCommitHooks:
         for pattern in ["*.py", "*.toml", "*.md", "*.yml", "*.yaml"]:
             for file_path in project_dir.rglob(pattern):
                 # Skip .git, .venv, and build artifacts
-                if any(part in str(file_path) for part in [".git", ".venv", "venv", "__pycache__", ".ruff_cache", "site-packages"]):
+                if any(
+                    part in str(file_path)
+                    for part in [
+                        ".git",
+                        ".venv",
+                        "venv",
+                        "__pycache__",
+                        ".ruff_cache",
+                        "site-packages",
+                    ]
+                ):
                     continue
 
                 try:
                     content = file_path.read_text()
                     lines_with_trailing = [
-                        i + 1 for i, line in enumerate(content.splitlines())
+                        i + 1
+                        for i, line in enumerate(content.splitlines())
                         if line.endswith((" ", "\t"))
                     ]
 
-                    assert not lines_with_trailing, \
+                    assert not lines_with_trailing, (
                         f"Trailing whitespace found in {file_path} on lines: {lines_with_trailing}"
+                    )
                 except (UnicodeDecodeError, PermissionError):
                     # Skip binary files
                     continue
@@ -138,8 +157,9 @@ class TestPreCommitHooks:
                 try:
                     content = file_path.read_text()
                     if content:  # Skip empty files
-                        assert content.endswith("\n"), \
+                        assert content.endswith("\n"), (
                             f"File does not end with newline: {file_path}"
+                        )
                 except (UnicodeDecodeError, PermissionError):
                     continue
 
@@ -163,9 +183,9 @@ class TestPreCommitHooks:
             return loader.construct_scalar(node)
 
         yaml.add_constructor("!ENV", env_constructor, Loader=yaml.SafeLoader)
-        yaml.add_multi_constructor("tag:yaml.org,2002:python/name:",
-                                   python_name_constructor,
-                                   Loader=yaml.SafeLoader)
+        yaml.add_multi_constructor(
+            "tag:yaml.org,2002:python/name:", python_name_constructor, Loader=yaml.SafeLoader
+        )
 
         for yaml_file in project_dir.rglob("*.yml"):
             if ".git" in str(yaml_file):
@@ -223,16 +243,23 @@ class TestPreCommitHooks:
 
         # Files that legitimately contain '=======' as section separators
         excluded_files = {
-            ".env.example", ".env.template", "CHANGELOG.md", "README.md",
-            ".pre-commit-config.yaml", "CONTRIBUTING.md", "SECURITY.md"
+            ".env.example",
+            ".env.template",
+            "CHANGELOG.md",
+            "README.md",
+            ".pre-commit-config.yaml",
+            "CONTRIBUTING.md",
+            "SECURITY.md",
         }
 
         for file_path in project_dir.rglob("*"):
             # Skip git files, backup files, binary files, and excluded files
-            if (not file_path.is_file()
+            if (
+                not file_path.is_file()
                 or ".git" in str(file_path)
                 or file_path.suffix == ".bak"
-                or file_path.name in excluded_files):
+                or file_path.name in excluded_files
+            ):
                 continue
 
             try:
@@ -243,10 +270,12 @@ class TestPreCommitHooks:
                 for i, line in enumerate(lines, 1):
                     stripped = line.strip()
                     # Check for standalone conflict markers (not in comments)
-                    if stripped in ["<<<<<<<", "=======", ">>>>>>>"] and not line.lstrip().startswith("#"):
-                        pytest.fail(
-                            f"Merge conflict marker '{stripped}' found in {file_path}:{i}"
-                        )
+                    if stripped in [
+                        "<<<<<<<",
+                        "=======",
+                        ">>>>>>>",
+                    ] and not line.lstrip().startswith("#"):
+                        pytest.fail(f"Merge conflict marker '{stripped}' found in {file_path}:{i}")
             except (UnicodeDecodeError, PermissionError):
                 continue
 
@@ -273,8 +302,9 @@ class TestPreCommitHooks:
             try:
                 content = file_path.read_text()
                 for pattern in private_key_patterns:
-                    assert pattern not in content, \
+                    assert pattern not in content, (
                         f"Private key pattern '{pattern}' found in {file_path}"
+                    )
             except (UnicodeDecodeError, PermissionError):
                 continue
 
@@ -300,18 +330,15 @@ class TestSecurityScans:
         )
 
         # Bandit returns 1 if issues found
-        assert result.returncode in [0, 1], \
-            f"Bandit scan failed:\n{result.stdout}\n{result.stderr}"
+        assert result.returncode in [0, 1], f"Bandit scan failed:\n{result.stdout}\n{result.stderr}"
 
         # Check for high/critical issues
         if "Issue: [B" in result.stdout:
             # Parse output to check severity
             high_severity_found = any(
-                severity in result.stdout
-                for severity in ["Severity: High", "Severity: Critical"]
+                severity in result.stdout for severity in ["Severity: High", "Severity: Critical"]
             )
-            assert not high_severity_found, \
-                f"High/Critical security issues found:\n{result.stdout}"
+            assert not high_severity_found, f"High/Critical security issues found:\n{result.stdout}"
 
     @pytest.mark.slow
     def test_safety_dependency_scan(
@@ -346,7 +373,9 @@ class TestSecurityScans:
         # Safety returns non-zero if vulnerabilities found
         # Allow this but report as warning
         if result.returncode != 0:
-            pytest.skip(f"Safety found vulnerabilities (expected for fresh install):\n{result.stdout}")
+            pytest.skip(
+                f"Safety found vulnerabilities (expected for fresh install):\n{result.stdout}"
+            )
 
 
 @pytest.mark.integration
@@ -382,8 +411,7 @@ class TestCodeQuality:
 
         # Allow failure since template code might have minimal docstrings
         # Just check it runs without crashing
-        assert "error" not in result.stderr.lower(), \
-            f"Interrogate crashed:\n{result.stderr}"
+        assert "error" not in result.stderr.lower(), f"Interrogate crashed:\n{result.stderr}"
 
     def test_no_hardcoded_secrets(
         self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
@@ -396,9 +424,9 @@ class TestCodeQuality:
         # Patterns that indicate potential secrets
         secret_patterns = [
             (r'(api_key|password|secret|token)\s*=\s*["\'][^"\']{8,}["\']', "hardcoded credential"),
-            (r'(AWS|aws)_access_key_id\s*=', "AWS access key"),
-            (r'(AWS|aws)_secret_access_key\s*=', "AWS secret key"),
-            (r'-----BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY-----', "private key"),
+            (r"(AWS|aws)_access_key_id\s*=", "AWS access key"),
+            (r"(AWS|aws)_secret_access_key\s*=", "AWS secret key"),
+            (r"-----BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY-----", "private key"),
         ]
 
         import re
@@ -411,14 +439,16 @@ class TestCodeQuality:
                     matches = re.findall(pattern, content, re.IGNORECASE)
                     # Filter out obvious placeholders
                     real_matches = [
-                        m for m in matches
+                        m
+                        for m in matches
                         if "example" not in str(m).lower()
                         and "placeholder" not in str(m).lower()
                         and "your_" not in str(m).lower()
                     ]
 
-                    assert not real_matches, \
+                    assert not real_matches, (
                         f"Potential {description} found in {py_file}: {real_matches}"
+                    )
             except (UnicodeDecodeError, PermissionError):
                 continue
 
@@ -447,8 +477,7 @@ class TestCodeQuality:
                 content = py_file.read_text()
 
                 for tag in llm_tags:
-                    assert tag not in content, \
-                        f"Unverified LLM tag '{tag}' found in {py_file}"
+                    assert tag not in content, f"Unverified LLM tag '{tag}' found in {py_file}"
             except (UnicodeDecodeError, PermissionError):
                 continue
 
@@ -489,8 +518,9 @@ class TestShellScripts:
                 check=False,
             )
 
-            assert result.returncode == 0, \
+            assert result.returncode == 0, (
                 f"Shellcheck failed for {script}:\n{result.stdout}\n{result.stderr}"
+            )
 
 
 @pytest.mark.integration
@@ -533,8 +563,9 @@ class TestMarkdownAndDocs:
         )
 
         # Allow warnings but not errors
-        assert result.returncode in [0, 1] or "error" not in result.stderr.lower(), \
+        assert result.returncode in [0, 1] or "error" not in result.stderr.lower(), (
             f"Markdownlint critical issues found:\n{result.stdout}\n{result.stderr}"
+        )
 
     def test_no_spelling_errors(
         self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
@@ -556,12 +587,7 @@ class TestMarkdownAndDocs:
 
         # Run codespell
         result = subprocess.run(
-            [
-                "codespell",
-                ".",
-                "--skip=.git",
-                "--ignore-words-list=crate,nd,rouge,compiletime"
-            ],
+            ["codespell", ".", "--skip=.git", "--ignore-words-list=crate,nd,rouge,compiletime"],
             cwd=project_dir,
             capture_output=True,
             text=True,
@@ -570,10 +596,8 @@ class TestMarkdownAndDocs:
 
         # Codespell returns non-zero if typos found
         # Allow this but report what was found
-        if result.returncode != 0:
-            # Check if there are actual errors or just warnings
-            if result.stdout.strip():
-                pytest.skip(f"Codespell found potential typos:\n{result.stdout}")
+        if result.returncode != 0 and result.stdout.strip():
+            pytest.skip(f"Codespell found potential typos:\n{result.stdout}")
 
 
 @pytest.mark.integration
@@ -600,16 +624,13 @@ class TestAllConfigsCombined:
         from tests.conftest import generate_project
 
         # Generate project directly in temp_dir (generate_project creates subdirectory)
-        project_dir = generate_project(
-            template_dir,
-            temp_dir,
-            config_data["default_context"]
-        )
+        project_dir = generate_project(template_dir, temp_dir, config_data["default_context"])
 
         # Verify project directory exists
         assert project_dir.exists(), f"Project directory not found: {project_dir}"
-        assert (project_dir / "pyproject.toml").exists(), \
+        assert (project_dir / "pyproject.toml").exists(), (
             f"pyproject.toml not found in {project_dir}. Contents: {list(project_dir.iterdir())}"
+        )
 
         # 1. Black formatting (skip for now - template files with Jinja2 are hard to pre-format)
         # TODO: Format template files properly or use post-generation hook
@@ -644,18 +665,19 @@ class TestAllConfigsCombined:
 
         for py_file in project_dir.rglob("*.py"):
             # Skip .git, .venv, and other build artifacts
-            if any(part in str(py_file) for part in [".git", ".venv", "venv", "__pycache__", ".ruff_cache"]):
+            if any(
+                part in str(py_file)
+                for part in [".git", ".venv", "venv", "__pycache__", ".ruff_cache"]
+            ):
                 continue
 
             content = py_file.read_text()
             matches = jinja_pattern.findall(content)
-            assert not matches, \
-                f"Template variables found in {py_file}: {matches}"
+            assert not matches, f"Template variables found in {py_file}: {matches}"
 
         # 5. No hardcoded template values
         for py_file in project_dir.rglob("*.py"):
             content = py_file.read_text()
-            assert "williaby" not in content.lower(), \
-                f"Hardcoded template author in {py_file}"
+            assert "williaby" not in content.lower(), f"Hardcoded template author in {py_file}"
 
         print(f"✅ All validation checks passed for {config_name}")

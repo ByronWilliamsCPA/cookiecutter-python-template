@@ -47,7 +47,8 @@ exclude_patterns = [
   "**/tmp_cleanup/**",
   # Exclude cookiecutter template directories (not actual code)
   # Note: Template files contain Jinja2 syntax that breaks parsers
-  "{{cookiecutter.project_slug}}/**",
+  # Curly braces must be escaped to avoid glob brace expansion
+  "\\{\\{cookiecutter.project_slug\\}\\}/**",
 ]
 
 test_patterns = [
@@ -101,10 +102,8 @@ drivers = [
 [[plugin]]
 name = "trufflehog"
 
-[[plugin]]
-name = "cpd"
-# Copy-Paste Detector for identifying duplicated code
-# Helps maintain DRY principles and reduce technical debt
+# Note: CPD (Copy-Paste Detector) is not available as a qlty plugin.
+# Duplicate code detection is handled by the smells feature with mode="comment" above.
 
 # Skip bandit on test files - test assertions are legitimate (B101)
 [[exclude]]
