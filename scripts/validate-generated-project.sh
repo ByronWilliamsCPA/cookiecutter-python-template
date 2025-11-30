@@ -100,7 +100,7 @@ main() {
                 success "Valid pyproject.toml"
             else
                 error "Invalid pyproject.toml"
-                echo "$TOML_ERROR" | head -5
+                echo "$TOML_ERROR"
             fi
         else
             # Try with json.tool as fallback (won't work for TOML, but checks if file is readable)
