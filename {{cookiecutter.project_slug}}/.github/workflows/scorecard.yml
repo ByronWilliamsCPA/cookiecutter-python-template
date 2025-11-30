@@ -2,9 +2,7 @@
 # OpenSSF Scorecard for {{ cookiecutter.project_name }}
 # Security posture assessment and supply chain security validation.
 #
-# Dashboard:
-#   https://securityscorecards.dev/viewer/?uri=github.com/{{
-#   cookiecutter.github_org_or_user }}/{{ cookiecutter.project_slug }}
+# Dashboard: https://securityscorecards.dev/viewer/?uri=github.com/{{ cookiecutter.github_org_or_user }}/{{ cookiecutter.project_slug }}
 # Documentation: https://github.com/ossf/scorecard
 {%- if cookiecutter.include_github_actions == "yes" %}
 name: OpenSSF Scorecard
