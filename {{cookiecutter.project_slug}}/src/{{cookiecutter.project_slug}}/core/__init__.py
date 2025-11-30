@@ -18,20 +18,20 @@ from {{ cookiecutter.project_slug }}.core.exceptions import (
 )
 
 __all__ = [
-    # Configuration
-    "Settings",
-    # Exceptions
-    "ProjectBaseError",
-    "ConfigurationError",
-    "ValidationError",
-    "ResourceNotFoundError",
+    # Exceptions (sorted alphabetically)
+    "APIError",
     "AuthenticationError",
     "AuthorizationError",
-    "ExternalServiceError",
-    "APIError",
-    "DatabaseError",
     "BusinessLogicError",
+    "ConfigurationError",
+    "DatabaseError",
+    "ExternalServiceError",
 {% if cookiecutter.use_decimal_precision == "yes" -%}
     "FinancialCalculationError",
 {% endif -%}
+    "ProjectBaseError",
+    "ResourceNotFoundError",
+    # Configuration
+    "Settings",
+    "ValidationError",
 ]

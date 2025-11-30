@@ -344,7 +344,7 @@ def find_python_files(directories: list[Path]) -> Iterator[Path]:
 
 def print_issue(issue: FipsIssue, show_hints: bool = False) -> None:
     """Print a FIPS issue with formatting."""
-    severity_symbols = {"error": "✗", "warning": "⚠", "info": "ℹ"}
+    severity_symbols = {"error": "✗", "warning": "⚠", "info": "i"}  # noqa: RUF001
     severity_colors = {"error": "\033[91m", "warning": "\033[93m", "info": "\033[94m"}
     reset = "\033[0m"
 
@@ -424,7 +424,7 @@ Examples:
     infos = [i for i in all_issues if i.severity == "info"]
 
     if args.json:
-        import json
+        import json  # noqa: PLC0415
 
         output = {
             "summary": {

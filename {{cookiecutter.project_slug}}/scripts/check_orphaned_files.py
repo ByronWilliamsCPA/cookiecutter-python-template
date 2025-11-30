@@ -64,7 +64,7 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
     orphaned: list[tuple[str, str, Path]] = []
 
     # Define conditional file mappings
-    # Format: (feature_key, disabled_value, paths_to_check)
+    # Format: (feature_key, disabled_value, paths_to_check)  # noqa: ERA001
     conditional_files: list[tuple[str, str, list[Path]]] = [
         ("include_cli", "no", [src_dir / "cli.py"]),
         (
@@ -137,9 +137,11 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
 
     for feature_key, disabled_value, paths in conditional_files:
         if context.get(feature_key) == disabled_value:
-            for path in paths:
-                if path.exists():
-                    orphaned.append((feature_key, disabled_value, path))
+            orphaned.extend(  # noqa: PERF401
+                (feature_key, disabled_value, path)
+                for path in paths
+                if path.exists()
+            )
 
     return orphaned
 
