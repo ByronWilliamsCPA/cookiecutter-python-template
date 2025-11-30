@@ -216,9 +216,9 @@ jobs:
 
             ### Failed Jobs
 
-            ${{ needs.comprehensive-validation.result != 'success' ? '- ❌ Comprehensive Validation\n' : '' }}
-            ${{ needs.dependency-audit.result != 'success' ? '- ❌ Dependency Audit\n' : '' }}
-            ${{ needs.test-latest-tools.result != 'success' ? '- ❌ Latest Tools Test\n' : '' }}
+            ${{ needs.comprehensive-validation.result != 'success' && '- ❌ Comprehensive Validation\n' || '' }}
+            ${{ needs.dependency-audit.result != 'success' && '- ❌ Dependency Audit\n' || '' }}
+            ${{ needs.test-latest-tools.result != 'success' && '- ❌ Latest Tools Test\n' || '' }}
 
             ### Recommended Actions
 
