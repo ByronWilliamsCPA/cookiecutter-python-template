@@ -106,7 +106,7 @@ jobs:
         run: |
           uv sync --all-extras
           # Install additional tools for validation
-          pip install cookiecutter pre-commit yamllint tomli ruff
+          pip install cookiecutter pre-commit yamllint tomli ruff basedpyright
 
       - name: Test feature combination
         run: |
