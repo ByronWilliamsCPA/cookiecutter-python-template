@@ -1,0 +1,140 @@
+# Cruft Template Update Workflow
+# Automatically checks for and applies template updates to registered repositories.
+#
+# This workflow runs on a schedule and creates PRs when template updates are available.
+#
+# SPDX-FileCopyrightText: 2025 Byron Williams
+# SPDX-License-Identifier: MIT
+#
+# This workflow runs in the cookiecutter-python-template repo to update all child projects.
+name: Cruft Template Updates
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Check for updates without applying them'
+        required: false
+        default: 'false'
+        type: boolean
+      repository:
+        description: 'Specific repository to update (leave empty for all)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-updates:
+    name: Check for Template Updates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: |
+          uv pip install cruft pyyaml
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run cruft check (dry run)
+        if: ${{ inputs.dry_run == 'true' || github.event_name == 'schedule' }}
+        run: |
+          python tools/cruft-manager/cruft_manager.py \
+            --registry tools/cruft-manager/cruft_registry.yaml \
+            --dry-run \
+            --report cruft-report.md \
+            --verbose
+
+      - name: Upload dry run report
+        if: ${{ inputs.dry_run == 'true' || github.event_name == 'schedule' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cruft-update-report
+          path: cruft-report.md
+          retention-days: 7
+
+  apply-updates:
+    name: Apply Template Updates
+    runs-on: ubuntu-latest
+    needs: check-updates
+    if: ${{ inputs.dry_run != 'true' && github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: |
+          uv pip install cruft pyyaml
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Apply cruft updates
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python tools/cruft-manager/cruft_manager.py \
+            --registry tools/cruft-manager/cruft_registry.yaml \
+            --report cruft-update-results.md \
+            --verbose
+
+      - name: Upload update results
+        uses: actions/upload-artifact@v4
+        with:
+          name: cruft-update-results
+          path: cruft-update-results.md
+          retention-days: 30
+
+      - name: Create summary issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let report = 'Update failed - see workflow logs for details';
+            try {
+              report = fs.readFileSync('cruft-update-results.md', 'utf8');
+            } catch (e) {}
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🔄 Cruft Template Update Failed',
+              body: `## Template Update Failure\n\n${report}\n\n[Workflow Run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              labels: ['automation', 'cruft']
+            });
