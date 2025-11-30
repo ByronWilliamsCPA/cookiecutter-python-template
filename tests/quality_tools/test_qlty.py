@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 from typing import TYPE_CHECKING, Any
 
@@ -43,6 +44,9 @@ class TestQLTYIntegration:
         project_dir = generate_project(template_dir, temp_dir, minimal_config)
 
         # Check if qlty command is available
+        if not shutil.which("qlty"):
+            pytest.skip("QLTY not installed")
+
         result = subprocess.run(
             ["qlty", "--version"],
             capture_output=True,
@@ -51,7 +55,7 @@ class TestQLTYIntegration:
         )
 
         if result.returncode != 0:
-            pytest.skip("QLTY not installed")
+            pytest.skip("QLTY not working properly")
 
         # Run qlty check
         result = subprocess.run(
