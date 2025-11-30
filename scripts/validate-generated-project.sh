@@ -96,15 +96,22 @@ main() {
 
     if check_command python; then
         if python -c "import tomli" 2>/dev/null; then
-            if TOML_ERROR=$(python -m tomli pyproject.toml 2>&1); then
+            if TOML_ERROR=$(python -c "import tomli; tomli.load(open('pyproject.toml', 'rb'))" 2>&1); then
+                success "Valid pyproject.toml"
+            else
+                error "Invalid pyproject.toml"
+                echo "$TOML_ERROR"
+            fi
+        elif python -c "import tomllib" 2>/dev/null; then
+            # Python 3.11+ has tomllib in stdlib
+            if TOML_ERROR=$(python -c "import tomllib; tomllib.load(open('pyproject.toml', 'rb'))" 2>&1); then
                 success "Valid pyproject.toml"
             else
                 error "Invalid pyproject.toml"
                 echo "$TOML_ERROR"
             fi
         else
-            # Try with json.tool as fallback (won't work for TOML, but checks if file is readable)
-            warning "tomli not available, skipping TOML validation"
+            warning "tomli/tomllib not available, skipping TOML validation"
         fi
     fi
     echo ""
