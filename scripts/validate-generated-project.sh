@@ -135,11 +135,12 @@ main() {
                     # Check for errors (including config errors and syntax errors)
                     if [[ "$YAML_OUTPUT" =~ [Ee]rror ]] || [[ "$YAML_OUTPUT" =~ "invalid config" ]]; then
                         error "YAML errors in: $yamlfile"
+                        # Always show output for errors
                         echo "$YAML_OUTPUT"
                     else
                         warning "YAML issues in: $yamlfile (yamllint reported warnings - non-blocking)"
-                        # Optionally show warnings for debugging
-                        # echo "$YAML_OUTPUT"
+                        # Show warnings too for debugging in CI
+                        echo "$YAML_OUTPUT"
                     fi
                 fi
             done
