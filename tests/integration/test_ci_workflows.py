@@ -85,9 +85,9 @@ class TestGeneratedProjectCI:
 
         project_dir = generate_project(template_dir, temp_dir, minimal_config)
 
-        # First install dependencies with uv
+        # First install dependencies with uv (including dev extras for pytest)
         result = subprocess.run(
-            ["uv", "sync"],
+            ["uv", "sync", "--all-extras"],
             cwd=project_dir,
             capture_output=True,
             text=True,
