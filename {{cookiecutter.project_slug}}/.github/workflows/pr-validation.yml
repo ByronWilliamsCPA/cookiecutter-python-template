@@ -158,8 +158,8 @@ jobs:
         run: |
           echo "## PR Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          {%- raw %}
 
-          {% raw %}
           if [ "${{ needs.core-validation.result }}" == "success" ]; then
             echo "✅ Core Validation: Passed" >> $GITHUB_STEP_SUMMARY
           else
@@ -179,26 +179,26 @@ jobs:
           else
             echo "⚠️ Changelog: ${{ needs.changelog.result }}" >> $GITHUB_STEP_SUMMARY
           fi
-          {% endraw %}
+          {%- endraw %}
+          {%- if cookiecutter.use_mkdocs == "yes" %}
 
-          {% if cookiecutter.use_mkdocs == "yes" %}
-          {% raw %}
+          {%- raw %}
           if [ "${{ needs.link-check.result }}" == "success" ]; then
             echo "✅ Link Check: Passed" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ Link Check: ${{ needs.link-check.result }}" >> $GITHUB_STEP_SUMMARY
           fi
-          {% endraw %}
-          {% endif %}
+          {%- endraw %}
+          {%- endif %}
 
-          {% raw %}
+          {%- raw %}
           # Fail if core validation failed
           if [ "${{ needs.core-validation.result }}" == "failure" ]; then
             echo ""
             echo "❌ Core validation checks failed. Please review and fix issues." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-          {% endraw %}
+          {%- endraw %}
 
           echo ""
           echo "✅ All validation checks passed!" >> $GITHUB_STEP_SUMMARY

@@ -121,16 +121,22 @@ main() {
 
     if [ -d ".github/workflows" ]; then
         if check_command yamllint; then
+            # Use project's .yamllint config if it exists
+            YAMLLINT_CONFIG=""
+            if [ -f ".yamllint" ]; then
+                YAMLLINT_CONFIG="-c .yamllint"
+            fi
+
             for yamlfile in .github/workflows/*.yml .github/workflows/*.yaml; do
                 [ -e "$yamlfile" ] || continue
-                if yamllint "$yamlfile" &>/dev/null; then
+                if yamllint $YAMLLINT_CONFIG "$yamlfile" &>/dev/null; then
                     success "Valid YAML: $yamlfile"
                 else
                     # yamllint returns non-zero for warnings and errors
                     # Show the actual output to help debug
                     # Temporarily disable exit-on-error for command substitution
                     set +e
-                    YAML_OUTPUT=$(yamllint "$yamlfile" 2>&1)
+                    YAML_OUTPUT=$(yamllint $YAMLLINT_CONFIG "$yamlfile" 2>&1)
                     set -e
                     # Check for errors (including config errors and syntax errors)
                     if [[ "$YAML_OUTPUT" =~ [Ee]rror ]] || [[ "$YAML_OUTPUT" =~ "invalid config" ]]; then
