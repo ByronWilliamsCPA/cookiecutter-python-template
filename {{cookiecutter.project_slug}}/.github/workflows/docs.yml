@@ -10,7 +10,7 @@ name: Documentation
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
@@ -34,7 +34,11 @@ jobs:
     uses: {{ cookiecutter.github_org_or_user }}/.github/.github/workflows/python-docs.yml@main
     with:
       python-version: '{{ cookiecutter.python_version }}'
-      deploy-to-pages: {% raw %}${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}{% endraw %}
+      deploy-to-pages: >-
+        {% raw %}${{
+          github.event_name == 'push' &&
+          github.ref == 'refs/heads/main'
+        }}{% endraw %}
 {% else -%}
 # Standalone documentation workflow
 jobs:
