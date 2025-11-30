@@ -126,7 +126,18 @@ main() {
                 if yamllint "$yamlfile" &>/dev/null; then
                     success "Valid YAML: $yamlfile"
                 else
-                    warning "YAML issues in: $yamlfile (yamllint reported warnings)"
+                    # yamllint returns non-zero for warnings and errors
+                    # Show the actual output to help debug
+                    YAML_OUTPUT=$(yamllint "$yamlfile" 2>&1)
+                    # Only treat as error if it contains "error" (not just warnings)
+                    if [[ "$YAML_OUTPUT" =~ [Ee]rror ]]; then
+                        error "YAML errors in: $yamlfile"
+                        echo "$YAML_OUTPUT"
+                    else
+                        warning "YAML issues in: $yamlfile (yamllint reported warnings - non-blocking)"
+                        # Optionally show warnings for debugging
+                        # echo "$YAML_OUTPUT"
+                    fi
                 fi
             done
         else
