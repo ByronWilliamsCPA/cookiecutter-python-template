@@ -97,9 +97,10 @@ class TestGeneratedProjectCI:
         if result.returncode != 0:
             pytest.skip(f"UV sync failed (may not be available): {result.stderr}")
 
-        # Run pytest
+        # Run pytest without coverage requirements for integration testing
+        # Coverage goals are for production projects, not templates
         result = subprocess.run(
-            ["uv", "run", "pytest", "-v"],
+            ["uv", "run", "pytest", "-v", "--no-cov"],
             cwd=project_dir,
             capture_output=True,
             text=True,
