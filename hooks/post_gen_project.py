@@ -823,6 +823,10 @@ def get_cruft_skip_patterns() -> list[str]:
         ".vscode/**",
         # Node modules (if any JS tooling)
         "node_modules/**",
+        # Template-specific files that should remain project-owned
+        "CLAUDE.md",
+        "REUSE.toml",
+        "docs/template_feedback.md",
     ]
 
 
@@ -845,11 +849,23 @@ def add_cruft_skip_patterns() -> None:
 
     if cruft_file.exists():
         # Update existing .cruft.json (created by cruft create)
+        # Merge with existing skip patterns to preserve user customizations
         try:
             cruft_config = json.loads(cruft_file.read_text())
-            cruft_config["skip"] = skip_patterns
+            existing_skip = cruft_config.get("skip", [])
+
+            # Normalize existing 'skip' into a list of strings
+            if isinstance(existing_skip, str):
+                existing_skip = [existing_skip]
+            elif not isinstance(existing_skip, list):
+                existing_skip = []
+
+            # Merge and deduplicate, preserving order with new patterns first
+            merged_skip = list(dict.fromkeys(skip_patterns + existing_skip))
+            cruft_config["skip"] = merged_skip
+
             cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
-            print(f"  ✓ Added {len(skip_patterns)} skip patterns to .cruft.json")
+            print(f"  ✓ Updated .cruft.json skip patterns ({len(merged_skip)} entries)")
         except Exception as e:
             print(f"  - Failed to update skip patterns: {e}", file=sys.stderr)
     else:
