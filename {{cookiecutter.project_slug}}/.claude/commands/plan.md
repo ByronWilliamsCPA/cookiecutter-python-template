@@ -78,7 +78,6 @@ This project was created from the cookiecutter-python-template with:
 - **Package**: {{cookiecutter.project_slug}}
 - **Python Version**: {{cookiecutter.python_version}}
 - **Author**: {{cookiecutter.author_name}}
-{% raw %}
 {%- if cookiecutter.include_cli == "yes" %}
 - **CLI**: Yes (Click framework)
 {%- endif %}
@@ -88,7 +87,6 @@ This project was created from the cookiecutter-python-template with:
 {%- if cookiecutter.use_mkdocs == "yes" %}
 - **Documentation**: MkDocs Material
 {%- endif %}
-{% endraw %}
 
 ## Quality Requirements
 
