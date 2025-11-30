@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import json
 import subprocess
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
 
+
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from pathlib import Path
 
 
 class TestBasicGeneration:

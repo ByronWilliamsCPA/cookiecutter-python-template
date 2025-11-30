@@ -7,13 +7,13 @@ and pre-commit hooks, ensuring generated projects won't have any issues.
 from __future__ import annotations
 
 import subprocess
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
 
+
 if TYPE_CHECKING:
-    pass
+    from pathlib import Path
 
 
 @pytest.mark.integration
