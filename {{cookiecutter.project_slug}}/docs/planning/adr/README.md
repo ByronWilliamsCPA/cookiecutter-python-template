@@ -10,7 +10,7 @@ tags:
   - decisions
 ---
 
-This directory contains Architecture Decision Records (ADRs) for {{ '{{cookiecutter.project_name}}' }}.
+This directory contains Architecture Decision Records (ADRs) for {{cookiecutter.project_name}}.
 
 ## What Are ADRs?
 
