@@ -759,6 +759,15 @@ def run_code_fixes() -> None:
         return
 
     # Run Ruff auto-fix
+    # Format code with Ruff (replaces Black)
+    print("  • Formatting code with Ruff...")
+    success = run_command(["uv", "run", "ruff", "format", "."], check=False)
+    if success:
+        print("  ✓ Ruff format completed")
+    else:
+        print("  - Ruff format completed with some issues (review manually)")
+
+    # Fix linting issues with Ruff
     print("  • Fixing linting issues with Ruff...")
     success = run_command(["uv", "run", "ruff", "check", "--fix", "."], check=False)
     if success:
