@@ -1,3 +1,4 @@
+---
 # Security Analysis Workflow
 # Runs security scans including Bandit, Safety, and dependency checks.
 #
@@ -44,7 +45,7 @@ jobs:
       run-bandit: true
       run-safety: true
       run-osv: true
-{% else -%}
+{%- else -%}
 # Standalone security workflow
 jobs:
   security:
@@ -79,5 +80,5 @@ jobs:
             bandit-report.json
             safety-report.json
           retention-days: 30
-{% endif -%}
-{% endif -%}
+{%- endif -%}
+{%- endif -%}
