@@ -1,0 +1,56 @@
+# Cruft Manager Docker Compose
+# Runs cruft template updates on a schedule using ofelia cron scheduler
+#
+# SPDX-FileCopyrightText: 2025 Byron Williams
+# SPDX-License-Identifier: MIT
+#
+# Usage:
+#   docker-compose up -d        # Start scheduler
+#   docker-compose logs -f      # Watch logs
+#   docker-compose run cruft-manager python cruft_manager.py --dry-run  # Manual run
+
+services:
+  cruft-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/byronwilliamscpa/cruft-manager:latest
+    container_name: cruft-manager
+    environment:
+      - GH_TOKEN=${GH_TOKEN}
+      - TZ=America/New_York
+    volumes:
+      # Mount registry for updates without rebuild
+      - ./cruft_registry.yaml:/home/cruft-manager/cruft_registry.yaml:ro
+      # Mount reports directory
+      - ./reports:/home/cruft-manager/reports
+      # Optional: mount SSH keys for authenticated git operations
+      # - ~/.ssh:/home/cruft-manager/.ssh:ro
+    labels:
+      # Ofelia cron labels for scheduled execution
+      ofelia.enabled: "true"
+      ofelia.job-exec.cruft-check.schedule: "0 6 * * *"  # Daily at 6 AM
+      ofelia.job-exec.cruft-check.command: "python cruft_manager.py --dry-run --report /home/cruft-manager/reports/daily-check.md --verbose"
+      # Weekly full update (with PR creation) on Sundays
+      ofelia.job-exec.cruft-update.schedule: "0 8 * * 0"
+      ofelia.job-exec.cruft-update.command: "python cruft_manager.py --report /home/cruft-manager/reports/weekly-update.md --verbose"
+    restart: unless-stopped
+    networks:
+      - homelab
+
+  # Ofelia - Cron job scheduler for Docker
+  ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: ofelia-cruft
+    depends_on:
+      - cruft-manager
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    external: true
