@@ -59,7 +59,11 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --all-extras
-          pip install cookiecutter pre-commit yamllint tomli ruff basedpyright black bandit safety
+          pip install cookiecutter pre-commit yamllint tomli ruff basedpyright black bandit safety interrogate codespell
+
+      - name: Install Node.js tools
+        run: |
+          npm install -g markdownlint-cli
 
       - name: Run Black formatter check
         run: |
