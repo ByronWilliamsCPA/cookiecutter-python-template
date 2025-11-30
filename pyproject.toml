@@ -167,6 +167,8 @@ omit = [
 precision = 2
 show_missing = true
 skip_covered = false
+# Hook files are integration-tested via template generation, not unit tests
+fail_under = 0
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
