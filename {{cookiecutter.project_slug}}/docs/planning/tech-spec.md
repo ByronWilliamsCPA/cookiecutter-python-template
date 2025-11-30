@@ -35,7 +35,7 @@ Project concept: [describe your project here]
 
 This project was created with:
 
-- **Python**: {{ '{{cookiecutter.python_version}}' }}
+- **Python**: {{cookiecutter.python_version}}
 - **Package Manager**: UV
 - **Linter**: Ruff
 - **Type Checker**: BasedPyright
