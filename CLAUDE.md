@@ -393,11 +393,11 @@ Both the template repository and generated projects support SonarCloud for conti
 **Configuration**:
 
 - **Organization**: `williaby`
-- **Project Key**: `williaby_cookiecutter-python-template`
+- **Project Key**: `ByronWilliamsCPA_cookiecutter-python-template`
 - **Analysis Method**: CI-Based (GitHub Actions)
 - **Workflow**: `.github/workflows/sonarcloud.yml`
 - **Configuration**: `sonar-project.properties`
-- **Dashboard**: <https://sonarcloud.io/project/overview?id=williaby_cookiecutter-python-template>
+- **Dashboard**: <https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template>
 
 **What's Analyzed**:
 
