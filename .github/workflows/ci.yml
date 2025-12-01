@@ -290,7 +290,7 @@ jobs:
         run: |
           echo "::group::Quality Gate Status"
           echo "Quality Gate Status: ${{ steps.quality-gate.outputs.quality-gate-status }}"
-          echo "View detailed results: https://sonarcloud.io/project/overview?id=williaby_cookiecutter-python-template"
+          echo "View detailed results: https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template"
           echo "::endgroup::"
 
       - name: Quality Gate Status (Non-Blocking)
@@ -299,7 +299,7 @@ jobs:
           echo "::warning::⚠️ Quality Gate FAILED (non-blocking for template repo)"
           echo ""
           echo "SonarQube quality gate did not pass. Consider reviewing:"
-          echo "- Review issues at: https://sonarcloud.io/project/overview?id=williaby_cookiecutter-python-template"
+          echo "- Review issues at: https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template"
           echo "- Note: Duplicate code warnings are expected in cookiecutter templates"
           echo "- SonarCloud analysis primarily for main branch monitoring"
 
