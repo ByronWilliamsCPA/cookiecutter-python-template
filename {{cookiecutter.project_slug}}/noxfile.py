@@ -36,11 +36,11 @@ import nox
 
 # nox-uv is imported but not explicitly registered.
 # In nox-uv 0.6.x+, registration happens automatically when using
-# nox.options.default_venv_backend = "uv"
-try:
+# the "uv" backend specified in nox.options.default_venv_backend
+import contextlib
+
+with contextlib.suppress(ImportError):
     import nox_uv  # noqa: F401 - Required for uv backend support
-except ImportError:
-    pass  # nox-uv is optional; falls back to standard venv
 
 # Default sessions and options
 nox.options.sessions = ["test", "lint", "docs"]

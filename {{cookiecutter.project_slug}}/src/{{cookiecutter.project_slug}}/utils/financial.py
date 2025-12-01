@@ -1,5 +1,6 @@
 """Financial utilities module.
-{% if cookiecutter.use_decimal_precision == "yes" %}
+{% if cookiecutter.use_decimal_precision == "yes" -%}
+
 CRITICAL: Always use Decimal for financial calculations to avoid floating-point errors.
 
 Example:
@@ -24,13 +25,12 @@ Never use float for money:
 
 {% if cookiecutter.use_decimal_precision == "yes" -%}
 from decimal import Decimal, ROUND_HALF_UP, getcontext
-from typing import Union
 
 # Set default precision for financial calculations
 getcontext().prec = 28  # Standard precision for financial calculations
 
 
-def to_decimal(value: Union[str, int, float, Decimal]) -> Decimal:
+def to_decimal(value: str | int | float | Decimal) -> Decimal:
     """Convert value to Decimal safely.
 
     Args:
@@ -98,7 +98,8 @@ def validate_positive(amount: Decimal, field_name: str = "amount") -> None:
         ValueError: amount must be positive, got -5.00
     """
     if amount <= 0:
-        raise ValueError(f"{field_name} must be positive, got {amount}")
+        msg = f"{field_name} must be positive, got {amount}"
+        raise ValueError(msg)
 
 
 def calculate_percentage(
