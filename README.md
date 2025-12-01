@@ -1,7 +1,7 @@
 # Cookiecutter Python Template
 
-[![Validate Template](https://github.com/williaby/cookiecutter-python-template/actions/workflows/validate-template.yml/badge.svg)](https://github.com/williaby/cookiecutter-python-template/actions/workflows/validate-template.yml)
-[![SonarCloud](https://github.com/williaby/cookiecutter-python-template/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/williaby/cookiecutter-python-template/actions/workflows/sonarcloud.yml)
+[![Validate Template](https://github.com/ByronWilliamsCPA/cookiecutter-python-template/actions/workflows/validate-template.yml/badge.svg)](https://github.com/ByronWilliamsCPA/cookiecutter-python-template/actions/workflows/validate-template.yml)
+[![SonarCloud](https://github.com/ByronWilliamsCPA/cookiecutter-python-template/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/ByronWilliamsCPA/cookiecutter-python-template/actions/workflows/sonarcloud.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ByronWilliamsCPA_cookiecutter-python-template&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ByronWilliamsCPA_cookiecutter-python-template)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ByronWilliamsCPA_cookiecutter-python-template&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ByronWilliamsCPA_cookiecutter-python-template)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ByronWilliamsCPA_cookiecutter-python-template&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ByronWilliamsCPA_cookiecutter-python-template)
