@@ -26,6 +26,8 @@ Never use float for money:
 {% if cookiecutter.use_decimal_precision == "yes" -%}
 from decimal import Decimal, ROUND_HALF_UP, getcontext
 
+from {{ cookiecutter.project_slug }}.core.exceptions import ValidationError
+
 # Set default precision for financial calculations
 getcontext().prec = 28  # Standard precision for financial calculations
 
@@ -88,18 +90,18 @@ def validate_positive(amount: Decimal, field_name: str = "amount") -> None:
         field_name: Name of field for error messages
 
     Raises:
-        ValueError: If amount is not positive
+        ValidationError: If amount is not positive
 
     Examples:
         >>> validate_positive(Decimal('10.00'))  # OK
-        >>> validate_positive(Decimal('-5.00'))  # Raises ValueError
+        >>> validate_positive(Decimal('-5.00'))  # Raises ValidationError
         Traceback (most recent call last):
             ...
-        ValueError: amount must be positive, got -5.00
+        ValidationError: amount must be positive, got -5.00
     """
     if amount <= 0:
         msg = f"{field_name} must be positive, got {amount}"
-        raise ValueError(msg)
+        raise ValidationError(msg, field=field_name, value=str(amount))
 
 
 def calculate_percentage(
