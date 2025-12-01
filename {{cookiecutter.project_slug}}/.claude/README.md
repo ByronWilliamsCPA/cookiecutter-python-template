@@ -57,7 +57,7 @@ The `claude.md` file in this directory contains **project-specific** guidelines 
 
 The `context/` directory contains **project-specific** reference documents:
 
-- `python-standards.md` - Project-specific Python conventions (supplements `standard/standards/python.md`)
+- `python-standards.md` - Project-specific Python conventions (supplements global `/standards/python.md`)
 - `testing-patterns.md` - Project-specific testing patterns and fixtures
 
 These files extend the universal standards with project-specific examples and patterns. Edit these freely to match your project's needs.
