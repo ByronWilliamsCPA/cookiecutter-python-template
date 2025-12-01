@@ -83,7 +83,7 @@ export SONAR_TOKEN="your-token-here"
 
 # For template repository
 python scripts/check_quality_gate.py \
-  --project-key "williaby_cookiecutter-python-template" \
+  --project-key "ByronWilliamsCPA_cookiecutter-python-template" \
   --org "williaby"
 
 # For generated projects (from project root)

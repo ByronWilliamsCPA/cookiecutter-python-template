@@ -1,11 +1,11 @@
 # Cookiecutter Python Template
 
-[![Validate Template](https://github.com/williaby/cookiecutter-python-template/actions/workflows/validate-template.yml/badge.svg)](https://github.com/williaby/cookiecutter-python-template/actions/workflows/validate-template.yml)
-[![SonarCloud](https://github.com/williaby/cookiecutter-python-template/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/williaby/cookiecutter-python-template/actions/workflows/sonarcloud.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=williaby_cookiecutter-python-template&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=williaby_cookiecutter-python-template)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=williaby_cookiecutter-python-template&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=williaby_cookiecutter-python-template)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=williaby_cookiecutter-python-template&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=williaby_cookiecutter-python-template)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=williaby_cookiecutter-python-template&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=williaby_cookiecutter-python-template)
+[![Validate Template](https://github.com/ByronWilliamsCPA/cookiecutter-python-template/actions/workflows/validate-template.yml/badge.svg)](https://github.com/ByronWilliamsCPA/cookiecutter-python-template/actions/workflows/validate-template.yml)
+[![SonarCloud](https://github.com/ByronWilliamsCPA/cookiecutter-python-template/actions/workflows/sonarcloud.yml/badge.svg)](https://github.com/ByronWilliamsCPA/cookiecutter-python-template/actions/workflows/sonarcloud.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ByronWilliamsCPA_cookiecutter-python-template&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ByronWilliamsCPA_cookiecutter-python-template)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ByronWilliamsCPA_cookiecutter-python-template&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ByronWilliamsCPA_cookiecutter-python-template)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ByronWilliamsCPA_cookiecutter-python-template&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ByronWilliamsCPA_cookiecutter-python-template)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ByronWilliamsCPA_cookiecutter-python-template&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=ByronWilliamsCPA_cookiecutter-python-template)
 
 This folder contains a complete, production-ready cookiecutter template for starting new Python projects.
 
@@ -291,10 +291,10 @@ Both this template repository and generated projects support SonarCloud for cont
 
 The template repository itself is configured with SonarCloud to analyze hooks and template files:
 
-1. **Project Already Created**: `williaby_cookiecutter-python-template`
+1. **Project Already Created**: `ByronWilliamsCPA_cookiecutter-python-template`
 2. **Token Configured**: `SONAR_TOKEN` secret added to GitHub organization
 3. **Workflow Enabled**: `.github/workflows/sonarcloud.yml` runs on push/PR
-4. **Dashboard**: [View SonarCloud Dashboard](https://sonarcloud.io/project/overview?id=williaby_cookiecutter-python-template)
+4. **Dashboard**: [View SonarCloud Dashboard](https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template)
 
 ### For Generated Projects
 
