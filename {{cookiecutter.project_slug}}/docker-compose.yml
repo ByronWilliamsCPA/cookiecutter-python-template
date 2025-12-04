@@ -72,6 +72,36 @@ services:
     networks:
       - {{ cookiecutter.project_slug }}-network
 
+{% if cookiecutter.include_frontend == "react" -%}
+  # =============================================================================
+  # Frontend Service (React + Vite)
+  # =============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    image: {{ cookiecutter.project_slug }}-frontend:${VERSION:-latest}
+    container_name: {{ cookiecutter.project_slug }}-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - VITE_API_URL=http://localhost:${APP_PORT:-8000}
+    volumes:
+      # Development: Mount source code for hot reload
+      - ./frontend/src:/app/src:ro
+      - ./frontend/public:/app/public:ro
+      - ./frontend/index.html:/app/index.html:ro
+    {% if cookiecutter.include_api_framework == "yes" -%}
+    depends_on:
+      - app
+    {% endif -%}
+    restart: unless-stopped
+
+    networks:
+      - {{ cookiecutter.project_slug }}-network
+
+{% endif -%}
 {% if cookiecutter.include_database != "none" -%}
   # =============================================================================
   # Database Service (PostgreSQL)

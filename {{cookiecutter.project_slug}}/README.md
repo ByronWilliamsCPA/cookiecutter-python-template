@@ -149,6 +149,63 @@ uv run {{cookiecutter.cli_tool_name}} process input.txt --output result.json
 
 {%- endif %}
 
+{%- if cookiecutter.include_frontend == "react" %}
+
+## Frontend Development
+
+The frontend is a React + TypeScript application built with Vite.
+
+### Quick Start
+
+```bash
+cd frontend
+{{ cookiecutter.frontend_package_manager }} install
+{{ cookiecutter.frontend_package_manager }} run dev
+```
+
+Frontend runs at http://localhost:3000 with hot reload.
+
+### Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `{{ cookiecutter.frontend_package_manager }} run dev` | Start dev server with HMR |
+| `{{ cookiecutter.frontend_package_manager }} run build` | Build for production |
+| `{{ cookiecutter.frontend_package_manager }} run test` | Run tests in watch mode |
+| `{{ cookiecutter.frontend_package_manager }} run lint` | Lint code |
+| `{{ cookiecutter.frontend_package_manager }} run typecheck` | Run TypeScript type checking |
+| `{{ cookiecutter.frontend_package_manager }} run generate-client` | Generate API client from OpenAPI |
+
+### API Client Generation
+
+Generate a type-safe TypeScript client from the FastAPI OpenAPI schema:
+
+```bash
+# Start backend first
+uv run uvicorn {{ cookiecutter.project_slug }}.main:app &
+
+# Generate client
+cd frontend && {{ cookiecutter.frontend_package_manager }} run generate-client
+```
+
+This creates typed API functions in `frontend/src/client/`.
+
+{%- if cookiecutter.include_docker == "yes" %}
+
+### Docker
+
+```bash
+# Development (with hot reload)
+docker-compose up frontend
+
+# Production build
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up frontend
+```
+
+{%- endif %}
+
+{%- endif %}
+
 ## Google Assured OSS Integration
 
 This project uses **Google Assured OSS** as the primary package source, with PyPI as a fallback. Assured OSS provides vetted, secure open-source packages with Google's security guarantees.

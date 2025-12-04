@@ -12,7 +12,15 @@
   "_copy_without_render": [
     "*.html",
     "*.css",
-    "*.js"
+    "*.js",
+    "*.ts",
+    "*.tsx",
+    "*.jsx",
+    "*.svg",
+    "*.png",
+    "*.ico",
+    "*.woff",
+    "*.woff2"
   ],
 
   "python_version": ["3.12", "3.11", "3.13", "3.10", "3.14"],
@@ -32,6 +40,12 @@
 
   "include_ml_dependencies": ["no", "yes"],
   "include_api_framework": ["no", "yes"],
+
+  "_comment_frontend": "Frontend Configuration (React with Vite + TypeScript)",
+  "include_frontend": ["no", "react"],
+  "frontend_package_manager": ["npm", "pnpm"],
+  "include_openapi_client": ["yes", "no"],
+  "node_version": "22",
 
   "_comment_mcp": "MCP Server Support (from zen-mcp-server analysis)",
   "include_mcp_server": ["no", "yes"],
