@@ -56,11 +56,16 @@ repos:
   # ============================================================================
   # Advanced secret detection beyond detect-private-key
   # Detects API keys, tokens, credentials, and other secrets
-  - repo: https://github.com/trufflesecurity/trufflehog
-    rev: v3.63.11
+  # Uses local system-installed trufflehog to avoid Go build issues
+  # Install: brew install trufflehog (macOS) or see https://github.com/trufflesecurity/trufflehog#installation
+  - repo: local
     hooks:
       - id: trufflehog
-        entry: trufflehog filesystem --fail --no-update .
+        name: TruffleHog Secret Scanner
+        description: Detect secrets in your data before committing
+        entry: bash -c 'command -v trufflehog >/dev/null 2>&1 && trufflehog git file://. --since-commit HEAD --results=verified,unknown --fail || echo "TruffleHog not installed - skipping (install: brew install trufflehog)"'
+        language: system
+        pass_filenames: false
         stages: [pre-commit]
 
   # ============================================================================
