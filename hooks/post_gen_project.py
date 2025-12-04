@@ -188,6 +188,23 @@ def cleanup_conditional_files() -> None:
     if "{{ cookiecutter.use_mkdocs }}" == "no":
         remove_file(Path(".github/workflows/docs.yml"))
 
+    # Remove frontend if not needed
+    if "{{ cookiecutter.include_frontend }}" == "no":
+        remove_dir(Path("frontend"))
+        remove_file(Path("scripts/generate-client.sh"))
+    else:
+        # Frontend is enabled
+        # Handle OpenAPI client generator script
+        if "{{ cookiecutter.include_openapi_client }}" == "yes":
+            make_executable(Path("scripts/generate-client.sh"))
+        else:
+            remove_file(Path("scripts/generate-client.sh"))
+
+        # Warn if frontend enabled without API framework
+        if "{{ cookiecutter.include_api_framework }}" == "no":
+            print("  ⚠ Warning: Frontend enabled without API framework")
+            print("    Consider enabling include_api_framework for full-stack support")
+
     # Note: Security scanning workflows (security-analysis.yml) are always included
 
 
@@ -498,6 +515,8 @@ def print_success_message() -> None:
     include_semantic_release = "{{ cookiecutter.include_semantic_release }}" == "yes"
     include_coderabbit = "{{ cookiecutter.include_coderabbit }}" == "yes"
     include_linear = "{{ cookiecutter.include_linear }}" == "yes"
+    include_frontend = "{{ cookiecutter.include_frontend }}"
+    frontend_package_manager = "{{ cookiecutter.frontend_package_manager }}"
 
     print("\n" + "=" * 60)
     print(f"🎉 SUCCESS! {project_name} has been created!")
@@ -523,6 +542,8 @@ def print_success_message() -> None:
         optional_features.append("CodeRabbit (AI code reviews)")
     if include_linear:
         optional_features.append("Linear (project management integration)")
+    if include_frontend != "no":
+        optional_features.append(f"Frontend ({include_frontend.title()} + Vite + TypeScript)")
 
     if optional_features:
         print("\n✨ Optional features included:")
@@ -606,6 +627,17 @@ def print_success_message() -> None:
         print("     Link PRs to issues: 'Closes ENG-123' in PR description")
         print("     Issues sync bidirectionally with GitHub")
 
+    if include_frontend != "no":
+        print("\n  🎨 Frontend (React + Vite):")
+        print("     cd frontend")
+        print(f"     {frontend_package_manager} install")
+        print(f"     {frontend_package_manager} run dev          # Start dev server (http://localhost:3000)")
+        print(f"     {frontend_package_manager} run test         # Run tests")
+        print(f"     {frontend_package_manager} run build        # Build for production")
+        if include_docker:
+            print("\n     Or with Docker:")
+            print("     docker-compose up frontend  # Start frontend container")
+
     print("\n" + "=" * 60)
     print("📚 Documentation:")
     print("  - README.md: Project overview and quick start")
@@ -613,6 +645,8 @@ def print_success_message() -> None:
     print("  - CLAUDE.md: Claude Code development guidance")
     if include_load_testing:
         print("  - tests/load/README.md: Load testing guide")
+    if include_frontend != "no":
+        print("  - frontend/README.md: Frontend development guide")
     print("=" * 60 + "\n")
 
 
@@ -823,6 +857,20 @@ def get_cruft_skip_patterns() -> list[str]:
         ".vscode/**",
         # Node modules (if any JS tooling)
         "node_modules/**",
+        # Frontend user customizations (don't overwrite with cruft update)
+        "frontend/src/components/**",
+        "frontend/src/hooks/**",
+        "frontend/src/pages/**",
+        "frontend/src/routes/**",
+        "frontend/src/App.tsx",
+        "frontend/src/App.css",
+        "frontend/public/**",
+        # Frontend generated/build files
+        "frontend/src/client/**",
+        "frontend/dist/**",
+        "frontend/node_modules/**",
+        "frontend/.vite/**",
+        "frontend/coverage/**",
         # Template-specific files that should remain project-owned
         "CLAUDE.md",
         "REUSE.toml",
