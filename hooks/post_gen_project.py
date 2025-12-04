@@ -194,11 +194,10 @@ def cleanup_conditional_files() -> None:
         remove_file(Path("scripts/generate-client.sh"))
     else:
         # Frontend is enabled
-        # Make generate-client.sh executable
-        make_executable(Path("scripts/generate-client.sh"))
-
-        # Remove OpenAPI client generator if not wanted
-        if "{{ cookiecutter.include_openapi_client }}" == "no":
+        # Handle OpenAPI client generator script
+        if "{{ cookiecutter.include_openapi_client }}" == "yes":
+            make_executable(Path("scripts/generate-client.sh"))
+        else:
             remove_file(Path("scripts/generate-client.sh"))
 
         # Warn if frontend enabled without API framework

@@ -34,7 +34,7 @@ export function ApiStatus() {
     // Poll health status every 30 seconds
     const interval = setInterval(checkHealth, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [api])
 
   if (loading) {
     return (
