@@ -631,7 +631,9 @@ def print_success_message() -> None:
         print("\n  🎨 Frontend (React + Vite):")
         print("     cd frontend")
         print(f"     {frontend_package_manager} install")
-        print(f"     {frontend_package_manager} run dev          # Start dev server (http://localhost:3000)")
+        print(
+            f"     {frontend_package_manager} run dev          # Start dev server (http://localhost:3000)"
+        )
         print(f"     {frontend_package_manager} run test         # Run tests")
         print(f"     {frontend_package_manager} run build        # Build for production")
         if include_docker:
