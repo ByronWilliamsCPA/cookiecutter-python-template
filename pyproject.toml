@@ -178,3 +178,10 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "@abstractmethod",
 ]
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.35.0",
+    "codespell>=2.4.1",
+    "interrogate>=1.7.0",
+]

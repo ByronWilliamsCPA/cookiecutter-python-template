@@ -10,3 +10,4 @@ data/promptcraft/
 # Claude local config files (may contain secrets/tokens)
 .claude/.mcp.json
 .claude/settings.local.json
+node_modules/
