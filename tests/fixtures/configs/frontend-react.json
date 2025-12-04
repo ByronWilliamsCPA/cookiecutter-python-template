@@ -1,0 +1,20 @@
+{
+  "default_context": {
+    "project_name": "Frontend React Project",
+    "project_slug": "frontend_react_project",
+    "project_short_description": "A full-stack project with React frontend",
+    "author_name": "Test Author",
+    "author_email": "test@example.com",
+    "github_username": "testuser",
+    "version": "0.1.0",
+    "include_frontend": "react",
+    "frontend_package_manager": "npm",
+    "node_version": "22",
+    "include_openapi_client": "yes",
+    "include_api_framework": "yes",
+    "include_health_checks": "yes",
+    "include_docker": "yes",
+    "include_github_actions": "yes",
+    "use_pre_commit": "yes"
+  }
+}

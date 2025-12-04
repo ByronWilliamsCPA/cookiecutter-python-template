@@ -95,6 +95,36 @@ def ml_config(minimal_config: dict[str, Any]) -> dict[str, Any]:
 
 
 @pytest.fixture
+def frontend_config(minimal_config: dict[str, Any]) -> dict[str, Any]:
+    """Provide React frontend test configuration."""
+    return {
+        **minimal_config,
+        "project_name": "Frontend Project",
+        "project_slug": "frontend_project",
+        "include_frontend": "react",
+        "include_api_framework": "yes",
+        "include_openapi_client": "yes",
+        "include_docker": "yes",
+        "frontend_package_manager": "npm",
+        "node_version": "22",
+    }
+
+
+@pytest.fixture
+def frontend_no_openapi_config(minimal_config: dict[str, Any]) -> dict[str, Any]:
+    """Provide React frontend test configuration without OpenAPI client."""
+    return {
+        **minimal_config,
+        "project_name": "Frontend No OpenAPI",
+        "project_slug": "frontend_no_openapi",
+        "include_frontend": "react",
+        "include_api_framework": "yes",
+        "include_openapi_client": "no",
+        "include_docker": "yes",
+    }
+
+
+@pytest.fixture
 def full_config(minimal_config: dict[str, Any]) -> dict[str, Any]:
     """Provide full-featured test configuration."""
     return {
@@ -112,6 +142,7 @@ def full_config(minimal_config: dict[str, Any]) -> dict[str, Any]:
         "include_nox": "yes",
         "include_mutation_testing": "yes",
         "use_mkdocs": "yes",
+        "include_frontend": "react",
     }
 
 

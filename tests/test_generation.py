@@ -89,6 +89,85 @@ class TestBasicGeneration:
         assert any(pkg in content.lower() for pkg in ml_packages), \
             "ML dependencies should be in pyproject.toml"
 
+    def test_frontend_generation(
+        self, template_dir: Path, temp_dir: Path, frontend_config: dict[str, Any]
+    ) -> None:
+        """Test generation with React frontend configuration."""
+        from tests.conftest import generate_project
+
+        project_dir = generate_project(template_dir, temp_dir, frontend_config)
+        assert project_dir.exists(), "Project directory should exist"
+
+        # Check for frontend directory and key files
+        frontend_dir = project_dir / "frontend"
+        assert frontend_dir.exists(), "frontend directory should exist"
+        assert (frontend_dir / "package.json").exists(), "package.json should exist"
+        assert (frontend_dir / "vite.config.ts").exists(), "vite.config.ts should exist"
+        assert (frontend_dir / "tsconfig.json").exists(), "tsconfig.json should exist"
+        assert (frontend_dir / "Dockerfile").exists(), "frontend Dockerfile should exist"
+        assert (frontend_dir / "nginx.conf").exists(), "nginx.conf should exist"
+
+        # Check for React source files
+        assert (frontend_dir / "src" / "App.tsx").exists(), "App.tsx should exist"
+        assert (frontend_dir / "src" / "main.tsx").exists(), "main.tsx should exist"
+        assert (frontend_dir / "src" / "hooks" / "useApi.ts").exists(), \
+            "useApi.ts hook should exist"
+        assert (frontend_dir / "src" / "components" / "ApiStatus.tsx").exists(), \
+            "ApiStatus.tsx component should exist"
+
+        # Check for test setup
+        assert (frontend_dir / "src" / "test" / "App.test.tsx").exists(), \
+            "App.test.tsx should exist"
+        assert (frontend_dir / "src" / "test" / "setup.ts").exists(), \
+            "test setup.ts should exist"
+
+        # Check OpenAPI client generator script exists (include_openapi_client=yes)
+        assert (project_dir / "scripts" / "generate-client.sh").exists(), \
+            "generate-client.sh should exist when include_openapi_client=yes"
+
+        # Check Docker compose includes frontend
+        docker_compose = project_dir / "docker-compose.yml"
+        assert docker_compose.exists(), "docker-compose.yml should exist"
+        content = docker_compose.read_text()
+        assert "frontend" in content, "docker-compose.yml should include frontend service"
+
+    def test_frontend_without_openapi_client(
+        self,
+        template_dir: Path,
+        temp_dir: Path,
+        frontend_no_openapi_config: dict[str, Any],
+    ) -> None:
+        """Test that generate-client.sh is removed when include_openapi_client=no."""
+        from tests.conftest import generate_project
+
+        project_dir = generate_project(template_dir, temp_dir, frontend_no_openapi_config)
+        assert project_dir.exists(), "Project directory should exist"
+
+        # Frontend should still exist
+        assert (project_dir / "frontend").exists(), "frontend directory should exist"
+
+        # But generate-client.sh should NOT exist
+        assert not (project_dir / "scripts" / "generate-client.sh").exists(), \
+            "generate-client.sh should NOT exist when include_openapi_client=no"
+
+    def test_no_frontend_generation(
+        self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
+    ) -> None:
+        """Test that frontend is not created when include_frontend=no (default)."""
+        from tests.conftest import generate_project
+
+        # minimal_config doesn't set include_frontend, so it defaults to "no"
+        project_dir = generate_project(template_dir, temp_dir, minimal_config)
+        assert project_dir.exists(), "Project directory should exist"
+
+        # Frontend directory should NOT exist
+        assert not (project_dir / "frontend").exists(), \
+            "frontend directory should NOT exist when include_frontend=no"
+
+        # generate-client.sh should NOT exist
+        assert not (project_dir / "scripts" / "generate-client.sh").exists(), \
+            "generate-client.sh should NOT exist when include_frontend=no"
+
     @pytest.mark.slow
     def test_full_featured_generation(
         self, template_dir: Path, temp_dir: Path, full_config: dict[str, Any]
@@ -106,13 +185,17 @@ class TestBasicGeneration:
             "GitHub workflows should exist"
         assert (project_dir / "docs").exists(), "docs directory should exist"
 
+        # Verify frontend is included in full config
+        assert (project_dir / "frontend").exists(), \
+            "frontend directory should exist in full config"
+
 
 class TestConfigurationVariations:
     """Tests for various configuration combinations."""
 
     @pytest.mark.parametrize(
         "config_name",
-        ["minimal", "cli-app", "api-service", "ml-project", "full-featured"],
+        ["minimal", "cli-app", "api-service", "ml-project", "frontend-react", "full-featured"],
     )
     def test_predefined_configs(
         self, template_dir: Path, temp_dir: Path, configs_dir: Path, config_name: str
