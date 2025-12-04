@@ -22,6 +22,10 @@
     "include_github_actions": "yes",
     "use_pre_commit": "yes",
     "include_coderabbit": "yes",
-    "include_compliance_docs": "yes"
+    "include_compliance_docs": "yes",
+    "include_frontend": "react",
+    "frontend_package_manager": "npm",
+    "node_version": "22",
+    "include_openapi_client": "yes"
   }
 }
