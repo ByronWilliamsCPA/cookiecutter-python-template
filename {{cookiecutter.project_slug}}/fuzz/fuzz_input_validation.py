@@ -20,6 +20,7 @@ Reference:
 
 from __future__ import annotations
 
+import contextlib
 import sys
 from typing import TYPE_CHECKING
 
@@ -28,8 +29,8 @@ import atheris
 if TYPE_CHECKING:
     pass
 
-# Import the module functions you want to fuzz
-# from {{ cookiecutter.project_slug }}.validation import validate_input
+# TODO: Import the module functions you want to fuzz
+# Example: from {{ cookiecutter.project_slug }}.validation import validate_input
 
 
 def test_one_input(data: bytes) -> None:
@@ -46,18 +47,11 @@ def test_one_input(data: bytes) -> None:
     fdp = atheris.FuzzedDataProvider(data)
 
     # Example: Fuzz string input validation
-    try:
-        test_string = fdp.ConsumeUnicodeNoSurrogates(1024)
-        # Call your validation function here
-        # result = validate_input(test_string)
-
-        # Example assertions (uncomment when you have real validation)
-        # assert result is not None
-        pass
-
-    except (ValueError, TypeError):
-        # Expected exceptions for invalid input
-        pass
+    with contextlib.suppress(ValueError, TypeError):
+        _ = fdp.ConsumeUnicodeNoSurrogates(1024)
+        # TODO: Call your validation function here
+        # Example: result = validate_input(test_string)
+        # Example: assert result is not None
 
 
 def main() -> None:
