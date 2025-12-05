@@ -186,6 +186,16 @@ load_testing = [
     "locust>=2.20.0",  # Python-based load testing with web UI
 ]
 {% endif %}
+{% if cookiecutter.include_supply_chain_security == "yes" %}
+# Supply chain security tools
+supply-chain = [
+    "cyclonedx-bom>=4.6.0",          # SBOM generation (CycloneDX format)
+    "pip-audit>=2.7.0",              # Python vulnerability scanning
+    "safety>=3.7.0",                 # Additional vulnerability scanning
+    "pip-licenses>=4.0.0",           # License compliance checking
+    "keyrings.google-artifactregistry-auth>=1.1.0",  # GCP Artifact Registry auth
+]
+{% endif %}
 {% if cookiecutter.include_cli == "yes" %}
 [project.scripts]
 {{ cookiecutter.cli_tool_name }} = "{{ cookiecutter.project_slug }}.cli:cli"
@@ -696,21 +706,52 @@ ignore_names = [
 # Note: UV now recommends using [dependency-groups] instead of dev-dependencies
 # We use [project.optional-dependencies] for dev dependencies (PEP 621 standard)
 
+{% if cookiecutter.include_supply_chain_security == "yes" -%}
+# =============================================================================
+# SUPPLY CHAIN SECURITY - Package Index Configuration
+# =============================================================================
+# Priority order:
+#   1. Assured OSS (Google-verified, SLSA Level 3) - third-party packages
+#   2. Internal ({{ cookiecutter.gcp_artifact_registry }}) - internal shared packages
+#   3. PyPI (fallback) - packages not in Assured OSS
+#
+# Documentation: https://cloud.google.com/assured-open-source-software/docs
+# =============================================================================
+
+[[tool.uv.index]]
+name = "assured-oss"
+url = "https://us-python.pkg.dev/cloud-aoss/cloud-aoss-python/simple"
+# Google Assured OSS - curated packages with SLSA Level 3 provenance
+# Includes: numpy, pandas, tensorflow, requests, flask, django, etc.
+# Full list: https://cloud.google.com/assured-open-source-software/docs/supported-packages
+
+[[tool.uv.index]]
+name = "internal"
+url = "https://{{ cookiecutter.gcp_region }}-python.pkg.dev/{{ cookiecutter.gcp_project_id }}/{{ cookiecutter.gcp_artifact_registry }}/simple"
+explicit = true
+# Internal packages from your organization's Artifact Registry
+# explicit = true means packages must be explicitly directed here via [tool.uv.sources]
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
+# PyPI fallback for packages not in Assured OSS
+
+# =============================================================================
+# Package Sources - Direct specific packages to specific indexes
+# =============================================================================
+[tool.uv.sources]
+# Internal packages (add your organization's packages here)
+# Example:
+# your-internal-package = { index = "internal" }
+# your-auth-library = { index = "internal" }
+
+{% else -%}
 # Package Index Configuration
-# Google Assured OSS as primary source with PyPI fallback
-# See .env.example for required Google Cloud credentials and configuration
-#
-# Indexes are configured at runtime via environment variables:
-# - GOOGLE_CLOUD_PROJECT: Your GCP project ID
-# - ASSURED_OSS_REGION: Region (us, europe, asia)
-# - ASSURED_OSS_REPOSITORY: Repository name (default: assuredoss)
-# - USE_ASSURED_OSS: Enable/disable Assured OSS (true/false)
-#
-# Index URL format:
-# https://{ASSURED_OSS_REGION}-python.pkg.dev/{GOOGLE_CLOUD_PROJECT}/{ASSURED_OSS_REPOSITORY}/simple/
-#
-# UV automatically falls back to PyPI when packages are not found in Assured OSS.
-# Authentication uses GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_APPLICATION_CREDENTIALS_B64.
+# Using default PyPI. Enable supply chain security for Google Assured OSS integration.
+# See: https://cloud.google.com/assured-open-source-software/docs
+{% endif -%}
 
 {% if cookiecutter.include_semantic_release == "yes" -%}
 # Semantic Release Configuration

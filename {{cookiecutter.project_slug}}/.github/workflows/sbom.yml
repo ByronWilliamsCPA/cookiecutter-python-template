@@ -33,6 +33,11 @@ permissions:
   contents: read
   security-events: write
 
+{% if cookiecutter.include_supply_chain_security == "yes" -%}
+env:
+  INFISICAL_DOMAIN: {{ cookiecutter.infisical_domain }}
+{% endif -%}
+
 jobs:
   sbom:
     name: SBOM & Security
@@ -43,6 +48,11 @@ jobs:
       severity-threshold: 'CRITICAL,HIGH'
       artifact-retention-days: 90
       fail-on-forbidden-licenses: false
+    {%- if cookiecutter.include_supply_chain_security == "yes" %}
+    secrets:
+      INFISICAL_CLIENT_ID: {% raw %}${{ secrets.INFISICAL_CLIENT_ID }}{% endraw %}
+      INFISICAL_CLIENT_SECRET: {% raw %}${{ secrets.INFISICAL_CLIENT_SECRET }}{% endraw %}
+    {%- endif %}
 {%- else %}
 # GitHub Actions disabled for this project
 # Enable include_github_actions to use SBOM generation and security scanning

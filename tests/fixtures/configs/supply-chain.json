@@ -1,0 +1,17 @@
+{
+  "default_context": {
+    "project_name": "Supply Chain Project",
+    "project_slug": "supply_chain_project",
+    "project_short_description": "A project with supply chain security enabled",
+    "author_name": "Test Author",
+    "author_email": "test@example.com",
+    "github_username": "testuser",
+    "version": "0.1.0",
+    "include_supply_chain_security": "yes",
+    "include_github_actions": "yes",
+    "infisical_domain": "https://secrets.example.com",
+    "gcp_project_id": "test-gcp-project",
+    "gcp_artifact_registry": "python-libs",
+    "gcp_region": "us-central1"
+  }
+}

@@ -164,6 +164,60 @@ All contributions MUST meet these requirements:
 - **Input Validation**: Validate all user inputs and file paths
 - **Path Sanitization**: Use `pathlib.Path.resolve()` to prevent directory traversal
 - **Dependency Security**: Run `uv run safety check` before submitting PRs
+{%- if cookiecutter.include_supply_chain_security == "yes" %}
+
+### Dependency Management
+
+This project uses secure package indexes to protect against supply chain attacks:
+
+**Package Index Priority:**
+
+1. **Google Assured OSS** (SLSA Level 3) - Verified third-party packages
+2. **Internal Artifact Registry** - Organization-maintained packages
+3. **PyPI** (fallback) - Standard packages not available elsewhere
+
+**Adding New Dependencies:**
+
+```bash
+# Add a dependency (UV will resolve from secure indexes first)
+uv add package-name
+
+# Add a dev dependency
+uv add --dev package-name
+
+# Verify dependency security
+uv run pip-audit
+uv run safety check
+```
+
+**Guidelines for Dependencies:**
+
+- Prefer packages available in Google Assured OSS when possible
+- Check package provenance before adding new dependencies
+- Pin specific versions for production dependencies
+- Review transitive dependencies for security concerns
+- Document why each dependency is needed in PR descriptions
+
+**Checking Package Availability:**
+
+```bash
+# Check if package is in Assured OSS
+pip index versions package-name --index-url https://us-python.pkg.dev/cloud-aoss/cloud-aoss-python/simple
+
+# View package sources
+uv pip compile pyproject.toml --verbose 2>&1 | grep package-name
+```
+
+**Internal Packages:**
+
+To use a package from the internal registry, add it to `[tool.uv.sources]` in `pyproject.toml`:
+
+```toml
+[tool.uv.sources]
+internal-package = { index = "internal" }
+```
+
+{%- endif %}
 
 ### Type Hints
 

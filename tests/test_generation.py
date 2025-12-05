@@ -52,8 +52,9 @@ class TestBasicGeneration:
 
         # Verify CLI dependencies are included
         content = pyproject.read_text()
-        assert "typer" in content.lower() or "click" in content.lower(), \
+        assert "typer" in content.lower() or "click" in content.lower(), (
             "CLI framework should be in dependencies"
+        )
 
     def test_api_generation(
         self, template_dir: Path, temp_dir: Path, api_config: dict[str, Any]
@@ -67,10 +68,10 @@ class TestBasicGeneration:
         # Check for API-specific files
         pyproject = project_dir / "pyproject.toml"
         content = pyproject.read_text()
-        assert "fastapi" in content.lower() or "flask" in content.lower(), \
+        assert "fastapi" in content.lower() or "flask" in content.lower(), (
             "API framework should be in dependencies"
-        assert "sqlalchemy" in content.lower(), \
-            "Database framework should be in dependencies"
+        )
+        assert "sqlalchemy" in content.lower(), "Database framework should be in dependencies"
 
     def test_ml_generation(
         self, template_dir: Path, temp_dir: Path, ml_config: dict[str, Any]
@@ -86,8 +87,9 @@ class TestBasicGeneration:
         content = pyproject.read_text()
         # At least some ML-related packages should be present
         ml_packages = ["numpy", "pandas", "scikit-learn", "torch", "tensorflow"]
-        assert any(pkg in content.lower() for pkg in ml_packages), \
+        assert any(pkg in content.lower() for pkg in ml_packages), (
             "ML dependencies should be in pyproject.toml"
+        )
 
     def test_frontend_generation(
         self, template_dir: Path, temp_dir: Path, frontend_config: dict[str, Any]
@@ -110,20 +112,23 @@ class TestBasicGeneration:
         # Check for React source files
         assert (frontend_dir / "src" / "App.tsx").exists(), "App.tsx should exist"
         assert (frontend_dir / "src" / "main.tsx").exists(), "main.tsx should exist"
-        assert (frontend_dir / "src" / "hooks" / "useApi.ts").exists(), \
+        assert (frontend_dir / "src" / "hooks" / "useApi.ts").exists(), (
             "useApi.ts hook should exist"
-        assert (frontend_dir / "src" / "components" / "ApiStatus.tsx").exists(), \
+        )
+        assert (frontend_dir / "src" / "components" / "ApiStatus.tsx").exists(), (
             "ApiStatus.tsx component should exist"
+        )
 
         # Check for test setup
-        assert (frontend_dir / "src" / "test" / "App.test.tsx").exists(), \
+        assert (frontend_dir / "src" / "test" / "App.test.tsx").exists(), (
             "App.test.tsx should exist"
-        assert (frontend_dir / "src" / "test" / "setup.ts").exists(), \
-            "test setup.ts should exist"
+        )
+        assert (frontend_dir / "src" / "test" / "setup.ts").exists(), "test setup.ts should exist"
 
         # Check OpenAPI client generator script exists (include_openapi_client=yes)
-        assert (project_dir / "scripts" / "generate-client.sh").exists(), \
+        assert (project_dir / "scripts" / "generate-client.sh").exists(), (
             "generate-client.sh should exist when include_openapi_client=yes"
+        )
 
         # Check Docker compose includes frontend
         docker_compose = project_dir / "docker-compose.yml"
@@ -147,8 +152,9 @@ class TestBasicGeneration:
         assert (project_dir / "frontend").exists(), "frontend directory should exist"
 
         # But generate-client.sh should NOT exist
-        assert not (project_dir / "scripts" / "generate-client.sh").exists(), \
+        assert not (project_dir / "scripts" / "generate-client.sh").exists(), (
             "generate-client.sh should NOT exist when include_openapi_client=no"
+        )
 
     def test_no_frontend_generation(
         self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
@@ -161,12 +167,14 @@ class TestBasicGeneration:
         assert project_dir.exists(), "Project directory should exist"
 
         # Frontend directory should NOT exist
-        assert not (project_dir / "frontend").exists(), \
+        assert not (project_dir / "frontend").exists(), (
             "frontend directory should NOT exist when include_frontend=no"
+        )
 
         # generate-client.sh should NOT exist
-        assert not (project_dir / "scripts" / "generate-client.sh").exists(), \
+        assert not (project_dir / "scripts" / "generate-client.sh").exists(), (
             "generate-client.sh should NOT exist when include_frontend=no"
+        )
 
     @pytest.mark.slow
     def test_full_featured_generation(
@@ -181,13 +189,11 @@ class TestBasicGeneration:
         # Verify key features are present
         assert (project_dir / "noxfile.py").exists(), "noxfile.py should exist"
         assert (project_dir / "Dockerfile").exists(), "Dockerfile should exist"
-        assert (project_dir / ".github" / "workflows").exists(), \
-            "GitHub workflows should exist"
+        assert (project_dir / ".github" / "workflows").exists(), "GitHub workflows should exist"
         assert (project_dir / "docs").exists(), "docs directory should exist"
 
         # Verify frontend is included in full config
-        assert (project_dir / "frontend").exists(), \
-            "frontend directory should exist in full config"
+        assert (project_dir / "frontend").exists(), "frontend directory should exist in full config"
 
 
 class TestConfigurationVariations:
@@ -195,7 +201,15 @@ class TestConfigurationVariations:
 
     @pytest.mark.parametrize(
         "config_name",
-        ["minimal", "cli-app", "api-service", "ml-project", "frontend-react", "full-featured"],
+        [
+            "minimal",
+            "cli-app",
+            "api-service",
+            "ml-project",
+            "frontend-react",
+            "full-featured",
+            "supply-chain",
+        ],
     )
     def test_predefined_configs(
         self, template_dir: Path, temp_dir: Path, configs_dir: Path, config_name: str
@@ -223,8 +237,7 @@ class TestConfigurationVariations:
             check=False,
         )
 
-        assert result.returncode == 0, \
-            f"Generation failed for {config_name}: {result.stderr}"
+        assert result.returncode == 0, f"Generation failed for {config_name}: {result.stderr}"
 
         # Verify project directory exists
         with config_file.open() as f:
@@ -232,18 +245,16 @@ class TestConfigurationVariations:
         project_slug = config_data["default_context"]["project_slug"]
         project_dir = output_dir / project_slug
 
-        assert project_dir.exists(), \
-            f"Project directory should exist for {config_name}"
-        assert (project_dir / "pyproject.toml").exists(), \
+        assert project_dir.exists(), f"Project directory should exist for {config_name}"
+        assert (project_dir / "pyproject.toml").exists(), (
             f"pyproject.toml should exist for {config_name}"
+        )
 
 
 class TestInvalidInputHandling:
     """Tests for handling invalid inputs."""
 
-    def test_generation_with_empty_project_name(
-        self, template_dir: Path, temp_dir: Path
-    ) -> None:
+    def test_generation_with_empty_project_name(self, template_dir: Path, temp_dir: Path) -> None:
         """Test that generation fails gracefully with empty project name."""
         config = {
             "project_name": "",  # Invalid: empty
@@ -271,5 +282,4 @@ class TestInvalidInputHandling:
         )
 
         # Should fail validation in pre_gen_project.py
-        assert result.returncode != 0, \
-            "Generation should fail with empty project name"
+        assert result.returncode != 0, "Generation should fail with empty project name"

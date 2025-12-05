@@ -206,85 +206,184 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up frontend
 
 {%- endif %}
 
-## Google Assured OSS Integration
+{%- if cookiecutter.include_supply_chain_security == "yes" %}
 
-This project uses **Google Assured OSS** as the primary package source, with PyPI as a fallback. Assured OSS provides vetted, secure open-source packages with Google's security guarantees.
+## Supply Chain Security
 
-### Why Assured OSS?
+This project implements enterprise-grade supply chain security with a multi-tier package index strategy and centralized secrets management.
 
-- **Security**: All packages are scanned and verified by Google
-- **Supply Chain Protection**: Reduced risk of malicious packages
-- **Compliance**: Meets enterprise security requirements
-- **Automatic Fallback**: Seamlessly falls back to PyPI when needed
+### Security Architecture
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    Package Index Priority                        │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Google Assured OSS (SLSA Level 3) - Third-party packages    │
+│  2. Internal Artifact Registry - Organization packages           │
+│  3. PyPI (fallback) - Packages not in tier 1 or 2               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Quick Start
+
+```bash
+# Run the setup script
+./scripts/setup-supply-chain.sh
+
+# Or manually configure
+gcloud auth login
+gcloud auth application-default login
+pip install keyrings.google-artifactregistry-auth
+```
+
+### Package Indexes
+
+| Priority | Index | SLSA Level | Purpose |
+|----------|-------|------------|---------|
+| 1 | Google Assured OSS | 3 | Verified third-party packages |
+| 2 | Internal Registry | 2+ | Organization-maintained packages |
+| 3 | PyPI | - | Fallback for remaining packages |
+
+**Why This Matters:**
+
+- **SLSA Level 3**: Build integrity, provenance, and tamper-proof artifacts
+- **Supply Chain Protection**: Reduced risk of dependency confusion attacks
+- **Compliance**: Meets enterprise security and audit requirements
+- **Automatic Fallback**: UV seamlessly falls back when packages aren't available
+
+### Secrets Management with Infisical
+
+Secrets are managed via [Infisical](https://infisical.com/) instead of environment variables or GitHub Secrets.
+
+**Local Development:**
+
+```bash
+# Login to Infisical
+infisical login
+
+# Initialize project connection
+infisical init
+
+# Run commands with secrets injected
+infisical run --env=dev -- uv run python main.py
+
+# Or export secrets to local file
+infisical export --env=dev > .env.local
+```
+
+**CI/CD Integration:**
+
+- GitHub Actions use Infisical's Machine Identity authentication
+- Secrets are injected at runtime, never stored in repositories
+- Environment mapping: `main` → `prod`, `develop` → `staging`, `*` → `dev`
+
+### SBOM & Attestation
+
+Software Bill of Materials (SBOM) is generated on every release:
+
+```bash
+# Generate SBOM locally
+uv run cyclonedx-py environment -o sbom.json
+
+# Verify package attestation
+pip-audit --require-hashes
+```
+
+**Automated via CI:**
+
+- CycloneDX SBOM generated in JSON and XML formats
+- Attestation attached to GitHub releases
+- Vulnerability scanning with OSV database
 
 ### Setup Instructions
 
-1. **Copy the environment template**:
+1. **Run the setup script** (recommended):
+
    ```bash
-   cp .env.example .env
+   ./scripts/setup-supply-chain.sh
    ```
 
-2. **Configure Google Cloud Project**:
+2. **Or configure manually**:
+
+   **Google Cloud Authentication:**
+
    ```bash
-   # Edit .env and set your GCP project ID
-   GOOGLE_CLOUD_PROJECT=your-gcp-project-id
+   gcloud auth login
+   gcloud auth application-default login
+   pip install keyrings.google-artifactregistry-auth
    ```
 
-3. **Setup Authentication** (choose one method):
+   **Infisical Setup:**
 
-   **Option A: Service Account JSON File** (local development)
    ```bash
-   # Download service account key from GCP Console
-   # Set the file path in .env
-   GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
+   # Install Infisical CLI
+   # macOS
+   brew install infisical/get-cli/infisical
+
+   # Linux
+   curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.deb.sh' | sudo -E bash
+   sudo apt-get install infisical
+
+   # Connect to project
+   infisical login
+   infisical init
    ```
 
-   **Option B: Base64 Encoded Credentials** (CI/CD recommended)
-   ```bash
-   # Encode your service account JSON
-   base64 -w 0 service-account-key.json
+3. **Configure CI/CD secrets in Infisical:**
 
-   # Set the base64 string in .env
-   GOOGLE_APPLICATION_CREDENTIALS_B64=<paste-base64-here>
-   ```
+   - `GCP_SA_KEY_BASE64`: Base64-encoded GCP service account key
+   - `CODECOV_TOKEN`: Codecov upload token (if using Codecov)
+   - `SONAR_TOKEN`: SonarCloud token (if using SonarCloud)
 
-4. **Validate Configuration**:
-   ```bash
-   # Run the validation script
-   uv run python scripts/validate_assuredoss.py
+### Required GCP Permissions
 
-   # Or use nox
-   nox -s assuredoss
-   ```
-
-### Service Account Permissions
-
-Your service account needs the following IAM role:
-- `roles/artifactregistry.reader` (Artifact Registry Reader)
-
-### Disabling Assured OSS
-
-To use only PyPI (not recommended for production):
-
-```bash
-# In .env file
-USE_ASSURED_OSS=false
-```
+| Role | Purpose |
+|------|---------|
+| `roles/artifactregistry.reader` | Read from Assured OSS and internal registry |
+| `roles/artifactregistry.writer` | Publish to internal registry (CI only) |
 
 ### Troubleshooting
 
 **Q: Packages not found in Assured OSS?**
-- UV automatically falls back to PyPI for packages not in Assured OSS
-- No action needed - this is expected behavior
 
-**Q: Authentication errors?**
-- Verify your service account has Artifact Registry Reader role
-- Check that GOOGLE_CLOUD_PROJECT is set correctly
-- Ensure credentials file/base64 is valid JSON
+- UV automatically falls back to PyPI - no action needed
+- Check available packages: [Assured OSS Supported Packages](https://cloud.google.com/assured-open-source-software/docs/supported-packages)
 
-**Q: How to see which packages are available?**
-- Run `nox -s assuredoss` to list all available packages
-- Visit: https://cloud.google.com/assured-open-source-software/docs/supported-packages
+**Q: Authentication errors with Artifact Registry?**
+
+- Run `gcloud auth application-default login` to refresh credentials
+- Verify service account has `Artifact Registry Reader` role
+- Check keyring is installed: `pip install keyrings.google-artifactregistry-auth`
+
+**Q: Infisical connection issues?**
+
+- Verify `.infisical.json` has correct `workspaceId`
+- Check your Infisical organization permissions
+- For CI: Ensure `INFISICAL_CLIENT_ID` and `INFISICAL_CLIENT_SECRET` are set
+
+**Q: How to verify supply chain setup?**
+
+```bash
+# Test package index access
+./scripts/setup-supply-chain.sh  # Re-run to verify all checks pass
+```
+
+{%- else %}
+
+## Google Assured OSS Integration
+
+This project can use **Google Assured OSS** as the primary package source for enhanced supply chain security.
+
+### Enabling Supply Chain Security
+
+To enable full supply chain security features, regenerate this project with:
+```bash
+cruft update
+# Select include_supply_chain_security: yes
+```
+
+Or manually configure by following the [Google Assured OSS documentation](https://cloud.google.com/assured-open-source-software/docs).
+{%- endif %}
 
 ## Development
 

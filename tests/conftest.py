@@ -125,6 +125,22 @@ def frontend_no_openapi_config(minimal_config: dict[str, Any]) -> dict[str, Any]
 
 
 @pytest.fixture
+def supply_chain_config(minimal_config: dict[str, Any]) -> dict[str, Any]:
+    """Provide supply chain security test configuration."""
+    return {
+        **minimal_config,
+        "project_name": "Supply Chain Project",
+        "project_slug": "supply_chain_project",
+        "include_supply_chain_security": "yes",
+        "include_github_actions": "yes",
+        "infisical_domain": "https://secrets.example.com",
+        "gcp_project_id": "test-gcp-project",
+        "gcp_artifact_registry": "python-libs",
+        "gcp_region": "us-central1",
+    }
+
+
+@pytest.fixture
 def full_config(minimal_config: dict[str, Any]) -> dict[str, Any]:
     """Provide full-featured test configuration."""
     return {
@@ -143,6 +159,7 @@ def full_config(minimal_config: dict[str, Any]) -> dict[str, Any]:
         "include_mutation_testing": "yes",
         "use_mkdocs": "yes",
         "include_frontend": "react",
+        "include_supply_chain_security": "yes",
     }
 
 
@@ -186,9 +203,7 @@ def generated_project(
         shutil.rmtree(project_dir)
 
 
-def generate_project(
-    template_dir: Path, output_dir: Path, config: dict[str, Any]
-) -> Path:
+def generate_project(template_dir: Path, output_dir: Path, config: dict[str, Any]) -> Path:
     """Generate a project with the given configuration.
 
     Args:
