@@ -67,7 +67,7 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-{% elif cookiecutter.license == "GPL-3.0" -%}
+{% elif cookiecutter.license == "GPL-3.0-or-later" -%}
 GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
 
@@ -85,7 +85,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-{% elif cookiecutter.license == "LGPL-3.0" -%}
+{% elif cookiecutter.license == "LGPL-3.0-or-later" -%}
 GNU LESSER GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
 
