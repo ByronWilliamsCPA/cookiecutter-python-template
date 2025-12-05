@@ -48,7 +48,7 @@
   "node_version": "22",
 
   "_comment_mcp": "MCP Server Support (from zen-mcp-server analysis)",
-  "include_mcp_server": ["no", "yes"],
+  "include_mcp_server": ["yes", "no"],
   "mcp_transport": ["stdio", "http", "sse"],
 
   "_comment_api": "API Integration Patterns (from xero-practice-management & FIS analysis)",
@@ -84,9 +84,9 @@
   "use_org_workflows": ["yes", "no"],
   "_comment_org_workflows": "Use org-level reusable workflows (requires .github repo with shared workflows)",
   "include_semantic_release": ["yes", "no"],
-  "include_fuzzing": ["no", "yes"],
+  "include_fuzzing": ["yes", "no"],
   "include_codecov": ["yes", "no"],
-  "include_sonarcloud": ["no", "yes"],
+  "include_sonarcloud": ["yes", "no"],
   "sonarcloud_organization": "your-org",
   "include_renovate": ["yes", "no"],
 
@@ -97,8 +97,8 @@
 
   "_comment_supply_chain": "Supply Chain Security (Google Assured OSS + Infisical)",
   "include_supply_chain_security": ["yes", "no"],
-  "infisical_domain": "https://secrets.yourdomain.com",
-  "gcp_project_id": "your-gcp-project",
+  "infisical_domain": "https://infisical.williamshome.family",
+  "gcp_project_id": "assured-oss-457903",
   "gcp_artifact_registry": "python-libs",
   "gcp_region": "us-central1",
 
@@ -116,7 +116,7 @@
   "include_health_checks": ["yes", "no"],
 
   "_comment_testing": "Testing Configuration",
-  "include_mutation_testing": ["no", "yes"],
+  "include_mutation_testing": ["yes", "no"],
 
   "_comment_performance": "Performance and Scalability",
   "include_background_jobs": ["no", "arq", "celery"],
