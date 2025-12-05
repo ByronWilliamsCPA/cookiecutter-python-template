@@ -11,6 +11,10 @@ name: Dependency Review
 on:
   pull_request:
     branches: [main, master, develop]
+    paths:
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'requirements*.txt'
 
 permissions:
   contents: read
