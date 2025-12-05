@@ -47,11 +47,10 @@ def test_one_input(data: bytes) -> None:
     fdp = atheris.FuzzedDataProvider(data)
 
     # Example: Fuzz string input validation
+    # TODO: Import your validation functions and call them here
+    # TODO: Add assertions to verify expected behavior
     with contextlib.suppress(ValueError, TypeError):
         _ = fdp.ConsumeUnicodeNoSurrogates(1024)
-        # TODO: Call your validation function here
-        # Example: result = validate_input(test_string)
-        # Example: assert result is not None
 
 
 def main() -> None:
