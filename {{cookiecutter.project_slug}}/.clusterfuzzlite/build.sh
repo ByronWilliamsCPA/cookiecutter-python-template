@@ -5,6 +5,9 @@
 #
 # Reference: https://google.github.io/clusterfuzzlite/build-integration/python/
 
+# shellcheck disable=SC2154
+# Note: $SRC and $OUT are provided by ClusterFuzzLite runtime environment
+
 # Install the package with fuzzing support
 pip3 install -e .
 
