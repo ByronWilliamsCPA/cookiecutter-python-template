@@ -63,7 +63,7 @@ jobs:
       - name: Build Fuzzers
         if: steps.check-fuzz.outputs.has-targets == 'true'
         id: build
-        uses: google/clusterfuzzlite/actions/build_fuzzers@f090cc7d581f82fb0e0b04f0c9e56ff7f4a24e76 # v1
+        uses: google/clusterfuzzlite/actions/build_fuzzers@v1
         with:
           language: python
           sanitizer: {% raw %}${{  matrix.sanitizer  }}{% endraw %}
@@ -71,7 +71,7 @@ jobs:
       - name: Run Fuzzers
         if: steps.check-fuzz.outputs.has-targets == 'true'
         id: run
-        uses: google/clusterfuzzlite/actions/run_fuzzers@f090cc7d581f82fb0e0b04f0c9e56ff7f4a24e76 # v1
+        uses: google/clusterfuzzlite/actions/run_fuzzers@v1
         with:
           github-token: {% raw %}${{  secrets.GITHUB_TOKEN  }}{% endraw %}
           fuzz-seconds: 600
