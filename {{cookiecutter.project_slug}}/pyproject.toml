@@ -721,8 +721,10 @@ ignore_names = [
 [[tool.uv.index]]
 name = "assured-oss"
 url = "https://us-python.pkg.dev/cloud-aoss/cloud-aoss-python/simple"
+explicit = true
 # Google Assured OSS - curated packages with SLSA Level 3 provenance
-# Includes: numpy, pandas, tensorflow, requests, flask, django, etc.
+# explicit = true: packages must be directed here via [tool.uv.sources]
+# This prevents auth failures when GCP credentials are not configured
 # Full list: https://cloud.google.com/assured-open-source-software/docs/supported-packages
 
 [[tool.uv.index]]
@@ -730,22 +732,31 @@ name = "internal"
 url = "https://{{ cookiecutter.gcp_region }}-python.pkg.dev/{{ cookiecutter.gcp_project_id }}/{{ cookiecutter.gcp_artifact_registry }}/simple"
 explicit = true
 # Internal packages from your organization's Artifact Registry
-# explicit = true means packages must be explicitly directed here via [tool.uv.sources]
+# explicit = true: packages must be directed here via [tool.uv.sources]
 
 [[tool.uv.index]]
 name = "pypi"
 url = "https://pypi.org/simple"
 default = true
-# PyPI fallback for packages not in Assured OSS
+# PyPI is the default - all packages resolve from here unless explicitly directed
 
 # =============================================================================
-# Package Sources - Direct specific packages to specific indexes
+# Package Sources - Direct specific packages to secure indexes
 # =============================================================================
-[tool.uv.sources]
-# Internal packages (add your organization's packages here)
-# Example:
+# After configuring GCP authentication, uncomment packages to pull from Assured OSS:
+#
+# [tool.uv.sources]
+# numpy = { index = "assured-oss" }
+# pandas = { index = "assured-oss" }
+# requests = { index = "assured-oss" }
+# flask = { index = "assured-oss" }
+# django = { index = "assured-oss" }
+#
+# For internal packages:
 # your-internal-package = { index = "internal" }
-# your-auth-library = { index = "internal" }
+#
+# Setup: ./scripts/setup-supply-chain.sh
+# Packages: https://cloud.google.com/assured-open-source-software/docs/supported-packages
 
 {% else -%}
 # Package Index Configuration

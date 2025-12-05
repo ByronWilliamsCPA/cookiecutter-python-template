@@ -238,18 +238,29 @@ pip install keyrings.google-artifactregistry-auth
 
 ### Package Indexes
 
-| Priority | Index | SLSA Level | Purpose |
-|----------|-------|------------|---------|
-| 1 | Google Assured OSS | 3 | Verified third-party packages |
-| 2 | Internal Registry | 2+ | Organization-maintained packages |
-| 3 | PyPI | - | Fallback for remaining packages |
+| Index | SLSA Level | Purpose | Default |
+|-------|------------|---------|---------|
+| PyPI | - | Standard packages | Yes (default) |
+| Google Assured OSS | 3 | Verified third-party packages | Opt-in |
+| Internal Registry | 2+ | Organization-maintained packages | Opt-in |
+
+**How It Works:**
+
+By default, all packages resolve from PyPI. After configuring GCP authentication, you can opt-in specific packages to use Assured OSS by uncommenting entries in `pyproject.toml`:
+
+```toml
+[tool.uv.sources]
+numpy = { index = "assured-oss" }
+pandas = { index = "assured-oss" }
+requests = { index = "assured-oss" }
+```
 
 **Why This Matters:**
 
 - **SLSA Level 3**: Build integrity, provenance, and tamper-proof artifacts
 - **Supply Chain Protection**: Reduced risk of dependency confusion attacks
 - **Compliance**: Meets enterprise security and audit requirements
-- **Automatic Fallback**: UV seamlessly falls back when packages aren't available
+- **Graceful Fallback**: Works without authentication, opt-in when ready
 
 ### Secrets Management with Infisical
 
