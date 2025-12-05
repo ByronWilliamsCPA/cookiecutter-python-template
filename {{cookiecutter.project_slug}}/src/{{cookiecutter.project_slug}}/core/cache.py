@@ -30,17 +30,17 @@ import functools
 import hashlib
 import json
 import logging
-from typing import TYPE_CHECKING, Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from redis.asyncio import Redis, from_url
 from redis.exceptions import RedisError
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable
+    from collections.abc import Awaitable, Callable
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
+T = TypeVar("T")  # Covariant type variable for cached function return types
 
 # Global Redis connection pool
 _redis_pool: Redis | None = None
@@ -108,7 +108,7 @@ def cached(
     ttl: int = 3600,
     key_prefix: str = "",
     key_builder: Callable[..., str] | None = None,
-) -> Callable:
+) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """Cache async function results in Redis.
 
     Args:
@@ -179,7 +179,7 @@ def cached(
     return decorator
 
 
-def cache_invalidate(key_pattern: str) -> Callable:
+def cache_invalidate(key_pattern: str) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """Decorator to invalidate cache keys matching a pattern.
 
     Useful for cache invalidation on data updates.
@@ -318,7 +318,7 @@ async def invalidate_pattern(pattern: str) -> int:
         return 0
 
     except RedisError as e:
-        logger.error("cache_invalidation_failed", pattern=pattern, error=str(e))
+        logger.exception("cache_invalidation_failed", pattern=pattern, error=str(e))
         return 0
 
 
@@ -373,7 +373,7 @@ async def warm_cache(
         return True
 
     except RedisError as e:
-        logger.error("cache_warming_failed", key=key, error=str(e))
+        logger.exception("cache_warming_failed", key=key, error=str(e))
         return False
 
 
@@ -453,5 +453,5 @@ async def get_cache_stats() -> dict[str, Any]:
         }
 
     except RedisError as e:
-        logger.error("cache_stats_failed", error=str(e))
+        logger.exception("cache_stats_failed", error=str(e))
         return {"error": str(e)}
