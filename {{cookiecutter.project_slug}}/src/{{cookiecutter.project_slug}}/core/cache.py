@@ -30,17 +30,17 @@ import functools
 import hashlib
 import json
 import logging
-from typing import TYPE_CHECKING, Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from redis.asyncio import Redis, from_url
 from redis.exceptions import RedisError
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable
+    from collections.abc import Awaitable, Callable
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
+T = TypeVar("T")  # Covariant type variable for cached function return types
 
 # Global Redis connection pool
 _redis_pool: Redis | None = None
@@ -108,7 +108,7 @@ def cached(
     ttl: int = 3600,
     key_prefix: str = "",
     key_builder: Callable[..., str] | None = None,
-) -> Callable:
+) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """Cache async function results in Redis.
 
     Args:
@@ -179,7 +179,7 @@ def cached(
     return decorator
 
 
-def cache_invalidate(key_pattern: str) -> Callable:
+def cache_invalidate(key_pattern: str) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """Decorator to invalidate cache keys matching a pattern.
 
     Useful for cache invalidation on data updates.
