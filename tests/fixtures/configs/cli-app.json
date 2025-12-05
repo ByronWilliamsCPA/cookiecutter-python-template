@@ -10,6 +10,10 @@
     "include_cli": "yes",
     "include_nox": "yes",
     "use_pre_commit": "yes",
-    "include_github_actions": "yes"
+    "include_github_actions": "yes",
+    "include_mcp_server": "no",
+    "include_fuzzing": "no",
+    "include_sonarcloud": "no",
+    "include_mutation_testing": "no"
   }
 }
