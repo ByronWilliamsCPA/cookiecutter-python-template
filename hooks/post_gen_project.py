@@ -179,6 +179,12 @@ def cleanup_conditional_files() -> None:
         remove_dir(Path(".clusterfuzzlite"))
         remove_dir(Path("fuzz"))
 
+    # Remove supply chain security files if not needed
+    if "{{ cookiecutter.include_supply_chain_security }}" == "no":
+        remove_file(Path(".infisical.json"))
+        remove_file(Path("scripts/setup-supply-chain.sh"))
+        remove_file(Path(".github/workflows/dependency-review.yml"))
+
     # Remove GitHub Actions workflows if not needed
     if "{{ cookiecutter.include_github_actions }}" == "no":
         remove_dir(Path(".github/workflows"))
@@ -517,6 +523,7 @@ def print_success_message() -> None:
     include_linear = "{{ cookiecutter.include_linear }}" == "yes"
     include_frontend = "{{ cookiecutter.include_frontend }}"
     frontend_package_manager = "{{ cookiecutter.frontend_package_manager }}"
+    include_supply_chain = "{{ cookiecutter.include_supply_chain_security }}" == "yes"
 
     print("\n" + "=" * 60)
     print(f"🎉 SUCCESS! {project_name} has been created!")
@@ -542,6 +549,8 @@ def print_success_message() -> None:
         optional_features.append("CodeRabbit (AI code reviews)")
     if include_linear:
         optional_features.append("Linear (project management integration)")
+    if include_supply_chain:
+        optional_features.append("Supply chain security (Assured OSS + Infisical)")
     if include_frontend != "no":
         optional_features.append(f"Frontend ({include_frontend.title()} + Vite + TypeScript)")
 
@@ -626,6 +635,13 @@ def print_success_message() -> None:
         print("     Connect your repo: https://linear.app/settings/integrations/github")
         print("     Link PRs to issues: 'Closes ENG-123' in PR description")
         print("     Issues sync bidirectionally with GitHub")
+
+    if include_supply_chain:
+        print("\n  🔐 Supply Chain Security:")
+        print("     ./scripts/setup-supply-chain.sh    # Configure local authentication")
+        print("     gcloud auth application-default login  # GCP credentials")
+        print("     infisical login && infisical init      # Secrets management")
+        print("     See README.md for full setup instructions")
 
     if include_frontend != "no":
         print("\n  🎨 Frontend (React + Vite):")

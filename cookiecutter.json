@@ -95,6 +95,13 @@
   "include_linear": ["no", "yes"],
   "linear_team_key": "",
 
+  "_comment_supply_chain": "Supply Chain Security (Google Assured OSS + Infisical)",
+  "include_supply_chain_security": ["yes", "no"],
+  "infisical_domain": "https://secrets.yourdomain.com",
+  "gcp_project_id": "your-gcp-project",
+  "gcp_artifact_registry": "python-libs",
+  "gcp_region": "us-central1",
+
   "_comment_security": "Enhanced Security (from pp-security-master analysis)",
   "include_compliance_docs": ["yes", "no"],
   "include_threat_model": ["no", "yes"],
