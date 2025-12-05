@@ -67,15 +67,14 @@ def init_sentry(
     """
     try:
         import sentry_sdk
-        {% if cookiecutter.include_api_framework == "yes" -%}
+        {%- if cookiecutter.include_api_framework == "yes" %}
         from sentry_sdk.integrations.fastapi import FastApiIntegration
         from sentry_sdk.integrations.starlette import StarletteIntegration
-        {% endif -%}
+        {%- endif %}
         from sentry_sdk.integrations.logging import LoggingIntegration
-        {% if cookiecutter.include_database != "none" -%}
+        {%- if cookiecutter.include_database != "none" %}
         from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-        {% endif -%}
-
+        {%- endif %}
     except ImportError:
         logger.warning(
             "Sentry SDK not installed. Install with: uv add sentry-sdk[fastapi]"

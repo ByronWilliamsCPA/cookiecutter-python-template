@@ -69,22 +69,36 @@ jobs:
         with:
           fetch-depth: 0  # Disable shallow clone for better analysis
 
+      - name: Check for Python code
+        id: check-code
+        run: |
+          if find src -name '*.py' -type f 2>/dev/null | grep -q .; then
+            echo "has-code=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-code=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No Python source files found. Skipping SonarCloud analysis." >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Set up Python
+        if: steps.check-code.outputs.has-code == 'true'
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: '{{ cookiecutter.python_version }}'
           cache: 'pip'
 
       - name: Install UV
+        if: steps.check-code.outputs.has-code == 'true'
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
+        if: steps.check-code.outputs.has-code == 'true'
         run: |
           uv sync --frozen --all-extras
 
       - name: Run tests with coverage
+        if: steps.check-code.outputs.has-code == 'true'
         run: |
           # Generate coverage in Cobertura XML format for SonarCloud
           uv run pytest \
@@ -96,6 +110,7 @@ jobs:
         continue-on-error: true  # Don't fail on test failures; let SonarCloud report them
 
       - name: Verify coverage report
+        if: steps.check-code.outputs.has-code == 'true'
         run: |
           if [ ! -f coverage.xml ]; then
             echo "::warning::Coverage report not found. Tests may have failed."
@@ -107,6 +122,7 @@ jobs:
           fi
 
       - name: SonarCloud Scan
+        if: steps.check-code.outputs.has-code == 'true'
         uses: SonarSource/sonarqube-scan-action@884b79409bbd464b2a59edc326a4b77dc56b2195 # v4.0.0
         env:
           GITHUB_TOKEN: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}  # Needed for PR decoration
