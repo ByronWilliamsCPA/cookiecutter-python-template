@@ -10,9 +10,12 @@
 #
 set -e
 
-echo "=============================================="
+# Constants
+readonly SEPARATOR="=============================================="
+
+echo "$SEPARATOR"
 echo "  Supply Chain Security Setup"
-echo "=============================================="
+echo "$SEPARATOR"
 echo ""
 
 # Colors for output
@@ -24,11 +27,11 @@ NC='\033[0m' # No Color
 # Check for gcloud CLI
 echo "Checking prerequisites..."
 if ! command -v gcloud &> /dev/null; then
-    echo -e "${RED}ERROR: gcloud CLI not found${NC}"
-    echo ""
-    echo "Install the Google Cloud SDK from:"
-    echo "  https://cloud.google.com/sdk/docs/install"
-    echo ""
+    echo -e "${RED}ERROR: gcloud CLI not found${NC}" >&2
+    echo "" >&2
+    echo "Install the Google Cloud SDK from:" >&2
+    echo "  https://cloud.google.com/sdk/docs/install" >&2
+    echo "" >&2
     exit 1
 fi
 echo -e "  ${GREEN}✓${NC} gcloud CLI found"
@@ -65,7 +68,7 @@ echo "This allows UV to authenticate with Artifact Registry."
 echo ""
 
 # Check if ADC already exists
-if [ -f "$HOME/.config/gcloud/application_default_credentials.json" ]; then
+if [[ -f "$HOME/.config/gcloud/application_default_credentials.json" ]]; then
     echo -e "  ${GREEN}✓${NC} Application Default Credentials already exist"
     read -p "  Refresh credentials? (y/N): " REFRESH
     if [[ "$REFRESH" =~ ^[Yy]$ ]]; then
@@ -130,9 +133,9 @@ else
 fi
 
 echo ""
-echo "=============================================="
+echo "$SEPARATOR"
 echo -e "  ${GREEN}Setup Complete!${NC}"
-echo "=============================================="
+echo "$SEPARATOR"
 echo ""
 echo "Next steps:"
 echo "  1. Run 'uv sync' to install dependencies from secure indexes"
