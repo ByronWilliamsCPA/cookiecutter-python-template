@@ -6,6 +6,10 @@
     "author_name": "Test Author",
     "author_email": "test@example.com",
     "github_username": "testuser",
-    "version": "0.1.0"
+    "version": "0.1.0",
+    "include_mcp_server": "no",
+    "include_fuzzing": "no",
+    "include_sonarcloud": "no",
+    "include_mutation_testing": "no"
   }
 }

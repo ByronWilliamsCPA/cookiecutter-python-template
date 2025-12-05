@@ -12,6 +12,10 @@
     "include_health_checks": "yes",
     "include_codecov": "yes",
     "include_github_actions": "yes",
-    "use_pre_commit": "yes"
+    "use_pre_commit": "yes",
+    "include_mcp_server": "no",
+    "include_fuzzing": "no",
+    "include_sonarcloud": "no",
+    "include_mutation_testing": "no"
   }
 }

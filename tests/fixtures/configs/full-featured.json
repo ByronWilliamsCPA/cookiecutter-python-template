@@ -26,6 +26,8 @@
     "include_frontend": "react",
     "frontend_package_manager": "npm",
     "node_version": "22",
-    "include_openapi_client": "yes"
+    "include_openapi_client": "yes",
+    "include_mcp_server": "yes",
+    "include_fuzzing": "yes"
   }
 }
