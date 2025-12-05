@@ -25,10 +25,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -66,14 +63,14 @@ def init_sentry(
         ... )
     """
     try:
-        import sentry_sdk
+        import sentry_sdk  # noqa: PLC0415  # Import only when Sentry is configured
         {%- if cookiecutter.include_api_framework == "yes" %}
-        from sentry_sdk.integrations.fastapi import FastApiIntegration
-        from sentry_sdk.integrations.starlette import StarletteIntegration
+        from sentry_sdk.integrations.fastapi import FastApiIntegration  # noqa: PLC0415
+        from sentry_sdk.integrations.starlette import StarletteIntegration  # noqa: PLC0415
         {%- endif %}
-        from sentry_sdk.integrations.logging import LoggingIntegration
+        from sentry_sdk.integrations.logging import LoggingIntegration  # noqa: PLC0415
         {%- if cookiecutter.include_database != "none" %}
-        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration  # noqa: PLC0415
         {%- endif %}
     except ImportError:
         logger.warning(
@@ -156,10 +153,10 @@ def _get_release_version() -> str:
     """
     # Try to get git SHA
     try:
-        import subprocess
+        import subprocess  # noqa: PLC0415  # Import only when needed (optional dependency)
 
         sha = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"],
+            ["git", "rev-parse", "--short", "HEAD"],  # noqa: S607  # Git is a trusted executable
             stderr=subprocess.DEVNULL,
         ).decode().strip()
         return f"{{ cookiecutter.project_slug }}@{sha}"
@@ -168,17 +165,18 @@ def _get_release_version() -> str:
 
     # Fallback to package version
     try:
-        from importlib.metadata import version
+        from importlib.metadata import version  # noqa: PLC0415  # Import only when needed
+
         pkg_version = version("{{ cookiecutter.pypi_package_name }}")
         return f"{{ cookiecutter.project_slug }}@{pkg_version}"
-    except Exception:
+    except Exception:  # noqa: BLE001  # Intentionally broad - fallback to static version
         pass
 
     # Ultimate fallback
     return "{{ cookiecutter.project_slug }}@{{ cookiecutter.version }}"
 
 
-def before_send_hook(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
+def before_send_hook(event: dict[str, Any], _hint: dict[str, Any]) -> dict[str, Any] | None:
     """Filter and modify events before sending to Sentry.
 
     This hook allows you to:
@@ -195,8 +193,8 @@ def before_send_hook(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, A
         Modified event dictionary, or None to drop the event
     """
     # Example: Filter out specific exceptions
-    if "exc_info" in hint:
-        exc_type, exc_value, _tb = hint["exc_info"]
+    if "exc_info" in _hint:
+        exc_type, _exc_value, _tb = _hint["exc_info"]
 
         # Don't send certain exception types
         if exc_type.__name__ in ("KeyboardInterrupt", "SystemExit"):
@@ -216,7 +214,7 @@ def before_send_hook(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, A
     return event
 
 
-def before_breadcrumb_hook(crumb: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
+def before_breadcrumb_hook(crumb: dict[str, Any], _hint: dict[str, Any]) -> dict[str, Any] | None:
     """Filter and modify breadcrumbs before adding to events.
 
     Breadcrumbs are actions/events leading up to an error.

@@ -260,14 +260,21 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    # Collect Markdown files
+    # Collect Markdown files (excluding planning docs)
     md_files: list[Path] = []
     for path_str in args.paths:
         path = Path(path_str)
         if path.is_dir():
-            md_files.extend(path.rglob("*.md"))
+            # Exclude docs/planning/ from validation
+            all_md_files = path.rglob("*.md")
+            md_files.extend([
+                f for f in all_md_files
+                if not any(part == "planning" for part in f.parts)
+            ])
         elif path.suffix.lower() == ".md":
-            md_files.append(path)
+            # Only add file if not in planning directory
+            if "planning" not in path.parts:
+                md_files.append(path)
 
     if not md_files:
         print("No Markdown files found", file=sys.stderr)

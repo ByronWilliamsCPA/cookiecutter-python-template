@@ -93,6 +93,35 @@ Update documents when:
 └─────────────────────────────┘
 ```
 
+## CI/CD Integration Notes
+
+Planning documents are **intentionally excluded** from strict validation checks to support the `/plan` workflow:
+
+- **Front Matter Validation**: Planning docs are excluded from strict YAML front matter requirements
+- **MkDocs Validation**: Link checking is relaxed for planning directory
+- **Pre-commit Hooks**: Planning docs use simplified validation rules
+
+This allows you to:
+
+1. Generate planning documents via `/plan` command
+2. Commit them immediately to a PR
+3. Iterate on content without CI failures
+
+**First PR Workflow**:
+
+```bash
+# After project generation, create planning docs
+/plan <project description>
+
+# Commit and push (CI will pass on planning docs)
+git add docs/planning/
+git commit -m "docs: add initial project planning documents"
+git push origin docs/initial-planning
+
+# Create PR - planning doc validation is relaxed
+gh pr create --title "docs: add initial planning" --body "Initial project planning documents"
+```
+
 ## More Information
 
 - Skill instructions: `.claude/skills/project-planning/SKILL.md`

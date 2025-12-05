@@ -190,6 +190,27 @@ jobs:
         run: |
           ./scripts/validate-generated-project.sh ${{ steps.project.outputs.dir }}
 
+      - name: Install project dependencies
+        working-directory: ${{ steps.project.outputs.dir }}
+        run: |
+          pip install uv
+          uv sync --all-extras
+
+      - name: Run Ruff linting on generated project
+        working-directory: ${{ steps.project.outputs.dir }}
+        run: |
+          uv run ruff check . --no-fix
+
+      - name: Run Ruff format check on generated project
+        working-directory: ${{ steps.project.outputs.dir }}
+        run: |
+          uv run ruff format --check .
+
+      - name: Run BasedPyright on generated project
+        working-directory: ${{ steps.project.outputs.dir }}
+        run: |
+          uv run basedpyright src/
+
       - name: Run pre-commit on generated project
         working-directory: ${{ steps.project.outputs.dir }}
         run: |

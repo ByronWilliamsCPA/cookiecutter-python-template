@@ -318,7 +318,7 @@ async def invalidate_pattern(pattern: str) -> int:
         return 0
 
     except RedisError as e:
-        logger.error("cache_invalidation_failed", pattern=pattern, error=str(e))
+        logger.exception("cache_invalidation_failed", pattern=pattern, error=str(e))
         return 0
 
 
@@ -373,7 +373,7 @@ async def warm_cache(
         return True
 
     except RedisError as e:
-        logger.error("cache_warming_failed", key=key, error=str(e))
+        logger.exception("cache_warming_failed", key=key, error=str(e))
         return False
 
 
@@ -453,5 +453,5 @@ async def get_cache_stats() -> dict[str, Any]:
         }
 
     except RedisError as e:
-        logger.error("cache_stats_failed", error=str(e))
+        logger.exception("cache_stats_failed", error=str(e))
         return {"error": str(e)}
