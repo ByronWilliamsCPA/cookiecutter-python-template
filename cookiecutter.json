@@ -94,6 +94,7 @@
   "include_coderabbit": ["yes", "no"],
   "include_linear": ["no", "yes"],
   "linear_team_key": "",
+  "include_han": ["yes", "no"],
 
   "_comment_supply_chain": "Supply Chain Security (Google Assured OSS + Infisical)",
   "include_supply_chain_security": ["yes", "no"],

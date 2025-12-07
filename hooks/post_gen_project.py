@@ -303,6 +303,26 @@ def setup_claude_subtree() -> None:
         print("       https://github.com/williaby/.claude.git main --squash")
 
 
+def setup_han_plugins() -> None:
+    """Install Han plugins if Han integration is enabled."""
+    if "{{ cookiecutter.include_han }}" == "no":
+        return
+
+    print("\n🔧 Setting up Han plugins...")
+
+    # Check if han is installed
+    if run_command(["han", "--version"], check=False):
+        if run_command(["han", "plugin", "install", "--auto"], check=False):
+            print("  ✓ Han plugins installed")
+        else:
+            print("  ⚠ Failed to install Han plugins")
+            print("    Run 'han plugin install --auto' manually after installation")
+    else:
+        print("  ⚠ Han not found - skipping plugin installation")
+        print("    Install Han: https://github.com/thebushidocollective/han")
+        print("    Then run: han plugin install --auto")
+
+
 def setup_pre_commit() -> None:
     """Install pre-commit hooks if pre-commit is available."""
     if "{{ cookiecutter.use_pre_commit }}" == "no":
@@ -521,6 +541,7 @@ def print_success_message() -> None:
     include_semantic_release = "{{ cookiecutter.include_semantic_release }}" == "yes"
     include_coderabbit = "{{ cookiecutter.include_coderabbit }}" == "yes"
     include_linear = "{{ cookiecutter.include_linear }}" == "yes"
+    include_han = "{{ cookiecutter.include_han }}" == "yes"
     include_frontend = "{{ cookiecutter.include_frontend }}"
     frontend_package_manager = "{{ cookiecutter.frontend_package_manager }}"
     include_supply_chain = "{{ cookiecutter.include_supply_chain_security }}" == "yes"
@@ -549,6 +570,8 @@ def print_success_message() -> None:
         optional_features.append("CodeRabbit (AI code reviews)")
     if include_linear:
         optional_features.append("Linear (project management integration)")
+    if include_han:
+        optional_features.append("Han (Claude Code plugin marketplace)")
     if include_supply_chain:
         optional_features.append("Supply chain security (Assured OSS + Infisical)")
     if include_frontend != "no":
@@ -635,6 +658,13 @@ def print_success_message() -> None:
         print("     Connect your repo: https://linear.app/settings/integrations/github")
         print("     Link PRs to issues: 'Closes ENG-123' in PR description")
         print("     Issues sync bidirectionally with GitHub")
+
+    if include_han:
+        print("\n  🥋 Han (Claude Code Plugins):")
+        print("     Han marketplace plugins are configured in .claude/settings.json")
+        print("     Install Han: https://github.com/thebushidocollective/han")
+        print("     Install plugins: han plugin install --auto")
+        print("     Enabled plugins: bushido, jutsu-python, jutsu-pytest")
 
     if include_supply_chain:
         print("\n  🔐 Supply Chain Security:")
@@ -974,6 +1004,7 @@ def main() -> None:
         initialize_git()
         setup_claude_subtree()  # Add Claude standards via git subtree
         setup_pre_commit()
+        setup_han_plugins()  # Install Han plugins if enabled
         setup_claude_user_settings()
         print_success_message()
     except Exception as e:

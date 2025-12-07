@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-config.json",
+  "comment": "Claude Code settings for {{ cookiecutter.project_name }}",
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(uv:*)",
+      "Bash(python:*)",
+      "Bash(pytest:*)",
+      "Bash(ruff:*)",
+      "Bash(basedpyright:*)",
+      "Bash(bandit:*)",
+      "Bash(pre-commit:*)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep"
+    ],
+    "deny": [],
+    "ask": [
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)"
+    ]
+  }{% if cookiecutter.include_han == "yes" %},
+  "extraKnownMarketplaces": {
+    "han": {
+      "source": {
+        "source": "github",
+        "repo": "thebushidocollective/han"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "bushido@han": true,
+    "jutsu-python@han": true,
+    "jutsu-pytest@han": true
+  }{% endif %}
+}
