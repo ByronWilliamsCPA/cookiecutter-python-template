@@ -57,7 +57,6 @@ def run_command(cmd: list[str], check: bool = True) -> bool:
     """
     try:
         subprocess.run(cmd, check=check, capture_output=True, text=True)  # nosec B603
-        return True
     except subprocess.CalledProcessError:
         return False
     except FileNotFoundError:
@@ -66,12 +65,12 @@ def run_command(cmd: list[str], check: bool = True) -> bool:
     except OSError:
         # Other OS-level errors (permission denied, etc.)
         return False
+    else:
+        return True
 
 
-def cleanup_conditional_files() -> None:
-    """Remove files based on cookiecutter choices."""
-    print("\n🧹 Cleaning up conditional files...")
-
+def _cleanup_documentation_files() -> None:
+    """Remove documentation files based on cookiecutter choices."""
     # Remove CLI if not needed
     if "{{ cookiecutter.include_cli }}" == "no":
         remove_file(Path("src/{{ cookiecutter.project_slug }}/cli.py"))
@@ -82,14 +81,6 @@ def cleanup_conditional_files() -> None:
         remove_dir(Path("docs"))
         remove_file(Path("tools/validate_front_matter.py"))
         remove_dir(Path("tools/frontmatter_contract"))
-
-    # Remove Nox if not needed
-    if "{{ cookiecutter.include_nox }}" == "no":
-        remove_file(Path("noxfile.py"))
-
-    # Remove pre-commit if not needed
-    if "{{ cookiecutter.use_pre_commit }}" == "no":
-        remove_file(Path(".pre-commit-config.yaml"))
 
     # Remove CODE_OF_CONDUCT if not needed
     if "{{ cookiecutter.include_code_of_conduct }}" == "no":
@@ -102,6 +93,23 @@ def cleanup_conditional_files() -> None:
     # Remove CONTRIBUTING if not needed
     if "{{ cookiecutter.include_contributing_guide }}" == "no":
         remove_file(Path("CONTRIBUTING.md"))
+
+
+def _cleanup_tooling_files() -> None:
+    """Remove tooling and integration files based on cookiecutter choices."""
+    # Remove Nox if not needed
+    if "{{ cookiecutter.include_nox }}" == "no":
+        remove_file(Path("noxfile.py"))
+
+    # Remove pre-commit if not needed
+    if "{{ cookiecutter.use_pre_commit }}" == "no":
+        remove_file(Path(".pre-commit-config.yaml"))
+
+    # Remove REUSE if not needed
+    if "{{ cookiecutter.use_reuse_licensing }}" == "no":
+        remove_file(Path("REUSE.toml"))
+        remove_dir(Path("LICENSES"))
+        remove_file(Path(".github/workflows/reuse.yml"))
 
     # Remove codecov config and workflow if not needed
     if "{{ cookiecutter.include_codecov }}" == "no":
@@ -121,12 +129,6 @@ def cleanup_conditional_files() -> None:
     if "{{ cookiecutter.include_coderabbit }}" == "no":
         remove_file(Path(".coderabbit.yaml"))
 
-    # Remove REUSE if not needed
-    if "{{ cookiecutter.use_reuse_licensing }}" == "no":
-        remove_file(Path("REUSE.toml"))
-        remove_dir(Path("LICENSES"))
-        remove_file(Path(".github/workflows/reuse.yml"))
-
     # Remove Docker files if not needed
     if "{{ cookiecutter.include_docker }}" == "no":
         remove_file(Path("Dockerfile"))
@@ -135,6 +137,9 @@ def cleanup_conditional_files() -> None:
         remove_file(Path(".dockerignore"))
         remove_file(Path(".github/workflows/container-security.yml"))
 
+
+def _cleanup_api_and_backend_files() -> None:
+    """Remove API, backend, and service files based on cookiecutter choices."""
     # Remove health check endpoints if not needed or if no API framework
     if (
         "{{ cookiecutter.include_health_checks }}" == "no"
@@ -144,18 +149,16 @@ def cleanup_conditional_files() -> None:
         # Remove api directory if empty
         api_dir = Path("src/{{ cookiecutter.project_slug }}/api")
         if api_dir.exists() and not any(
-            f.name != "__pycache__" and f.name != "__init__.py" for f in api_dir.iterdir()
+            f.name not in {"__pycache__", "__init__.py"} for f in api_dir.iterdir()
         ):
             remove_dir(api_dir)
-
-    # Remove Sentry monitoring if not needed
-    if "{{ cookiecutter.include_sentry }}" == "no":
-        remove_file(Path("src/{{ cookiecutter.project_slug }}/core/sentry.py"))
 
     # Remove API middleware if API framework not included
     if "{{ cookiecutter.include_api_framework }}" == "no":
         remove_file(Path("src/{{ cookiecutter.project_slug }}/middleware/security.py"))
-        remove_file(Path("src/{{ cookiecutter.project_slug }}/middleware/correlation.py"))
+        remove_file(
+            Path("src/{{ cookiecutter.project_slug }}/middleware/correlation.py")
+        )
         # Remove middleware directory if empty
         middleware_dir = Path("src/{{ cookiecutter.project_slug }}/middleware")
         if middleware_dir.exists() and not any(middleware_dir.iterdir()):
@@ -169,30 +172,16 @@ def cleanup_conditional_files() -> None:
     if "{{ cookiecutter.include_caching }}" == "no":
         remove_file(Path("src/{{ cookiecutter.project_slug }}/core/cache.py"))
 
+    # Remove Sentry monitoring if not needed
+    if "{{ cookiecutter.include_sentry }}" == "no":
+        remove_file(Path("src/{{ cookiecutter.project_slug }}/core/sentry.py"))
+
+
+def _cleanup_frontend_files() -> None:
+    """Remove frontend files based on cookiecutter choices."""
     # Remove load testing files if not needed
     if "{{ cookiecutter.include_load_testing }}" == "no":
         remove_dir(Path("tests/load"))
-
-    # Remove fuzzing files and workflow if not needed
-    if "{{ cookiecutter.include_fuzzing }}" == "no":
-        remove_file(Path(".github/workflows/cifuzzy.yml"))
-        remove_dir(Path(".clusterfuzzlite"))
-        remove_dir(Path("fuzz"))
-
-    # Remove supply chain security files if not needed
-    if "{{ cookiecutter.include_supply_chain_security }}" == "no":
-        remove_file(Path(".infisical.json"))
-        remove_file(Path("scripts/setup-supply-chain.sh"))
-        remove_file(Path(".github/workflows/dependency-review.yml"))
-
-    # Remove GitHub Actions workflows if not needed
-    if "{{ cookiecutter.include_github_actions }}" == "no":
-        remove_dir(Path(".github/workflows"))
-        remove_dir(Path(".github"))
-
-    # Remove MkDocs workflow if MkDocs not used
-    if "{{ cookiecutter.use_mkdocs }}" == "no":
-        remove_file(Path(".github/workflows/docs.yml"))
 
     # Remove frontend if not needed
     if "{{ cookiecutter.include_frontend }}" == "no":
@@ -211,7 +200,71 @@ def cleanup_conditional_files() -> None:
             print("  ⚠ Warning: Frontend enabled without API framework")
             print("    Consider enabling include_api_framework for full-stack support")
 
+
+def _cleanup_workflow_files() -> None:
+    """Remove workflow and CI files based on cookiecutter choices.
+
+    Must be called last since it may remove .github/ entirely.
+    """
+    # Remove fuzzing files and workflow if not needed
+    if "{{ cookiecutter.include_fuzzing }}" == "no":
+        remove_file(Path(".github/workflows/cifuzzy.yml"))
+        remove_dir(Path(".clusterfuzzlite"))
+        remove_dir(Path("fuzz"))
+
+    # Remove supply chain security files if not needed
+    if "{{ cookiecutter.include_supply_chain_security }}" == "no":
+        remove_file(Path(".infisical.json"))
+        remove_file(Path("scripts/setup-supply-chain.sh"))
+        remove_file(Path(".github/workflows/dependency-review.yml"))
+
+    # Remove MkDocs workflow if MkDocs not used (before removing all of .github/)
+    if "{{ cookiecutter.use_mkdocs }}" == "no":
+        remove_file(Path(".github/workflows/docs.yml"))
+
+    # Remove GitHub Actions workflows if not needed
+    if "{{ cookiecutter.include_github_actions }}" == "no":
+        remove_dir(Path(".github/workflows"))
+        remove_dir(Path(".github"))
+
+
+def cleanup_conditional_files() -> None:
+    """Remove files based on cookiecutter choices."""
+    print("\n🧹 Cleaning up conditional files...")
+    _cleanup_documentation_files()
+    _cleanup_tooling_files()
+    _cleanup_api_and_backend_files()
+    _cleanup_frontend_files()
+    _cleanup_workflow_files()  # Must be last: may remove .github/ entirely
     # Note: Security scanning workflows (security-analysis.yml) are always included
+
+
+def mark_scripts_executable() -> None:
+    """Ensure all shebang scripts have executable permissions.
+
+    Cookiecutter does not always preserve git file modes, so this
+    explicitly sets 0o755 on every script that carries a shebang line.
+    Must run after cleanup so removed files are not targeted.
+    """
+    executable_paths = [
+        "scripts/check_fips_compatibility.py",
+        "scripts/check_orphaned_files.py",
+        "scripts/check_quality_gate.py",
+        "scripts/check_type_hints.py",
+        "scripts/cleanup_conditional_files.py",
+        "scripts/cruft-update.sh",
+        "scripts/generate-client.sh",
+        "scripts/generate_requirements.sh",
+        "scripts/setup-supply-chain.sh",
+        "scripts/setup_github_protection.py",
+        "scripts/update-claude-standards.sh",
+        "scripts/validate_assuredoss.py",
+        "tools/validate_front_matter.py",
+        "fuzz/fuzz_input_validation.py",
+        ".claude/skills/project-planning/scripts/validate-planning-docs.py",
+    ]
+    for path_str in executable_paths:
+        make_executable(Path(path_str))
 
 
 def initialize_git() -> None:
@@ -246,7 +299,9 @@ def setup_claude_subtree() -> None:
     # Check if user wants to add the subtree
     try:
         response = (
-            input("\n  Add standard Claude configuration via git subtree? (Y/n): ").strip().lower()
+            input("\n  Add standard Claude configuration via git subtree? (Y/n): ")
+            .strip()
+            .lower()
         )
     except (EOFError, KeyboardInterrupt):
         print("\n  Skipping Claude standards setup.")
@@ -286,7 +341,9 @@ def setup_claude_subtree() -> None:
             if (standard_dir / "agents").exists():
                 print("  ✓ Standard agents available")
             if (standard_dir / "standards").exists():
-                print("  ✓ Development standards available (git, python, security, linting)")
+                print(
+                    "  ✓ Development standards available (git, python, security, linting)"
+                )
 
             print("\n  ✅ Claude standards integrated successfully!")
             print("\n  To update standards later, run:")
@@ -317,7 +374,9 @@ def setup_pre_commit() -> None:
         else:
             print("  ⚠ Failed to install pre-commit hooks")
     else:
-        print("  ⚠ pre-commit not found - run 'uv sync' and 'uv run pre-commit install'")
+        print(
+            "  ⚠ pre-commit not found - run 'uv sync' and 'uv run pre-commit install'"
+        )
 
 
 def create_initial_directories() -> None:
@@ -366,7 +425,9 @@ def render_workflow_templates() -> None:
     }
 
     rendered_count = 0
-    workflow_files = list(workflows_dir.glob("*.yml")) + list(workflows_dir.glob("*.yaml"))
+    workflow_files = list(workflows_dir.glob("*.yml")) + list(
+        workflows_dir.glob("*.yaml")
+    )
     workflow_files.append(workflows_dir / "README.md")  # Also render README
 
     for workflow_file in workflow_files:
@@ -384,13 +445,25 @@ def render_workflow_templates() -> None:
                 open_brace = "{" + "{"
                 close_brace = "}" + "}"
                 pattern1 = (
-                    open_brace + open_brace + f" cookiecutter.{key} " + close_brace + close_brace
+                    open_brace
+                    + open_brace
+                    + f" cookiecutter.{key} "
+                    + close_brace
+                    + close_brace
                 )
                 pattern2 = (
-                    open_brace + open_brace + f"cookiecutter.{key}" + close_brace + close_brace
+                    open_brace
+                    + open_brace
+                    + f"cookiecutter.{key}"
+                    + close_brace
+                    + close_brace
                 )
                 pattern3 = (
-                    open_brace + open_brace + f"  cookiecutter.{key}  " + close_brace + close_brace
+                    open_brace
+                    + open_brace
+                    + f"  cookiecutter.{key}  "
+                    + close_brace
+                    + close_brace
                 )
                 content = content.replace(pattern1, value)
                 content = content.replace(pattern2, value)
@@ -402,13 +475,49 @@ def render_workflow_templates() -> None:
                 rendered_count += 1
                 print(f"  ✓ Rendered: {workflow_file.name}")
 
-        except Exception as e:
+        except (OSError, ValueError, KeyError) as e:
             print(f"  ⚠ Failed to render {workflow_file.name}: {e}")
 
     if rendered_count > 0:
         print(f"  ✓ Rendered {rendered_count} workflow file(s)")
     else:
         print("  ℹ No unrendered templates found (workflows already rendered)")  # noqa: RUF001
+
+
+def _install_claude_settings(repo_url: str, install_path: Path) -> None:
+    """Clone and verify user-level Claude Code settings.
+
+    Args:
+        repo_url: Git repository URL to clone from.
+        install_path: Local path to install settings into.
+    """
+    print(f"\n  📥 Cloning settings from {repo_url}...")
+
+    if run_command(["git", "clone", repo_url, str(install_path)], check=False):
+        print(f"  ✓ User-level settings installed at: {install_path}")
+
+        # Check what was installed
+        installed_items: list[str] = []
+        if (install_path / "CLAUDE.md").exists():
+            installed_items.append("CLAUDE.md")
+        if (install_path / "skills").exists():
+            installed_items.append("skills/")
+        if (install_path / "agents").exists():
+            installed_items.append("agents/")
+        if (install_path / ".claude" / "commands").exists() or (
+            install_path / "commands"
+        ).exists():
+            installed_items.append("slash commands")
+
+        if installed_items:
+            print(f"  ✓ Installed: {', '.join(installed_items)}")
+
+        print(
+            "\n  ✅ User-level settings are now available to all Claude Code sessions!"
+        )
+    else:
+        print("  ⚠ Failed to clone settings repo. You can manually set up later:")
+        print(f"     git clone {repo_url} {install_path}")
 
 
 def setup_claude_user_settings() -> None:
@@ -422,16 +531,11 @@ def setup_claude_user_settings() -> None:
         Path.home() / ".config" / "claude",
     ]
 
-    existing_location = None
     for location in possible_locations:
         if location.exists() and (location / "CLAUDE.md").exists():
-            existing_location = location
-            break
-
-    if existing_location:
-        print(f"\n  ℹ User-level settings already exist at: {existing_location}")  # noqa: RUF001
-        print("    Skipping setup.")
-        return
+            print(f"\n  ℹ User-level settings already exist at: {location}")  # noqa: RUF001
+            print("    Skipping setup.")
+            return
 
     print("\n  User-level Claude settings provide:")
     print("    • Global CLAUDE.md configuration (best practices, workflows)")
@@ -470,34 +574,7 @@ def setup_claude_user_settings() -> None:
             if not install_location:
                 install_location = default_location
 
-            install_path = Path(install_location).expanduser()
-
-            # Clone the repo
-            print(f"\n  📥 Cloning settings from {repo_url}...")
-
-            if run_command(["git", "clone", repo_url, str(install_path)], check=False):
-                print(f"  ✓ User-level settings installed at: {install_path}")
-
-                # Check what was installed
-                installed_items = []
-                if (install_path / "CLAUDE.md").exists():
-                    installed_items.append("CLAUDE.md")
-                if (install_path / "skills").exists():
-                    installed_items.append("skills/")
-                if (install_path / "agents").exists():
-                    installed_items.append("agents/")
-                if (install_path / ".claude" / "commands").exists() or (
-                    install_path / "commands"
-                ).exists():
-                    installed_items.append("slash commands")
-
-                if installed_items:
-                    print(f"  ✓ Installed: {', '.join(installed_items)}")
-
-                print("\n  ✅ User-level settings are now available to all Claude Code sessions!")
-            else:
-                print("  ⚠ Failed to clone settings repo. You can manually set up later:")
-                print(f"     git clone {repo_url} {install_path}")
+            _install_claude_settings(repo_url, Path(install_location).expanduser())
 
         except (EOFError, KeyboardInterrupt):
             print("\n  Setup cancelled.")
@@ -506,59 +583,66 @@ def setup_claude_user_settings() -> None:
         print("     git clone https://github.com/williaby/.claude ~/.claude")
 
 
-def print_success_message() -> None:
-    """Print success message with next steps."""
-    project_name = "{{ cookiecutter.project_name }}"
-    project_slug = "{{ cookiecutter.project_slug }}"
-    use_pre_commit = "{{ cookiecutter.use_pre_commit }}" == "yes"
-    use_mkdocs = "{{ cookiecutter.use_mkdocs }}" == "yes"
-    include_docker = "{{ cookiecutter.include_docker }}" == "yes"
-    include_sentry = "{{ cookiecutter.include_sentry }}" == "yes"
-    include_health_checks = "{{ cookiecutter.include_health_checks }}" == "yes"
-    include_background_jobs = "{{ cookiecutter.include_background_jobs }}"
-    include_caching = "{{ cookiecutter.include_caching }}" == "yes"
-    include_load_testing = "{{ cookiecutter.include_load_testing }}" == "yes"
-    include_semantic_release = "{{ cookiecutter.include_semantic_release }}" == "yes"
-    include_coderabbit = "{{ cookiecutter.include_coderabbit }}" == "yes"
-    include_linear = "{{ cookiecutter.include_linear }}" == "yes"
-    include_frontend = "{{ cookiecutter.include_frontend }}"
-    frontend_package_manager = "{{ cookiecutter.frontend_package_manager }}"
-    include_supply_chain = "{{ cookiecutter.include_supply_chain_security }}" == "yes"
+def _collect_optional_features(
+    include_background_jobs: str,
+    include_frontend: str,
+    include_docker: bool,
+    include_sentry: bool,
+    include_health_checks: bool,
+    include_caching: bool,
+    include_load_testing: bool,
+    include_semantic_release: bool,
+    include_coderabbit: bool,
+    include_linear: bool,
+    include_supply_chain: bool,
+) -> list[str]:
+    """Collect enabled optional features into a display list.
 
-    print("\n" + "=" * 60)
-    print(f"🎉 SUCCESS! {project_name} has been created!")
-    print("=" * 60)
+    Args:
+        include_background_jobs: Background jobs setting ("no", "arq", or "celery").
+        include_frontend: Frontend setting ("no", "react", etc.).
+        include_docker: Whether Docker is enabled.
+        include_sentry: Whether Sentry is enabled.
+        include_health_checks: Whether health checks are enabled.
+        include_caching: Whether caching is enabled.
+        include_load_testing: Whether load testing is enabled.
+        include_semantic_release: Whether semantic release is enabled.
+        include_coderabbit: Whether CodeRabbit is enabled.
+        include_linear: Whether Linear is enabled.
+        include_supply_chain: Whether supply chain security is enabled.
 
-    # Print optional features that were included
-    optional_features = []
-    if include_docker:
-        optional_features.append("Docker containerization")
-    if include_sentry:
-        optional_features.append("Sentry monitoring")
-    if include_health_checks:
-        optional_features.append("Health check endpoints")
+    Returns:
+        List of feature description strings for enabled features.
+    """
+    simple_features: list[tuple[bool, str]] = [
+        (include_docker, "Docker containerization"),
+        (include_sentry, "Sentry monitoring"),
+        (include_health_checks, "Health check endpoints"),
+        (include_caching, "Redis caching"),
+        (include_load_testing, "Load testing (Locust & k6)"),
+        (include_semantic_release, "Semantic Release (automated versioning)"),
+        (include_coderabbit, "CodeRabbit (AI code reviews)"),
+        (include_linear, "Linear (project management integration)"),
+        (include_supply_chain, "Supply chain security (Assured OSS + Infisical)"),
+    ]
+    features: list[str] = [label for flag, label in simple_features if flag]
     if include_background_jobs != "no":
-        optional_features.append(f"Background jobs ({include_background_jobs.upper()})")
-    if include_caching:
-        optional_features.append("Redis caching")
-    if include_load_testing:
-        optional_features.append("Load testing (Locust & k6)")
-    if include_semantic_release:
-        optional_features.append("Semantic Release (automated versioning)")
-    if include_coderabbit:
-        optional_features.append("CodeRabbit (AI code reviews)")
-    if include_linear:
-        optional_features.append("Linear (project management integration)")
-    if include_supply_chain:
-        optional_features.append("Supply chain security (Assured OSS + Infisical)")
+        features.append(f"Background jobs ({include_background_jobs.upper()})")
     if include_frontend != "no":
-        optional_features.append(f"Frontend ({include_frontend.title()} + Vite + TypeScript)")
+        features.append(f"Frontend ({include_frontend.title()} + Vite + TypeScript)")
+    return features
 
-    if optional_features:
-        print("\n✨ Optional features included:")
-        for feature in optional_features:
-            print(f"  • {feature}")
 
+def _print_next_steps(
+    project_slug: str, use_pre_commit: bool, use_mkdocs: bool
+) -> None:
+    """Print numbered next steps for project setup.
+
+    Args:
+        project_slug: The generated project's directory name.
+        use_pre_commit: Whether pre-commit is enabled.
+        use_mkdocs: Whether MkDocs is enabled.
+    """
     print("\n📦 Next steps:")
     print("\n  1. Navigate to your project:")
     print(f"     cd {project_slug}")
@@ -592,7 +676,23 @@ def print_success_message() -> None:
     print("\n  9. Create GitHub repository:")
     print(f"     gh repo create {project_slug} --public --source=.")
 
-    # Add next steps for optional features
+
+def _print_infrastructure_integrations(
+    include_docker: bool,
+    include_background_jobs: str,
+    include_load_testing: bool,
+    include_sentry: bool,
+) -> None:
+    """Print setup instructions for infrastructure integrations.
+
+    Args:
+        include_docker: Whether Docker is enabled.
+        include_background_jobs: Background jobs setting ("no", "arq", or "celery").
+        include_load_testing: Whether load testing is enabled.
+        include_sentry: Whether Sentry is enabled.
+    """
+    project_slug = "{{ cookiecutter.project_slug }}"
+
     if include_docker:
         print("\n  📦 Docker:")
         print("     docker-compose up -d    # Start development environment")
@@ -615,6 +715,27 @@ def print_success_message() -> None:
         print("\n  🔍 Sentry:")
         print("     Set SENTRY_DSN in .env to enable error tracking")
 
+
+def _print_developer_tool_integrations(
+    include_semantic_release: bool,
+    include_coderabbit: bool,
+    include_linear: bool,
+    include_supply_chain: bool,
+    include_frontend: str,
+    frontend_package_manager: str,
+    include_docker: bool,
+) -> None:
+    """Print setup instructions for developer tool integrations.
+
+    Args:
+        include_semantic_release: Whether semantic release is enabled.
+        include_coderabbit: Whether CodeRabbit is enabled.
+        include_linear: Whether Linear is enabled.
+        include_supply_chain: Whether supply chain security is enabled.
+        include_frontend: Frontend setting ("no", "react", etc.).
+        frontend_package_manager: Package manager for frontend ("npm", "pnpm", etc.).
+        include_docker: Whether Docker is enabled.
+    """
     if include_semantic_release:
         print("\n  🚀 Semantic Release:")
         print("     Releases are automated on push to main/master branch")
@@ -625,7 +746,9 @@ def print_success_message() -> None:
     if include_coderabbit:
         print("\n  🐰 CodeRabbit:")
         print("     AI-powered code reviews are configured")
-        print("     Install CodeRabbit GitHub App: https://github.com/apps/coderabbitai")
+        print(
+            "     Install CodeRabbit GitHub App: https://github.com/apps/coderabbitai"
+        )
         print("     Reviews will run automatically on PRs")
         print("     Use @coderabbitai in PR comments to interact")
 
@@ -638,7 +761,9 @@ def print_success_message() -> None:
 
     if include_supply_chain:
         print("\n  🔐 Supply Chain Security:")
-        print("     ./scripts/setup-supply-chain.sh    # Configure local authentication")
+        print(
+            "     ./scripts/setup-supply-chain.sh    # Configure local authentication"
+        )
         print("     gcloud auth application-default login  # GCP credentials")
         print("     infisical login && infisical init      # Secrets management")
         print("     See README.md for full setup instructions")
@@ -651,10 +776,68 @@ def print_success_message() -> None:
             f"     {frontend_package_manager} run dev          # Start dev server (http://localhost:3000)"
         )
         print(f"     {frontend_package_manager} run test         # Run tests")
-        print(f"     {frontend_package_manager} run build        # Build for production")
+        print(
+            f"     {frontend_package_manager} run build        # Build for production"
+        )
         if include_docker:
             print("\n     Or with Docker:")
             print("     docker-compose up frontend  # Start frontend container")
+
+
+def print_success_message() -> None:
+    """Print success message with next steps."""
+    project_name = "{{ cookiecutter.project_name }}"
+    project_slug = "{{ cookiecutter.project_slug }}"
+    use_pre_commit = "{{ cookiecutter.use_pre_commit }}" == "yes"
+    use_mkdocs = "{{ cookiecutter.use_mkdocs }}" == "yes"
+    include_docker = "{{ cookiecutter.include_docker }}" == "yes"
+    include_sentry = "{{ cookiecutter.include_sentry }}" == "yes"
+    include_health_checks = "{{ cookiecutter.include_health_checks }}" == "yes"
+    include_background_jobs = "{{ cookiecutter.include_background_jobs }}"
+    include_caching = "{{ cookiecutter.include_caching }}" == "yes"
+    include_load_testing = "{{ cookiecutter.include_load_testing }}" == "yes"
+    include_semantic_release = "{{ cookiecutter.include_semantic_release }}" == "yes"
+    include_coderabbit = "{{ cookiecutter.include_coderabbit }}" == "yes"
+    include_linear = "{{ cookiecutter.include_linear }}" == "yes"
+    include_frontend = "{{ cookiecutter.include_frontend }}"
+    frontend_package_manager = "{{ cookiecutter.frontend_package_manager }}"
+    include_supply_chain = "{{ cookiecutter.include_supply_chain_security }}" == "yes"
+
+    print("\n" + "=" * 60)
+    print(f"🎉 SUCCESS! {project_name} has been created!")
+    print("=" * 60)
+
+    optional_features = _collect_optional_features(
+        include_background_jobs,
+        include_frontend,
+        include_docker,
+        include_sentry,
+        include_health_checks,
+        include_caching,
+        include_load_testing,
+        include_semantic_release,
+        include_coderabbit,
+        include_linear,
+        include_supply_chain,
+    )
+    if optional_features:
+        print("\n✨ Optional features included:")
+        for feature in optional_features:
+            print(f"  • {feature}")
+
+    _print_next_steps(project_slug, use_pre_commit, use_mkdocs)
+    _print_infrastructure_integrations(
+        include_docker, include_background_jobs, include_load_testing, include_sentry
+    )
+    _print_developer_tool_integrations(
+        include_semantic_release,
+        include_coderabbit,
+        include_linear,
+        include_supply_chain,
+        include_frontend,
+        frontend_package_manager,
+        include_docker,
+    )
 
     print("\n" + "=" * 60)
     print("📚 Documentation:")
@@ -704,7 +887,9 @@ def inject_creation_date() -> None:
             print(f"  ⚠ Could not update {filepath}: {e}")
 
     if updated_count > 0:
-        print(f"  ✓ Injected creation date ({creation_date}) into {updated_count} file(s)")
+        print(
+            f"  ✓ Injected creation date ({creation_date}) into {updated_count} file(s)"
+        )
     else:
         print("  ✓ No date placeholders found")
 
@@ -932,7 +1117,7 @@ def add_cruft_skip_patterns() -> None:
 
             cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
             print(f"  ✓ Updated .cruft.json skip patterns ({len(merged_skip)} entries)")
-        except Exception as e:
+        except (json.JSONDecodeError, OSError, KeyError) as e:
             print(f"  - Failed to update skip patterns: {e}", file=sys.stderr)
     else:
         # Create minimal .cruft.json for projects generated with plain cookiecutter
@@ -955,7 +1140,7 @@ def add_cruft_skip_patterns() -> None:
             cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
             print(f"  ✓ Created .cruft.json with {len(skip_patterns)} skip patterns")
             print("    (Use 'cruft link' to fully connect to the template)")
-        except Exception as e:
+        except OSError as e:
             print(f"  - Failed to create .cruft.json: {e}", file=sys.stderr)
 
 
@@ -970,13 +1155,14 @@ def main() -> None:
         create_initial_directories()
         run_code_fixes()  # Auto-fix code quality issues before git init
         ensure_trailing_newlines()  # Ensure all files have trailing newlines
+        mark_scripts_executable()  # Ensure shebang scripts have executable permissions
         add_cruft_skip_patterns()  # Add skip patterns to prevent binary file issues
         initialize_git()
         setup_claude_subtree()  # Add Claude standards via git subtree
         setup_pre_commit()
         setup_claude_user_settings()
         print_success_message()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - broad catch in main() is intentional
         print(f"\n❌ Error during post-generation: {e}", file=sys.stderr)
         sys.exit(1)
 

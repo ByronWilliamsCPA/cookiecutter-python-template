@@ -1,18 +1,16 @@
 ---
-schema_type: adr
+schema_type: planning
 title: "ADR-NNN: Short Descriptive Title of the Decision"
-description: "Brief one-sentence description of what decision this ADR documents"
+description: "Brief one-sentence description of what decision this ADR documents."
 tags:
   - architecture
-  - decision
-  - your-topic
-  - relevant-area
-status: proposed
-owner: "Your Team Role or Name"
-authors:
-  - name: "Author Name"
-    email: "author@example.com"
-purpose: "Document the decision to [choose X approach] for [problem area], with rationale for alternatives considered"
+  - decisions
+  - adr
+status: draft
+owner: core-maintainer
+component: Strategy
+source: "ADR template"
+purpose: "Document the decision to choose an approach for a problem area, with rationale for alternatives considered."
 ---
 
 > **Status**: `proposed` → Change to `published` once approved, or `deprecated`/`superseded` if no longer valid
