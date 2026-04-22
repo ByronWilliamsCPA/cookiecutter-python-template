@@ -45,6 +45,21 @@ jobs:
       run-bandit: true
       run-safety: true
       run-osv: true
+
+  security-gate-success:
+    name: Security Gate Validation
+    runs-on: ubuntu-latest
+    needs: [security]
+    if: always()
+    steps:
+      - name: Check security scan results
+        run: |
+          if [ "{% raw %}${{ needs.security.result }}{% endraw %}" == "success" ]; then
+            echo "Security Gate passed"
+          else
+            echo "Security Gate failed: {% raw %}${{ needs.security.result }}{% endraw %}"
+            exit 1
+          fi
 {%- else -%}
 # Standalone security workflow
 jobs:
@@ -80,5 +95,20 @@ jobs:
             bandit-report.json
             safety-report.json
           retention-days: 30
+
+  security-gate-success:
+    name: Security Gate Validation
+    runs-on: ubuntu-latest
+    needs: [security]
+    if: always()
+    steps:
+      - name: Check security scan results
+        run: |
+          if [ "{% raw %}${{ needs.security.result }}{% endraw %}" == "success" ]; then
+            echo "Security Gate passed"
+          else
+            echo "Security Gate failed: {% raw %}${{ needs.security.result }}{% endraw %}"
+            exit 1
+          fi
 {%- endif -%}
 {%- endif -%}
