@@ -2,9 +2,9 @@
 
 ## Supported Versions
 
-| Version | Supported |
-|---------|-----------|
-| 0.1.x   | Yes       |
+| Version                    | Supported |
+|----------------------------|-----------|
+| {{ cookiecutter.version }} | Yes       |
 
 ## Reporting a Vulnerability
 
