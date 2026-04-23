@@ -19,7 +19,7 @@ This document provides everything needed to implement supply chain security in t
 |-----------|--------|---------|
 | Google Assured OSS | ✅ Ready | GCP Project: `assured-oss-457903` |
 | python-libs Registry | ✅ Ready | `us-central1-python.pkg.dev/assured-oss-457903/python-libs` |
-| Infisical | ✅ Ready | https://infisical.williamshome.family |
+| Infisical | ✅ Ready | https://secrets.byronwilliamscpa.com |
 | Service Account | ✅ Ready | `assured-oss-accessor@assured-oss-457903.iam.gserviceaccount.com` |
 
 ---
@@ -604,6 +604,6 @@ assured-oss-accessor@assured-oss-457903.iam.gserviceaccount.com
 ## Contacts
 
 - **Supply Chain Questions:** Byron Williams
-- **Infisical Issues:** Check https://infisical.williamshome.family
+- **Infisical Issues:** Check https://secrets.byronwilliamscpa.com
 - **Assured OSS Issues:** Check GCP Console for `assured-oss-457903`
 - **python-libs Issues:** Check [ByronWilliamsCPA/python-libs](https://github.com/ByronWilliamsCPA/python-libs)

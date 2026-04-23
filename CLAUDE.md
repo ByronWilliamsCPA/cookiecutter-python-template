@@ -450,14 +450,14 @@ git commit -m "feat(template): add SonarCloud integration support"
 
 > **Reference**: Global CLAUDE.md standards for PR creation apply.
 
-**ALWAYS use `mcp__zen-core__pr_prepare` tool for PR creation**:
+**ALWAYS use `mcp__zen__pr_prepare` tool for PR creation**:
 
 ```bash
 # Standard template PR creation
-mcp__zen-core__pr_prepare --include_wtd=true --target_branch=main --change_type=feat
+mcp__zen__pr_prepare --include_wtd=true --target_branch=main --change_type=feat
 
 # Template enhancement PR
-mcp__zen-core__pr_prepare \
+mcp__zen__pr_prepare \
   --include_wtd=true \
   --target_branch=main \
   --change_type=feat \

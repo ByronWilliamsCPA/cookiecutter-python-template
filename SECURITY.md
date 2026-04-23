@@ -51,10 +51,10 @@ Generated projects include the following security tooling by default:
 
 - `bandit` for static analysis of Python code
 - `pip-audit` for dependency vulnerability scanning
-- `detect-secrets` (via TruffleHog) for secret scanning
+- `detect-secrets` for secret scanning
 - SHA-pinned GitHub Actions to prevent supply chain attacks
 - Semgrep rules for security-focused static analysis
-- OSV Scanner for open source vulnerability detection
+- OSV Scanner for open-source vulnerability detection
 
 ## Known Vulnerabilities
 
