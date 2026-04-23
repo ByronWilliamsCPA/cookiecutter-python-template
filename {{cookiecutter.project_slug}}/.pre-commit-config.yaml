@@ -124,6 +124,18 @@ repos:
         stages: [pre-commit]
 
   # ============================================================================
+  # Ruff Linting and Formatting (Fast, pre-commit stage)
+  # ============================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.0
+    hooks:
+      - id: ruff-format
+        stages: [pre-commit]
+      - id: ruff
+        stages: [pre-commit]
+        args: [--fix, --exit-non-zero-on-fix]
+
+  # ============================================================================
   # Qlty Unified Quality Checks (Pre-Push)
   # ============================================================================
   # Moved to pre-push to avoid clogging PR reviews with issues

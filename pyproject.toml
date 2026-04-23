@@ -26,12 +26,12 @@ dev = [
     # Code quality
     "pre-commit>=3.5.0",
     "ruff>=0.1.9",
-    "mypy>=1.8.0",
-    "black>=23.12.1",
+    "basedpyright>=1.35.0",
 
     # Security
     "bandit>=1.7.5",
-    "safety>=3.0.0",
+    "pip-audit>=2.7.0",
+    "detect-secrets>=1.5.0",
 
     # Template tools
     "cookiecutter>=2.5.0",
@@ -40,6 +40,8 @@ dev = [
     # Testing
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
+    "pytest-mock>=3.14.0",
+    "pytest-randomly>=3.15.0",
     "pytest-xdist>=3.5.0",
     "tomli>=2.0.1",
     "tomli-w>=1.0.0",
@@ -58,8 +60,8 @@ packages = ["hooks"]
 # ============================================================================
 
 [tool.ruff]
-line-length = 100
-target-version = "py310"
+line-length = 88
+target-version = "py312"
 src = ["hooks"]
 
 [tool.ruff.lint]
@@ -69,21 +71,61 @@ select = [
     "F",      # pyflakes
     "I",      # isort
     "N",      # pep8-naming
+    "D",      # pydocstyle
     "UP",     # pyupgrade
+    "ANN",    # flake8-annotations
     "B",      # flake8-bugbear
+    "BLE",    # flake8-blind-except
     "C4",     # flake8-comprehensions
-    "SIM",    # flake8-simplify
-    "TCH",    # flake8-type-checking
+    "C90",    # mccabe complexity
+    "EM",     # flake8-errmsg
+    "FA",     # flake8-future-annotations
+    "G",      # flake8-logging-format
+    "INP",    # flake8-no-pep420
+    "ISC",    # flake8-implicit-str-concat
+    "PGH",    # pygrep-hooks
+    "PL",     # pylint
     "PTH",    # flake8-use-pathlib
+    "RET",    # flake8-return
+    "RSE",    # flake8-raise
     "RUF",    # Ruff-specific rules
+    "S",      # flake8-bandit
+    "SIM",    # flake8-simplify
+    "SLF",    # flake8-self
+    "T10",    # flake8-debugger
+    "TCH",    # flake8-type-checking
+    "TID",    # flake8-tidy-imports
+    "TRY",    # tryceratops
+    "YTT",    # flake8-2020
 ]
 ignore = [
-    "E501",   # Line too long (handled by formatter)
+    "E501",    # Line too long (handled by formatter)
+    "D203",    # one-blank-line-before-class (conflicts with D211)
+    "D213",    # multi-line-summary-second-line (conflicts with D212)
 ]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-statements = 100
+max-branches = 12
+max-args = 4
 
 [tool.ruff.lint.per-file-ignores]
 "hooks/*" = [
-    "T201",   # Allow print statements in hooks
+    "T201",    # Allow print statements in hooks
+    "PLR0913", # Allow more args in hooks where needed
+    "S603",    # subprocess call: legitimate in template generation hooks
+    "PLR0133", # Two constants compared: false positive on Jinja2 template strings
+]
+"tests/*" = [
+    "S101",    # Allow assert in tests
+    "SLF001",  # Allow private member access in tests
+    "ANN",     # No annotations required in tests
 ]
 
 [tool.ruff.lint.isort]
@@ -91,40 +133,30 @@ known-first-party = []
 force-single-line = false
 lines-after-imports = 2
 
-[tool.mypy]
-python_version = "3.10"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_any_unimported = false
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-check_untyped_defs = true
-strict_equality = true
-files = ["hooks"]
-# Disable comparison-overlap for hooks - false positives from Jinja2 template strings
-disable_error_code = ["comparison-overlap"]
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
-[tool.black]
-line-length = 100
-target-version = ['py310', 'py311', 'py312', 'py313']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.mypy_cache
-  | \.ruff_cache
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | {{cookiecutter.project_slug}}
-)/
-'''
+
+[tool.basedpyright]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+strictListInference = true
+strictDictionaryInference = true
+strictSetInference = true
+# Hooks contain Jinja2 template strings (e.g. "{{ cookiecutter.include_cli }}")
+# that are always string literals at analysis time, never equal to "yes"/"no".
+# This is the same false-positive that PLR0133 is already suppressed for in ruff.
+reportUnnecessaryComparison = "none"
+include = ["hooks"]
+exclude = [
+    "{{cookiecutter.project_slug}}",
+    "{{ cookiecutter.repo_name }}",
+    ".venv",
+    "tests",
+]
 
 [tool.bandit]
 targets = ["hooks"]
@@ -153,6 +185,7 @@ addopts = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
 ]
 
 [tool.coverage.run]
@@ -167,8 +200,7 @@ omit = [
 precision = 2
 show_missing = true
 skip_covered = false
-# Hook files are integration-tested via template generation, not unit tests
-fail_under = 0
+fail_under = 80
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
@@ -181,7 +213,7 @@ exclude_lines = [
 
 [dependency-groups]
 dev = [
-    "basedpyright>=1.35.0",
     "codespell>=2.4.1",
     "interrogate>=1.7.0",
+    "darglint>=1.8.1",
 ]
