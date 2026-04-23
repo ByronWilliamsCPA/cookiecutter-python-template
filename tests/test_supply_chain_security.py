@@ -418,7 +418,10 @@ class TestSupplyChainSecurityFileContent:
         # permissive licenses (MIT, Apache-2.0) allowed implicitly
         assert "deny-licenses" in content, "Should use deny-list approach"
         assert "AGPL-3.0" in content, "Should deny AGPL-3.0"
+        assert "AGPL-3.0-only" in content, "Should deny AGPL-3.0-only"
+        assert "AGPL-3.0-or-later" in content, "Should deny AGPL-3.0-or-later"
         assert "GPL-2.0-only" in content, "Should deny GPL-2.0-only"
+        assert "LGPL-2.0-only" in content, "Should deny LGPL-2.0-only"
 
     def test_gcp_variables_rendered_in_pyproject(self, supply_chain_project: Path) -> None:
         """Verify GCP variables are properly rendered in pyproject.toml."""
