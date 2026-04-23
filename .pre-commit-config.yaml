@@ -107,6 +107,7 @@ repos:
         entry: "—"
         files: \.(py|md|txt|toml|yaml|yml|json|rst)$
         types_or: [python, markdown, plain-text, toml, yaml, json, rst]
+        exclude: ^\.pre-commit-config\.yaml$
 
   - repo: https://github.com/econchick/interrogate
     rev: 1.7.0

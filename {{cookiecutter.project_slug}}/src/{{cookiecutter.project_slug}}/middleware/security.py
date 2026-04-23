@@ -258,14 +258,12 @@ class SSRFPreventionMiddleware(BaseHTTPMiddleware):
         "localhost",
         "127.0.0.1",
         "0.0.0.0",
-        # AWS metadata endpoints
+        # AWS/Azure metadata endpoints (shared IP)
         "169.254.169.254",
         "fd00:ec2::254",
         # GCP metadata endpoints
         "metadata.google.internal",
         "metadata.goog",
-        # Azure metadata endpoints
-        "169.254.169.254",
         # Kubernetes
         "kubernetes.default",
         "kubernetes.default.svc",
