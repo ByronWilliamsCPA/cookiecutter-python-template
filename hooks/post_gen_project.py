@@ -447,27 +447,9 @@ def render_workflow_templates() -> None:
                 # Build patterns using separate strings to avoid Jinja2 interpretation
                 open_brace = "{" + "{"
                 close_brace = "}" + "}"
-                pattern1 = (
-                    open_brace
-                    + open_brace
-                    + f" cookiecutter.{key} "
-                    + close_brace
-                    + close_brace
-                )
-                pattern2 = (
-                    open_brace
-                    + open_brace
-                    + f"cookiecutter.{key}"
-                    + close_brace
-                    + close_brace
-                )
-                pattern3 = (
-                    open_brace
-                    + open_brace
-                    + f"  cookiecutter.{key}  "
-                    + close_brace
-                    + close_brace
-                )
+                pattern1 = open_brace + f" cookiecutter.{key} " + close_brace
+                pattern2 = open_brace + f"cookiecutter.{key}" + close_brace
+                pattern3 = open_brace + f"  cookiecutter.{key}  " + close_brace
                 content = content.replace(pattern1, value)
                 content = content.replace(pattern2, value)
                 content = content.replace(pattern3, value)
