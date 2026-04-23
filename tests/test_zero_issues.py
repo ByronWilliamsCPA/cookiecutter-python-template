@@ -73,7 +73,16 @@ class TestFormattingAndLinting:
 
         project_dir = generate_project(template_dir, temp_dir, minimal_config)
 
-        # Use BasedPyright (standard type checker per global CLAUDE.md)
+        # Skip if basedpyright is not installed
+        availability = subprocess.run(
+            ["basedpyright", "--version"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if availability.returncode != 0:
+            pytest.skip("basedpyright not installed")
+
         result = subprocess.run(
             ["basedpyright", "src/"],
             cwd=project_dir,
@@ -82,8 +91,7 @@ class TestFormattingAndLinting:
             check=False,
         )
 
-        # Allow 0 (success) or 1 (warnings only, no errors)
-        assert result.returncode in [0, 1] or "error" not in result.stdout.lower(), (
+        assert result.returncode == 0, (
             f"BasedPyright type checking errors detected:\n{result.stdout}\n{result.stderr}"
         )
 

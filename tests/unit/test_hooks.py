@@ -109,14 +109,23 @@ class TestHookCodeQuality:
         assert result.returncode == 0, f"Ruff format check failed: {result.stderr}"
 
     @pytest.mark.slow
-    def test_hooks_pass_mypy(self, template_dir: Path) -> None:
-        """Verify hooks pass mypy type checking."""
-        hooks_dir = template_dir / "hooks"
-        result = subprocess.run(
-            ["mypy", str(hooks_dir), "--ignore-missing-imports"],
+    def test_hooks_pass_basedpyright(self, template_dir: Path) -> None:
+        """Verify hooks pass basedpyright type checking."""
+        # Skip if basedpyright is not installed
+        availability = subprocess.run(
+            ["basedpyright", "--version"],
             capture_output=True,
             text=True,
             check=False,
         )
-        # MyPy returns 0 on success
-        assert result.returncode == 0, f"MyPy check failed: {result.stdout}"
+        if availability.returncode != 0:
+            pytest.skip("basedpyright not installed")
+
+        hooks_dir = template_dir / "hooks"
+        result = subprocess.run(
+            ["basedpyright", str(hooks_dir)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, f"BasedPyright check failed: {result.stdout}"
