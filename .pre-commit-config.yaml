@@ -106,7 +106,7 @@ repos:
         language: pygrep
         entry: "—"
         files: \.(py|md|txt|toml|yaml|yml|json|rst)$
-        types_or: [python, markdown, plain-text]
+        types_or: [python, markdown, plain-text, toml, yaml, json, rst]
 
   - repo: https://github.com/econchick/interrogate
     rev: 1.7.0
