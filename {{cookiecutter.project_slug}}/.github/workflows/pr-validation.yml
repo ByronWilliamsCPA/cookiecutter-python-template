@@ -148,15 +148,15 @@ jobs:
   # ==========================================================================
   # Validation Summary
   # ==========================================================================
-  validation-summary:
-    name: Validation Summary
+  validate-dependencies:
+    name: Dependency & Standards Validation
     runs-on: ubuntu-latest
     needs: [core-validation, dead-code, changelog{% if cookiecutter.use_mkdocs == "yes" %}, link-check{% endif %}]
     if: always()
     steps:
       - name: Check validation results
         run: |
-          echo "## PR Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Dependency & Standards Validation" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           {%- raw %}
 

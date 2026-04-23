@@ -85,6 +85,7 @@ dev = [
     "pytest-cov>=4.1.0",
     "pytest-asyncio>=0.21.0",
     "pytest-xdist>=3.3.0",
+    "pytest-randomly>=3.15.0",
     "hypothesis>=6.82.0",
 
     # Code Quality (always included)
@@ -312,7 +313,6 @@ ignore = [
     "ANN401", # dynamically typed expressions (Any) - sometimes necessary
 
     # Pylint rules (too strict for all cases)
-    "PLR0913", # too many arguments (>5) - sometimes necessary for APIs
     "PLR2004", # magic value comparison - too noisy
     "PLW2901", # outer loop variable overwritten - sometimes intentional
 
@@ -331,6 +331,7 @@ max-complexity = 10  # Google/Pylint default
 
 # Pylint Configuration (Function complexity limits)
 [tool.ruff.lint.pylint]
+max-args = 4           # Function argument limit
 max-statements = 100   # Function length hard limit
 max-branches = 12      # Nesting/branching limit
 max-nested-blocks = 4  # Explicit nesting limit
@@ -345,6 +346,12 @@ known-first-party = ["{{ cookiecutter.project_slug }}"]
 [tool.ruff.lint.per-file-ignores]
 # Module init files
 "__init__.py" = ["F401", "D104"]
+
+# Exception classes legitimately require multiple context parameters in __init__
+"**/core/exceptions.py" = ["PLR0913"]
+
+# Security middleware uses keyword-only args for a rich configuration surface
+"**/middleware/security.py" = ["PLR0913"]
 
 # Test files (relaxed rules for test code)
 "tests/**/*.py" = [
@@ -631,7 +638,7 @@ ignore = [
     "DAR401",  # Missing exception(s) in Raises section
 ]
 # Ignore in these directories
-ignore_regex = "^(tests|scripts|benchmarks|tools)/.*$"
+ignore_regex = "^(tests|scripts|benchmarks|tools)/.*$|^noxfile\\.py$|^\\.claude/.*$"
 
 # Mutation Testing Configuration (mutmut)
 [tool.mutmut]
