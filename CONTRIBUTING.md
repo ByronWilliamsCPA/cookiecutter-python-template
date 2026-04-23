@@ -78,14 +78,14 @@ git config --global commit.gpgsign true
    ```
 4. Run the test suite:
    ```bash
-   uv run pytest tests/ -v
+   uv run pytest tests/unit/ -v
    ```
 5. Test template generation manually:
    ```bash
    cd /tmp
    cruft create /path/to/cookiecutter-python-template --no-input
    cd my_project && uv sync --all-extras
-   uv run ruff format --check . && uv run ruff check . && uv run pytest -v
+   uv run ruff format --check . && uv run ruff check . && uv run basedpyright src/ && uv run pytest -v
    cd /tmp && rm -rf my_project
    ```
 6. Open a pull request with a clear description of the change and why it is needed.

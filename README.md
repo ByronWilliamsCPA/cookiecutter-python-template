@@ -490,7 +490,7 @@ This template includes a system to track projects created from it and notify the
 
 1. **Registry**: Projects are registered in `downstream-projects.json`
 2. **Notifications**: When a new template release is published, registered projects receive GitHub issues with update instructions
-3. **Opt-in**: Projects can opt out by setting `"notify": false` in the registry
+3. **Opt-out**: Projects can opt out by setting `"notify": false` in the registry
 
 **Registering your project:**
 
@@ -513,8 +513,7 @@ If you created your project locally, your `.cruft.json` may contain a local path
 ```json
 {
   "template": "https://github.com/ByronWilliamsCPA/cookiecutter-python-template",
-  "checkout": "main",
-  ...
+  "checkout": "main"
 }
 ```
 
