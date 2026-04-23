@@ -102,7 +102,8 @@ def setup_branch_protection(
     """Configure branch protection rules for a repository.
 
     Sets up OpenSSF-recommended branch protection including:
-    - Required status checks (CI Pipeline, Security Scan, PR Validation)
+    - Required status checks (CI Gate, Security Gate Validation,
+      Dependency & Standards Validation, and optionally Check REUSE Compliance)
     - Required pull request reviews
     - Admin enforcement
     - Linear history requirement

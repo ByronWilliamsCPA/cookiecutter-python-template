@@ -159,9 +159,12 @@ def _cleanup_api_and_backend_files() -> None:
         remove_file(
             Path("src/{{ cookiecutter.project_slug }}/middleware/correlation.py")
         )
-        # Remove middleware directory if empty
+        # Remove middleware directory if only __init__.py / __pycache__ remain
         middleware_dir = Path("src/{{ cookiecutter.project_slug }}/middleware")
-        if middleware_dir.exists() and not any(middleware_dir.iterdir()):
+        if middleware_dir.exists() and not any(
+            f.name not in {"__pycache__", "__init__.py"}
+            for f in middleware_dir.iterdir()
+        ):
             remove_dir(middleware_dir)
 
     # Remove background job files if not needed
