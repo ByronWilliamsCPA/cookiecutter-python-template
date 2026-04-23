@@ -95,13 +95,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install safety pip-audit
-
-      - name: Run Safety check
-        id: safety
-        run: |
-          pip freeze | safety check --stdin || echo "::warning::Safety found vulnerabilities"
-        continue-on-error: true
+          pip install pip-audit
 
       - name: Run pip-audit
         id: pip_audit
@@ -113,7 +107,6 @@ jobs:
         run: |
           echo "### Dependency Audit Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Safety Check:** ${{ steps.safety.outcome == 'success' && '✅ Passed' || '⚠️ Issues Found' }}" >> $GITHUB_STEP_SUMMARY
           echo "**pip-audit:** ${{ steps.pip_audit.outcome == 'success' && '✅ Passed' || '⚠️ Issues Found' }}" >> $GITHUB_STEP_SUMMARY
 
   # Test template generation with latest tools
@@ -145,9 +138,9 @@ jobs:
           cd /tmp/latest-tools-test/my_python_project
 
           # Run all quality checks
-          ruff format --check hooks/ || echo "::warning::Ruff format check failed with latest version"
-          ruff check hooks/ || echo "::warning::Ruff check failed with latest version"
-          basedpyright hooks/ || echo "::warning::BasedPyright check failed with latest version"
+          ruff format --check src/ tests/ || echo "::warning::Ruff format check failed with latest version"
+          ruff check . || echo "::warning::Ruff check failed with latest version"
+          basedpyright src/ || echo "::warning::BasedPyright check failed with latest version"
 
   # Notification job
   notify-results:

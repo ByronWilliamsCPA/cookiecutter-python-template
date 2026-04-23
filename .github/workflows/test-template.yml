@@ -37,7 +37,7 @@ jobs:
 
       - name: Run hook unit tests
         run: |
-          uv run pytest tests/test_hooks.py -v
+          uv run pytest tests/unit/test_hooks.py -v
 
   # Test template generation with various configs
   test-generation:
@@ -70,8 +70,8 @@ jobs:
 
       - name: Run generation tests for ${{ matrix.config }}
         run: |
-          uv run pytest tests/test_generation.py -v -k "${{ matrix.config }}" || \
-          uv run pytest tests/test_generation.py::TestConfigurationVariations::test_predefined_configs[${{ matrix.config }}] -v
+          uv run pytest tests/unit/test_generation.py -v -k "${{ matrix.config }}" || \
+          uv run pytest tests/unit/test_generation.py::TestConfigurationVariations::test_predefined_configs[${{ matrix.config }}] -v
 
   # Comprehensive integration tests
   test-integration:
