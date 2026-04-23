@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         config: [minimal, cli-app, api-service, ml-project, full-featured]
 
     steps:
@@ -134,7 +134,7 @@ jobs:
       - name: Install latest versions of tools
         run: |
           pip install --upgrade pip
-          pip install --upgrade cookiecutter black ruff mypy pytest pytest-cov bandit safety
+          pip install --upgrade cookiecutter ruff basedpyright pytest pytest-cov bandit pip-audit
 
       - name: Generate test project
         run: |
@@ -145,9 +145,9 @@ jobs:
           cd /tmp/latest-tools-test/my_python_project
 
           # Run all quality checks
-          black --check src/ tests/ || echo "::warning::Black check failed with latest version"
-          ruff check . || echo "::warning::Ruff check failed with latest version"
-          mypy src/ --ignore-missing-imports || echo "::warning::MyPy check failed with latest version"
+          ruff format --check hooks/ || echo "::warning::Ruff format check failed with latest version"
+          ruff check hooks/ || echo "::warning::Ruff check failed with latest version"
+          basedpyright hooks/ || echo "::warning::BasedPyright check failed with latest version"
 
   # Notification job
   notify-results:
@@ -188,9 +188,9 @@ jobs:
 
           ### Matrix Coverage
 
-          - **Python Versions:** 3.10, 3.11, 3.12, 3.13
+          - **Python Versions:** 3.10, 3.11, 3.12, 3.13, 3.14
           - **Configurations:** minimal, cli-app, api-service, ml-project, full-featured
-          - **Total Combinations:** 20
+          - **Total Combinations:** 25
 
           ### Next Steps
 

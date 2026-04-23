@@ -1,6 +1,6 @@
 # Cookiecutter Template Supply Chain Security Handoff
 
-> **Last Updated:** 2025-12-04  
+> **Last Updated:** 2025-12-04
 > **Status:** Ready for Implementation
 
 ## Overview
@@ -102,10 +102,10 @@ Document known CVE fixes in dependencies:
 dependencies = [
     # Security: CVE-2025-XXXX fixed in 2.9.0+
     "some-package>=2.9.0",
-    
+
     # Security: ReDoS vulnerability fixed in 0.115.0
     "fastapi>=0.115.0",
-    
+
     # Security: CVE-2024-7776 fixed in 1.17.0
     "onnx>=1.17.0",
 ]
@@ -146,7 +146,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       # Fetch all secrets from Infisical
       - name: Fetch secrets from Infisical
         uses: Infisical/secrets-action@v1.0.7
@@ -156,10 +156,10 @@ jobs:
           env-slug: prod  # or use github.ref mapping
           project-slug: ${{ github.event.repository.name }}
           domain: ${{ env.INFISICAL_DOMAIN }}
-      
+
       # Secrets are now available as environment variables
       # e.g., $GCP_SA_KEY_BASE64, $MODAL_TOKEN_ID, etc.
-      
+
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
@@ -310,7 +310,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
         with:

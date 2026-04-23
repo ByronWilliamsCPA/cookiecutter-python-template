@@ -59,17 +59,17 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --all-extras
-          pip install cookiecutter pre-commit yamllint tomli ruff basedpyright black bandit safety interrogate codespell
+          pip install cookiecutter pre-commit yamllint tomli ruff basedpyright bandit pip-audit interrogate codespell darglint
 
       - name: Install Node.js tools
         run: |
           npm install -g markdownlint-cli
 
-      - name: Run Black formatter check
+      - name: Run Ruff format check
         run: |
-          echo "::group::Black Formatting"
-          black --check --diff hooks/ || {
-            echo "::error::Code formatting issues detected. Run 'black hooks/' to fix."
+          echo "::group::Ruff Format Check"
+          ruff format --check --diff hooks/ || {
+            echo "::error::Code formatting issues detected. Run 'ruff format hooks/' to fix."
             exit 1
           }
           echo "::endgroup::"
@@ -80,11 +80,12 @@ jobs:
           ruff check hooks/ --output-format=github
           echo "::endgroup::"
 
-      - name: Run MyPy type checker
+      - name: Run BasedPyright type checker
         run: |
-          echo "::group::MyPy Type Checking"
-          mypy hooks/ --ignore-missing-imports --no-error-summary || {
-            echo "::warning::Type checking found issues"
+          echo "::group::BasedPyright Type Checking"
+          basedpyright hooks/ || {
+            echo "::error::Type checking errors detected. Run 'basedpyright hooks/' to see details."
+            exit 1
           }
           echo "::endgroup::"
 
@@ -98,7 +99,7 @@ jobs:
               --cov-report=term-missing \
               --cov-report=html \
               --cov-branch \
-              --cov-fail-under=0 \
+              --cov-fail-under=80 \
               -v
           else
             echo "::warning::No tests directory found"
@@ -117,9 +118,10 @@ jobs:
 
       - name: Dependency vulnerability scan
         run: |
-          echo "::group::Safety Dependency Scan"
-          pip freeze | safety check --stdin --ignore 51457 || {
-            echo "::warning::Vulnerable dependencies detected"
+          echo "::group::pip-audit Dependency Scan"
+          pip-audit --strict || {
+            echo "::error::Vulnerable dependencies detected. Review and update affected packages."
+            exit 1
           }
           echo "::endgroup::"
 
@@ -272,15 +274,13 @@ jobs:
           name: coverage-reports
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        continue-on-error: true
+        uses: SonarSource/sonarcloud-github-action@ffc3010689be73b8e5ae0c57ce35968afd7909e8 # v5.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Wait for Quality Gate
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        continue-on-error: true
+        uses: sonarsource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b # v1.2.0
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

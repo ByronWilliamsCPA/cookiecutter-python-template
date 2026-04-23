@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install cookiecutter black ruff mypy
+          pip install cookiecutter ruff basedpyright
 
       - name: Validate cookiecutter.json
         run: |
@@ -40,8 +40,8 @@ jobs:
       - name: Check hook code quality
         run: |
           ruff check hooks/
-          black --check hooks/
-          mypy hooks/ --ignore-missing-imports
+          ruff format --check hooks/
+          basedpyright hooks/
 
       - name: Test template generation (minimal)
         run: |

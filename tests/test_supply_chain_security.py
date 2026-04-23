@@ -414,13 +414,11 @@ class TestSupplyChainSecurityFileContent:
         workflow = supply_chain_project / ".github" / "workflows" / "dependency-review.yml"
         content = workflow.read_text()
 
-        # Should deny copyleft licenses
-        assert "GPL-3.0" in content, "Should deny GPL-3.0"
+        # Uses deny-list approach: copyleft licenses explicitly blocked,
+        # permissive licenses (MIT, Apache-2.0) allowed implicitly
+        assert "deny-licenses" in content, "Should use deny-list approach"
         assert "AGPL-3.0" in content, "Should deny AGPL-3.0"
-
-        # Should allow permissive licenses
-        assert "MIT" in content, "Should allow MIT"
-        assert "Apache-2.0" in content, "Should allow Apache-2.0"
+        assert "GPL-2.0-only" in content, "Should deny GPL-2.0-only"
 
     def test_gcp_variables_rendered_in_pyproject(self, supply_chain_project: Path) -> None:
         """Verify GCP variables are properly rendered in pyproject.toml."""
