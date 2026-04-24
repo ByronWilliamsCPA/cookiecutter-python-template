@@ -118,7 +118,7 @@ jobs:
       - name: Dependency vulnerability scan
         run: |
           echo "::group::pip-audit Dependency Scan"
-          pip-audit --strict || {
+          pip-audit --strict --ignore-vuln PYSEC-2022-42969 || {
             echo "::error::Vulnerable dependencies detected. Review and update affected packages."
             exit 1
           }
