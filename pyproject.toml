@@ -26,7 +26,7 @@ classifiers = [
 dev = [
     # Code quality
     "pre-commit>=3.5.0",
-    "ruff>=0.1.9",
+    "ruff>=0.14.6",
     "basedpyright>=1.35.0",
 
     # Security
@@ -62,6 +62,8 @@ packages = ["hooks"]
 
 [tool.ruff]
 line-length = 88
+# py312 intentional: hooks only run on Python 3.12+; requires-python covers the
+# generated project's broader >=3.10 support range, not the hook runtime.
 target-version = "py312"
 src = ["hooks"]
 
@@ -201,6 +203,8 @@ omit = [
 precision = 2
 show_missing = true
 skip_covered = false
+# fail_under omitted: hooks execute via cookiecutter, not pytest, so coverage
+# is always 0% in this repo. The generated projects enforce their own threshold.
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
