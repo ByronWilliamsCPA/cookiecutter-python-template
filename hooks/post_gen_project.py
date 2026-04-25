@@ -425,6 +425,24 @@ def render_workflow_templates() -> None:
         "author_name": "{{ cookiecutter.author_name }}",
         "author_email": "{{ cookiecutter.author_email }}",
         "version": "{{ cookiecutter.version }}",
+        # Feature flags and integration settings referenced in workflow templates
+        "code_coverage_target": "{{ cookiecutter.code_coverage_target }}",
+        "frontend_package_manager": "{{ cookiecutter.frontend_package_manager }}",
+        "include_codecov": "{{ cookiecutter.include_codecov }}",
+        "include_docker": "{{ cookiecutter.include_docker }}",
+        "include_frontend": "{{ cookiecutter.include_frontend }}",
+        "include_fuzzing": "{{ cookiecutter.include_fuzzing }}",
+        "include_github_actions": "{{ cookiecutter.include_github_actions }}",
+        "include_semantic_release": "{{ cookiecutter.include_semantic_release }}",
+        "include_sonarcloud": "{{ cookiecutter.include_sonarcloud }}",
+        "include_supply_chain_security": "{{ cookiecutter.include_supply_chain_security }}",
+        "infisical_domain": "{{ cookiecutter.infisical_domain }}",
+        "license": "{{ cookiecutter.license }}",
+        "node_version": "{{ cookiecutter.node_version }}",
+        "sonarcloud_organization": "{{ cookiecutter.sonarcloud_organization }}",
+        "use_mkdocs": "{{ cookiecutter.use_mkdocs }}",
+        "use_org_workflows": "{{ cookiecutter.use_org_workflows }}",
+        "use_reuse_licensing": "{{ cookiecutter.use_reuse_licensing }}",
     }
 
     rendered_count = 0
