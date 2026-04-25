@@ -1,4 +1,5 @@
 __pycache__/
+.coverage
 
 # Temporary reference files (Anti-compaction strategy)
 tmp_cleanup/
