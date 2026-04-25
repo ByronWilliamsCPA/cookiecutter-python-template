@@ -111,16 +111,10 @@ class TestHookCodeQuality:
     @pytest.mark.slow
     def test_hooks_pass_basedpyright(self, template_dir: Path) -> None:
         """Verify hooks pass basedpyright type checking."""
-        # Skip if basedpyright is not installed
-        availability = subprocess.run(
-            ["basedpyright", "--version"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if availability.returncode != 0:
-            pytest.skip("basedpyright not installed")
+        import shutil
 
+        if not shutil.which("basedpyright"):
+            pytest.skip("basedpyright not installed")
         hooks_dir = template_dir / "hooks"
         result = subprocess.run(
             ["basedpyright", str(hooks_dir)],
@@ -128,4 +122,6 @@ class TestHookCodeQuality:
             text=True,
             check=False,
         )
-        assert result.returncode == 0, f"BasedPyright check failed: {result.stdout}"
+        assert result.returncode == 0, (
+            f"BasedPyright check failed: {result.stdout}\n{result.stderr}"
+        )
