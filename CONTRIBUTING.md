@@ -79,6 +79,7 @@ git config --global commit.gpgsign true
 4. Run the test suite:
    ```bash
    uv run pytest tests/unit/ -v
+   uv run basedpyright hooks/
    ```
 5. Test template generation manually:
    ```bash

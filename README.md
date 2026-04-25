@@ -494,6 +494,8 @@ This template includes a system to track projects created from it and notify the
 
 **Registering your project:**
 
+> **Note**: `downstream-projects.json` and the associated notification workflow are planned but not yet implemented. The section below describes the intended interface.
+
 If you've created a project using this template and want to receive update notifications, add your project to `downstream-projects.json`:
 
 ```json
