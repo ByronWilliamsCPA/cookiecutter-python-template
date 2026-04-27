@@ -283,3 +283,68 @@ class TestInvalidInputHandling:
 
         # Should fail validation in pre_gen_project.py
         assert result.returncode != 0, "Generation should fail with empty project name"
+
+
+class TestWorkflowRendering:
+    """Regression tests for render_workflow_templates() post-gen hook.
+
+    Verifies that no {{ cookiecutter.xxx }} patterns survive into generated
+    workflow files and that known config values are correctly substituted.
+    """
+
+    def test_no_unrendered_cookiecutter_variables(
+        self, template_dir: Path, temp_dir: Path
+    ) -> None:
+        """Verify no {{ cookiecutter.xxx }} patterns remain after render_workflow_templates."""
+        from tests.conftest import generate_project
+
+        config: dict[str, Any] = {
+            "project_name": "Workflow Render Test",
+            "project_slug": "workflow_render_test",
+            "project_short_description": "Regression test for workflow rendering",
+            "author_name": "Test Author",
+            "author_email": "test@example.com",
+            "github_username": "testuser",
+            "version": "0.1.0",
+            "include_github_actions": "yes",
+        }
+        project_dir = generate_project(template_dir, temp_dir, config)
+        workflows_dir = project_dir / ".github" / "workflows"
+        assert workflows_dir.exists(), ".github/workflows should exist"
+
+        unrendered: list[str] = []
+        for wf_file in workflows_dir.glob("*.yml"):
+            content = wf_file.read_text()
+            if "{{ cookiecutter." in content or "{{cookiecutter." in content:
+                unrendered.append(wf_file.name)
+
+        assert not unrendered, (
+            f"Unrendered cookiecutter variables found in workflows: {unrendered}"
+        )
+
+    def test_github_org_resolved_in_workflows(
+        self, template_dir: Path, temp_dir: Path
+    ) -> None:
+        """Verify github_org_or_user resolves to the configured username in workflows."""
+        from tests.conftest import generate_project
+
+        config: dict[str, Any] = {
+            "project_name": "Workflow Render Test",
+            "project_slug": "workflow_render_test",
+            "project_short_description": "Regression test for workflow rendering",
+            "author_name": "Test Author",
+            "author_email": "test@example.com",
+            "github_username": "testuser",
+            "version": "0.1.0",
+            "include_github_actions": "yes",
+        }
+        project_dir = generate_project(template_dir, temp_dir, config)
+        workflows_dir = project_dir / ".github" / "workflows"
+        assert workflows_dir.exists(), ".github/workflows should exist"
+
+        all_content = "".join(
+            wf_file.read_text() for wf_file in workflows_dir.glob("*.yml")
+        )
+        assert "testuser" in all_content, (
+            "Resolved github_org_or_user ('testuser') should appear in generated workflows"
+        )
