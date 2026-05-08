@@ -43,12 +43,12 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Check for fuzz targets
         id: check-fuzz
@@ -63,7 +63,7 @@ jobs:
       - name: Build Fuzzers
         if: steps.check-fuzz.outputs.has-targets == 'true'
         id: build
-        uses: google/clusterfuzzlite/actions/build_fuzzers@v1
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
         with:
           language: python
           sanitizer: {% raw %}${{  matrix.sanitizer  }}{% endraw %}
@@ -71,7 +71,7 @@ jobs:
       - name: Run Fuzzers
         if: steps.check-fuzz.outputs.has-targets == 'true'
         id: run
-        uses: google/clusterfuzzlite/actions/run_fuzzers@v1
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
         with:
           github-token: {% raw %}${{  secrets.GITHUB_TOKEN  }}{% endraw %}
           fuzz-seconds: 600
@@ -81,7 +81,7 @@ jobs:
 
       - name: Upload SARIF
         if: always() && steps.check-fuzz.outputs.has-targets == 'true'
-        uses: github/codeql-action/upload-sarif@e2b3eafc8d227b0241d48be5f425d47c2d750a13 # v3.27.9
+        uses: github/codeql-action/upload-sarif@0daab03d71ff584ef619d027a3fd9146679c5d84 # v3.35.3
         with:
           sarif_file: results.sarif
           category: fuzzing-{% raw %}${{  matrix.sanitizer  }}{% endraw %}
