@@ -86,12 +86,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       {%- if cookiecutter.include_supply_chain_security == "yes" %}
 
       - name: Fetch secrets from Infisical
-        uses: Infisical/secrets-action@v1.0.7
+        uses: Infisical/secrets-action@77ab1f4ccd183a543cb5b42435fbd181189f4995 # v1.0.16
         with:
           client-id: {% raw %}${{ secrets.INFISICAL_CLIENT_ID }}{% endraw %}
           client-secret: {% raw %}${{ secrets.INFISICAL_CLIENT_SECRET }}{% endraw %}
@@ -101,13 +101,13 @@ jobs:
 
       - name: Authenticate to GCP (for Artifact Registry)
         if: env.GCP_SA_KEY_BASE64 != ''
-        uses: google-github-actions/auth@71f986410dfbc7added4569d411d040a91dc6935 # v2.1.8
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
         with:
           credentials_json: {% raw %}${{ env.GCP_SA_KEY_BASE64 }}{% endraw %}
       {%- endif %}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
         with:
           enable-cache: true
 
@@ -145,7 +145,7 @@ jobs:
       {%- if cookiecutter.include_codecov == "yes" %}
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v4.6.0
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
           token: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
           files: ./coverage.xml
@@ -154,7 +154,7 @@ jobs:
 
       - name: Upload test analytics to Codecov
         if: always()
-        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v4.6.0
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
           token: {% raw %}${{ secrets.CODECOV_TOKEN }}{% endraw %}
           files: ./junit.xml
@@ -172,10 +172,10 @@ jobs:
         working-directory: ./frontend
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '{{ cookiecutter.node_version }}'
           cache: '{{ cookiecutter.frontend_package_manager }}'
@@ -197,7 +197,7 @@ jobs:
         run: {{ cookiecutter.frontend_package_manager }} run build
 
       - name: Upload frontend coverage
-        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v4.6.0
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
           file: ./frontend/coverage/lcov.info
           flags: frontend
