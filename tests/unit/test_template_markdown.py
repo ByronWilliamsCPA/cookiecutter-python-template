@@ -43,11 +43,8 @@ def _iter_markdown(scan_dir: Path) -> list[Path]:
     """Yield .md files under scan_dir, skipping vendor and generated trees."""
     if not scan_dir.exists():
         return []
-    return [
-        p
-        for p in scan_dir.rglob("*.md")
-        if not (set(p.parts) & SKIP_DIR_PARTS)
-    ]
+    return [p for p in scan_dir.rglob("*.md") if not (set(p.parts) & SKIP_DIR_PARTS)]
+
 
 # Matches fences with an info string of [A-Za-z0-9_+-]. Does not match exotic
 # info strings (C#, text/html, {.python}); none appear in the scanned trees.

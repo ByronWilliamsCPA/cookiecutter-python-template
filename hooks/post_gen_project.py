@@ -514,7 +514,9 @@ def _is_safe_clone_url(repo_url: str) -> bool:
     # Allowed shapes: https://..., ssh://..., git://..., or git@host:path/path.git
     if repo_url.startswith(("https://", "ssh://", "git://")):
         return True
-    return bool(re.fullmatch(r"[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+:[A-Za-z0-9_./~-]+", repo_url))
+    return bool(
+        re.fullmatch(r"[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+:[A-Za-z0-9_./~-]+", repo_url)
+    )
 
 
 def _install_claude_settings(repo_url: str, install_path: Path) -> None:
@@ -1164,7 +1166,9 @@ def add_cruft_skip_patterns() -> None:
             merged_skip = list(dict.fromkeys(skip_patterns + existing_skip))
             cruft_config["skip"] = merged_skip
 
-            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8")
+            cruft_file.write_text(
+                json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8"
+            )
             print(f"  ✓ Updated .cruft.json skip patterns ({len(merged_skip)} entries)")
         except (json.JSONDecodeError, OSError, KeyError) as e:
             print(f"  - Failed to update skip patterns: {e}", file=sys.stderr)
@@ -1186,7 +1190,9 @@ def add_cruft_skip_patterns() -> None:
                 "directory": None,
                 "skip": skip_patterns,
             }
-            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8")
+            cruft_file.write_text(
+                json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8"
+            )
             print(f"  ✓ Created .cruft.json with {len(skip_patterns)} skip patterns")
             print("    (Use 'cruft link' to fully connect to the template)")
         except OSError as e:
