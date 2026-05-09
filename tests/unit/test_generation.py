@@ -348,3 +348,90 @@ class TestWorkflowRendering:
         assert "testuser" in all_content, (
             "Resolved github_org_or_user ('testuser') should appear in generated workflows"
         )
+
+
+class TestDockerfileGeneration:
+    """Regression tests for the Dockerfile dependency-stage README.md fix.
+
+    pyproject.toml's [project] table references README.md via the readme field,
+    so `uv sync --frozen` (which validates project metadata) requires README.md
+    to be present in the build context. The Dockerfile must therefore COPY
+    README.md before running uv sync, and .dockerignore must not exclude it.
+    """
+
+    @staticmethod
+    def _generate_with_docker(template_dir: Path, temp_dir: Path) -> Path:
+        from tests.conftest import generate_project
+
+        config: dict[str, Any] = {
+            "project_name": "Docker Regression",
+            "project_slug": "docker_regression",
+            "project_short_description": "Dockerfile README regression test",
+            "author_name": "Test Author",
+            "author_email": "test@example.com",
+            "github_username": "testuser",
+            "version": "0.1.0",
+            "include_docker": "yes",
+        }
+        return generate_project(template_dir, temp_dir, config)
+
+    def test_dockerfile_dependency_stage_copies_readme(
+        self, template_dir: Path, temp_dir: Path
+    ) -> None:
+        """Dockerfile must COPY README.md before the dep-only `uv sync` runs.
+
+        pyproject.toml's [project] readme = "README.md" makes README.md a
+        dependency of metadata resolution. uv sync reads metadata even with
+        --no-install-project, so the file must be in the build context before
+        the first uv sync invocation. Whether README.md ships in the same
+        COPY layer as pyproject.toml or in a separate layer is an
+        implementation detail; this test asserts the ordering invariant
+        (README is copied before the first uv sync), not the layer count.
+        """
+        project_dir = self._generate_with_docker(template_dir, temp_dir)
+        dockerfile = project_dir / "Dockerfile"
+        assert dockerfile.exists(), "Dockerfile should exist when include_docker=yes"
+
+        lines = dockerfile.read_text(encoding="utf-8").splitlines()
+
+        first_uv_sync_idx: int | None = None
+        for idx, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith("RUN ") and "uv sync" in stripped:
+                first_uv_sync_idx = idx
+                break
+        assert first_uv_sync_idx is not None, "Expected a `RUN uv sync ...` line"
+
+        readme_copied_before_sync = any(
+            line.strip().startswith("COPY ") and "README.md" in line
+            for line in lines[:first_uv_sync_idx]
+        )
+        assert readme_copied_before_sync, (
+            "Dependency-stage build must COPY README.md before the first "
+            "`RUN uv sync` so uv can validate the [project] readme reference. "
+            "Without it, every include_docker=yes build fails with "
+            "`error: Failed to read metadata: README.md not found`."
+        )
+
+    def test_dockerignore_does_not_exclude_readme(
+        self, template_dir: Path, temp_dir: Path
+    ) -> None:
+        """Generated .dockerignore must NOT exclude README.md."""
+        project_dir = self._generate_with_docker(template_dir, temp_dir)
+        dockerignore = project_dir / ".dockerignore"
+        assert dockerignore.exists(), ".dockerignore should exist when include_docker=yes"
+
+        # Strip comments and blank lines, then check for any pattern that would
+        # exclude README.md.
+        active_patterns = [
+            line.strip()
+            for line in dockerignore.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
+        bad_patterns = {"README.md", "README*", "*.md", "*"}
+        offending = [p for p in active_patterns if p in bad_patterns]
+        assert not offending, (
+            f".dockerignore would exclude README.md via patterns: {offending}. "
+            "README.md is required by Dockerfile during uv sync (see "
+            "test_dockerfile_dependency_stage_copies_readme)."
+        )
