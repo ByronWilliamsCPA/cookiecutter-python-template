@@ -25,7 +25,7 @@ repos:
         args: ['--fix=lf']
 
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
+    rev: 68e8b45440415753fff70a312ece8da92ba85b4a  # v1.5.0
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
@@ -105,8 +105,8 @@ repos:
         name: No em-dashes
         language: pygrep
         entry: "—"
-        files: \.(py|md|txt|toml|yaml|yml|json|rst)$
-        types_or: [python, markdown, plain-text, toml, yaml, json, rst]
+        files: \.(py|md|txt|toml|yaml|yml|json|rst|sh|bash)$
+        types_or: [python, markdown, plain-text, toml, yaml, json, rst, shell]
         exclude: ^\.pre-commit-config\.yaml$
 
   - repo: https://github.com/econchick/interrogate

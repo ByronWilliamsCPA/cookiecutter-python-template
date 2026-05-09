@@ -384,14 +384,14 @@ Git worktrees enable parallel development for template work:
 
 ```bash
 # Create worktree for new template feature
-git worktree add ../cookiecutter-python-template-worktrees/feat-new-integration -b feat/new-integration
-cd ../cookiecutter-python-template-worktrees/feat-new-integration && uv sync
+git worktree add .worktrees/feat-new-integration -b feat/new-integration
+cd .worktrees/feat-new-integration && uv sync
 
 # Test template generation from worktree
-cd /tmp && cruft create ../cookiecutter-python-template-worktrees/feat-new-integration --no-input
+cd /tmp && cruft create .worktrees/feat-new-integration --no-input
 
 # Cleanup after merging
-git worktree remove ../cookiecutter-python-template-worktrees/feat-new-integration
+git worktree remove .worktrees/feat-new-integration
 git worktree prune
 ```
 
