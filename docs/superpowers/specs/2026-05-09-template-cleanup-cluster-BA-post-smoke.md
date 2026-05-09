@@ -66,9 +66,9 @@ No new tests. The existing `tests/test_post_gen_hooks.py` covers the post-genera
 
 ## Implementation order within the PR
 
-1. Sweep for fence terminators (item 2) — reading-only first to enumerate all sites, then a single batched edit pass.
-2. Dockerfile fix (item 1) — single line change plus `.dockerignore` annotation.
-3. Status check name verification (item 3) — read-only first; only edit if a mismatch is found.
+1. Sweep for fence terminators (item 2): reading-only first to enumerate all sites, then a single batched edit pass.
+2. Dockerfile fix (item 1): single line change plus `.dockerignore` annotation.
+3. Status check name verification (item 3): read-only first; only edit if a mismatch is found.
 
 This order minimizes risk: item 2 may touch many files but is mechanical; item 1 is a one-line change that the smoke test validates immediately; item 3 may be a no-op.
 
