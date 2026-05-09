@@ -20,7 +20,7 @@ tags:
 
 When working on this project, if you discover any issue that originates from the template itself (not project-specific), add it here with the following format:
 
-```markdown
+````markdown
 ### [Short Title]
 
 - **Priority**: Critical / High / Medium / Low
@@ -34,7 +34,7 @@ When working on this project, if you discover any issue that originates from the
 **Suggested Fix**: [What should the template do differently?]
 
 **Affected Files**: [List template files that need changes]
-```
+````
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## Structure
 
-```markdown
+````markdown
 # ADR-[NNN]: [Decision Title]
 
 > **Status**: Proposed | Accepted | Deprecated | Superseded
@@ -87,7 +87,7 @@
 ## Related
 - [ADR-XXX](./adr-xxx.md): [Relationship]
 - [Tech Spec Section](../tech-spec.md#section): [Reference]
-```
+````
 
 ## Generation Notes
 

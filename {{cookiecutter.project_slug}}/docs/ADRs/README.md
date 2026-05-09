@@ -112,11 +112,11 @@ If an ADR is no longer valid:
 
 Example:
 
-```markdown
+````markdown
 > **DEPRECATED (2025-11-17)**: This approach is no longer used.
 > **Reason**: Replaced by more efficient algorithm
 > **Reference**: See [ADR-032: Better Algorithm](0032-better-algorithm.md)
-```
+````
 
 ### Superseding an ADR
 
@@ -149,9 +149,9 @@ The repository may contain several example ADRs:
 
 When referencing ADRs in code or docs, use:
 
-```markdown
+````markdown
 See [ADR-001: Decision Title](docs/ADRs/0001-decision-title.md) for details.
-```
+````
 
 ## Questions?
 

@@ -134,7 +134,7 @@ Every document should pass these tests:
 
 Use explicit links between documents:
 
-```markdown
+````markdown
 <!-- Good -->
 See [ADR-001: Database Choice](./adr/adr-001-database-choice.md) for rationale.
 Per [Tech Spec Section 3](./tech-spec.md#3-data-model), use UUID for all IDs.
@@ -142,7 +142,7 @@ Per [Tech Spec Section 3](./tech-spec.md#3-data-model), use UUID for all IDs.
 <!-- Bad -->
 See the ADR for more info.
 As mentioned elsewhere...
-```
+````
 
 ---
 
@@ -154,18 +154,18 @@ As mentioned elsewhere...
 **Solution**: Replace every placeholder with project-specific content
 
 **Bad**:
-```markdown
+````markdown
 ### Success Metrics
 - Improve user satisfaction
 - Reduce errors
-```
+````
 
 **Good**:
-```markdown
+````markdown
 ### Success Metrics
 - Transaction import time: 30s → 5s (6x improvement)
 - Categorization accuracy: Manual → 95% automated
-```
+````
 
 ### Pitfall 2: Over-Engineering
 
