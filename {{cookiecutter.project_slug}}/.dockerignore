@@ -156,7 +156,9 @@ secrets*.json
 # Project-Specific
 # =============================================================================
 # Add project-specific files to ignore
-README.md
+
+# README.md - intentionally not excluded; required by pyproject.toml [project] readme
+# so `uv sync --frozen --no-dev` (Dockerfile:35) can install the project itself.
 LICENSE
 CHANGELOG.md
 CONTRIBUTING.md
