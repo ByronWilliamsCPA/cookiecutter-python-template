@@ -127,7 +127,7 @@ repos:
   # Ruff Linting and Formatting (Fast, pre-commit stage)
   # ============================================================================
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.0
+    rev: fa1ed65ba95bfa7771a71003a9d74402541f5a5c  # v0.14.6
     hooks:
       - id: ruff
         stages: [pre-commit]
