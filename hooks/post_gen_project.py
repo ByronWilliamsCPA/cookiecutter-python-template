@@ -511,8 +511,10 @@ def _is_safe_clone_url(repo_url: str) -> bool:
     """
     if not repo_url or repo_url.startswith("-"):
         return False
-    # Allowed shapes: https://..., ssh://..., git://..., or git@host:path/path.git
-    if repo_url.startswith(("https://", "ssh://", "git://")):
+    # Allowed shapes: https://..., ssh://..., or git@host:path/path.git
+    # git:// is intentionally excluded: it is unauthenticated and plaintext,
+    # which is unacceptable for a settings-clone source.
+    if repo_url.startswith(("https://", "ssh://")):
         return True
     return bool(
         re.fullmatch(r"[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+:[A-Za-z0-9_./~-]+", repo_url)
@@ -567,8 +569,12 @@ def _install_claude_settings(repo_url: str, install_path: Path) -> None:
             "\n  ✅ User-level settings are now available to all Claude Code sessions!"
         )
     else:
+        # Sanitize repo_url before echoing to terminal: strip ANSI/control chars
+        # so a maliciously crafted URL cannot inject terminal escape sequences
+        # into the operator's terminal session.
+        safe_repo_url = re.sub(r"[\x00-\x1f\x7f]", "", repo_url)
         print("  ⚠ Failed to clone settings repo. You can manually set up later:")
-        print(f"     git clone {repo_url} {install_path}")
+        print(f"     git clone {safe_repo_url} {install_path}")
 
 
 def setup_claude_user_settings() -> None:
@@ -923,6 +929,10 @@ def inject_creation_date() -> None:
     placeholder = "__PROJECT_CREATION_DATE__"
     updated_count = 0
 
+    # NOTE: SonarCloud pythonsecurity:S2083 (path traversal) flags the
+    # filepath.write_text below as user-controlled. False positive: filepath
+    # comes exclusively from files_to_update, a hardcoded literal list above.
+    # No user input reaches this sink.
     for filepath in files_to_update:
         if not filepath.exists():
             continue
@@ -991,7 +1001,7 @@ def ensure_trailing_newlines() -> None:
     }
 
     fixed_count = 0
-    project_root = Path()
+    project_root = Path().resolve()
 
     for filepath in project_root.rglob("*"):
         if not filepath.is_file():
@@ -999,6 +1009,18 @@ def ensure_trailing_newlines() -> None:
 
         # Skip git directory
         if ".git" in filepath.parts:
+            continue
+
+        # #CRITICAL: Security: rglob follows symlinks by default; refuse to
+        # write to any file whose resolved path escapes project_root. This
+        # blocks a malicious template that ships a symlink pointing outside
+        # the generated tree.
+        # #VERIFY: filepath.resolve().is_relative_to(project_root) before write.
+        try:
+            resolved = filepath.resolve()
+        except OSError:
+            continue
+        if not resolved.is_relative_to(project_root):
             continue
 
         # Check if file should be processed
@@ -1146,6 +1168,10 @@ def add_cruft_skip_patterns() -> None:
     """
     print("\n🔧 Configuring cruft skip patterns...")
 
+    # NOTE: SonarCloud pythonsecurity:S2083 (path traversal) flags the
+    # cruft_file.write_text below. False positive: cruft_file is the literal
+    # Path(".cruft.json"), and the content written is json.dumps() of program-
+    # controlled data. No user-controlled string reaches the path or content.
     cruft_file = Path(".cruft.json")
     skip_patterns = get_cruft_skip_patterns()
 
