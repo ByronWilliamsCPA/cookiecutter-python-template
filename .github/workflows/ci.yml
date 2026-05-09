@@ -67,8 +67,8 @@ jobs:
       - name: Run Ruff format check
         run: |
           echo "::group::Ruff Format Check"
-          ruff format --check --diff hooks/ || {
-            echo "::error::Code formatting issues detected. Run 'ruff format hooks/' to fix."
+          uv run ruff format --check --diff hooks/ || {
+            echo "::error::Code formatting issues detected. Run 'uv run ruff format hooks/' to fix."
             exit 1
           }
           echo "::endgroup::"
@@ -76,14 +76,14 @@ jobs:
       - name: Run Ruff linter
         run: |
           echo "::group::Ruff Linting"
-          ruff check hooks/ --output-format=github
+          uv run ruff check hooks/ --output-format=github
           echo "::endgroup::"
 
       - name: Run BasedPyright type checker
         run: |
           echo "::group::BasedPyright Type Checking"
-          basedpyright hooks/ || {
-            echo "::error::Type checking errors detected. Run 'basedpyright hooks/' to see details."
+          uv run basedpyright hooks/ || {
+            echo "::error::Type checking errors detected. Run 'uv run basedpyright hooks/' to see details."
             exit 1
           }
           echo "::endgroup::"
@@ -108,7 +108,7 @@ jobs:
       - name: Security scan with Bandit
         run: |
           echo "::group::Bandit Security Scan"
-          bandit -r hooks/ -f json -o bandit-report.json || {
+          uv run bandit -r hooks/ -f json -o bandit-report.json || {
             echo "::warning::Security issues detected"
             cat bandit-report.json
           }
@@ -117,7 +117,7 @@ jobs:
       - name: Dependency vulnerability scan
         run: |
           echo "::group::pip-audit Dependency Scan"
-          pip-audit --strict --ignore-vuln PYSEC-2022-42969 || {
+          uv run pip-audit --strict --ignore-vuln PYSEC-2022-42969 || {
             echo "::error::Vulnerable dependencies detected. Review and update affected packages."
             exit 1
           }
@@ -291,15 +291,15 @@ jobs:
           echo "View detailed results: https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template"
           echo "::endgroup::"
 
-      - name: Quality Gate Status (Non-Blocking)
+      - name: Quality Gate Status (Blocking)
         if: steps.quality-gate.outputs.quality-gate-status == 'FAILED'
         run: |
-          echo "::warning::⚠️ Quality Gate FAILED (non-blocking for template repo)"
+          echo "::error::Quality Gate FAILED"
           echo ""
-          echo "SonarQube quality gate did not pass. Consider reviewing:"
-          echo "- Review issues at: https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template"
-          echo "- Note: Duplicate code warnings are expected in cookiecutter templates"
-          echo "- SonarCloud analysis primarily for main branch monitoring"
+          echo "SonarQube quality gate did not pass. Review:"
+          echo "- Issues: https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template"
+          echo "- Duplicate code warnings in template directories must be excluded via sonar-project.properties, not tolerated."
+          exit 1
 
       - name: Generate unified governance report
         if: always()
