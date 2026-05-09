@@ -8,8 +8,9 @@
 ## Purpose
 
 The template feedback file describes 47 issues spanning seven problem domains. This
-umbrella decomposes them into five clusters that ship as independent designs and PRs.
-Three items are redirected as out of scope (VM/infra concerns).
+umbrella decomposes them into four in-scope clusters (BA, C, D, E) that ship as
+independent designs and PRs. Three items are redirected as out of scope (VM/infra
+concerns).
 
 This is the index. Each cluster gets its own design file when its turn comes.
 

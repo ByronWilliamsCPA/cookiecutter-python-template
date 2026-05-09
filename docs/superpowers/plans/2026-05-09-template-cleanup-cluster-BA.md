@@ -360,13 +360,13 @@ After deletion, the file should retain only entries for cluster C (community_hea
 
 Insert this note immediately after the `> This file captures...` blockquote (before `## Feedback Items`):
 
-```markdown
+````markdown
 > **Cleanup 2026-05-09:** ~26 entries were removed in PR `fix/template-post-smoke-cleanup`
 > after a smoke test confirmed they are FIXED, REDIRECTED to homelab-infra (NTP, RTC,
 > OpenClaw retention), or closed by that PR. Remaining entries align to clusters C, D,
 > E of the template-cleanup umbrella at
 > `docs/superpowers/specs/2026-05-09-template-cleanup-umbrella.md`.
-```
+````
 
 - [ ] **Step 4.4: Commit**
 

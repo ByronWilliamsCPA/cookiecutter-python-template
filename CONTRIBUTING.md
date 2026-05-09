@@ -74,7 +74,7 @@ git config --global commit.gpgsign true
 2. Make your changes and write or update tests as needed.
 3. Run the full pre-commit suite:
    ```bash
-   pre-commit run --all-files
+   uv run pre-commit run --all-files
    ```
 4. Run the test suite:
    ```bash
