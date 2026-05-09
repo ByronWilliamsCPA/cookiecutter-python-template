@@ -6,6 +6,7 @@ Runs after all files have been created.
 """
 
 import json
+import re
 import shutil
 import subprocess  # nosec B404
 import sys
@@ -272,6 +273,9 @@ def mark_scripts_executable() -> None:
 
 def initialize_git() -> None:
     """Initialize git repository with main as default branch."""
+    # #ASSUME: External Resources: git is installed and on PATH.
+    # #VERIFY: run_command catches FileNotFoundError and returns False, falling
+    #          through to the "git not found" message below.
     print("\n🔧 Initializing Git repository...")
 
     if run_command(["git", "init", "-b", "main"], check=False):
@@ -408,6 +412,15 @@ def render_workflow_templates() -> None:
     This fixes the issue where workflows from external repositories contain
     unrendered Jinja2 variables. We replace them with actual cookiecutter values.
     """
+    # #ASSUME: External Resources: workflow files exist under .github/workflows
+    #          and are UTF-8 encoded.
+    # #ASSUME: Data Integrity: every {{ cookiecutter.X }} placeholder rendered
+    #          here corresponds to a key defined in cookiecutter.json. A missing
+    #          key leaves the placeholder verbatim and post-gen does not error;
+    #          test_no_unrendered_cookiecutter_variables (tests/unit) catches it.
+    # #VERIFY: read_text/write_text now use encoding="utf-8" explicitly (added
+    #          this PR); see also the post-gen test that scans all rendered
+    #          workflows for surviving {{ cookiecutter. patterns.
     print("\n🔧 Rendering GitHub workflow templates...")
 
     workflows_dir = Path(".github/workflows")
@@ -456,7 +469,7 @@ def render_workflow_templates() -> None:
             continue
 
         try:
-            content = workflow_file.read_text()
+            content = workflow_file.read_text(encoding="utf-8")
             original_content = content
 
             # Replace all cookiecutter variable patterns (with/without spaces)
@@ -474,7 +487,7 @@ def render_workflow_templates() -> None:
 
             # Only write if changes were made
             if content != original_content:
-                workflow_file.write_text(content)
+                workflow_file.write_text(content, encoding="utf-8")
                 rendered_count += 1
                 print(f"  ✓ Rendered: {workflow_file.name}")
 
@@ -487,16 +500,49 @@ def render_workflow_templates() -> None:
         print("  ℹ No unrendered templates found (workflows already rendered)")  # noqa: RUF001
 
 
+def _is_safe_clone_url(repo_url: str) -> bool:
+    """Validate that a git clone URL uses an allowed scheme and host shape.
+
+    Rejects values that could be interpreted as git options (leading "-"),
+    schemes other than https/ssh/git, and ssh URLs that do not look like
+    user@host:path. This prevents user input from being passed to git as a
+    flag (#CRITICAL: Security: arg injection in subprocess) or pointing at
+    an unexpected scheme.
+    """
+    if not repo_url or repo_url.startswith("-"):
+        return False
+    # Allowed shapes: https://..., ssh://..., git://..., or git@host:path/path.git
+    if repo_url.startswith(("https://", "ssh://", "git://")):
+        return True
+    return bool(re.fullmatch(r"[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+:[A-Za-z0-9_./~-]+", repo_url))
+
+
 def _install_claude_settings(repo_url: str, install_path: Path) -> None:
     """Clone and verify user-level Claude Code settings.
 
     Args:
-        repo_url: Git repository URL to clone from.
-        install_path: Local path to install settings into.
+        repo_url: Git repository URL to clone from. Must pass _is_safe_clone_url.
+        install_path: Local path to install settings into. Must be inside the
+            user's home directory to prevent path traversal.
     """
+    # #CRITICAL: Security: user-supplied repo_url passed to git clone via subprocess.
+    # #VERIFY: _is_safe_clone_url rejects flag-like values and unknown schemes.
+    if not _is_safe_clone_url(repo_url):
+        print(f"  ⚠ Refusing to clone from unsafe URL: {repo_url!r}")
+        return
+
+    # #CRITICAL: Security: install_path is user-supplied; reject paths that resolve
+    # outside the user's home directory.
+    # #VERIFY: resolve to absolute path and check ancestry against Path.home().
+    install_path = install_path.expanduser().resolve()
+    home = Path.home().resolve()
+    if home not in install_path.parents and install_path != home:
+        print(f"  ⚠ Refusing to install settings outside $HOME: {install_path}")
+        return
+
     print(f"\n  📥 Cloning settings from {repo_url}...")
 
-    if run_command(["git", "clone", repo_url, str(install_path)], check=False):
+    if run_command(["git", "clone", "--", repo_url, str(install_path)], check=False):
         print(f"  ✓ User-level settings installed at: {install_path}")
 
         # Check what was installed
@@ -880,10 +926,10 @@ def inject_creation_date() -> None:
             continue
 
         try:
-            content = filepath.read_text()
+            content = filepath.read_text(encoding="utf-8")
             if placeholder in content:
                 content = content.replace(placeholder, creation_date)
-                filepath.write_text(content)
+                filepath.write_text(content, encoding="utf-8")
                 updated_count += 1
                 print(f"  ✓ Updated: {filepath}")
         except (OSError, UnicodeDecodeError) as e:
@@ -1105,7 +1151,7 @@ def add_cruft_skip_patterns() -> None:
         # Update existing .cruft.json (created by cruft create)
         # Merge with existing skip patterns to preserve user customizations
         try:
-            cruft_config = json.loads(cruft_file.read_text())
+            cruft_config = json.loads(cruft_file.read_text(encoding="utf-8"))
             existing_skip = cruft_config.get("skip", [])
 
             # Normalize existing 'skip' into a list of strings
@@ -1118,7 +1164,7 @@ def add_cruft_skip_patterns() -> None:
             merged_skip = list(dict.fromkeys(skip_patterns + existing_skip))
             cruft_config["skip"] = merged_skip
 
-            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
+            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8")
             print(f"  ✓ Updated .cruft.json skip patterns ({len(merged_skip)} entries)")
         except (json.JSONDecodeError, OSError, KeyError) as e:
             print(f"  - Failed to update skip patterns: {e}", file=sys.stderr)
@@ -1140,7 +1186,7 @@ def add_cruft_skip_patterns() -> None:
                 "directory": None,
                 "skip": skip_patterns,
             }
-            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
+            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8")
             print(f"  ✓ Created .cruft.json with {len(skip_patterns)} skip patterns")
             print("    (Use 'cruft link' to fully connect to the template)")
         except OSError as e:
@@ -1165,7 +1211,15 @@ def main() -> None:
         setup_pre_commit()
         setup_claude_user_settings()
         print_success_message()
-    except Exception as e:  # noqa: BLE001 - broad catch in main() is intentional
+    except Exception as e:  # noqa: BLE001
+        # Architectural decision: main() is the top-level error boundary for the
+        # cookiecutter post-generation hook. Cookiecutter swallows exceptions raised
+        # from hooks and prints generic traceback noise; a broad catch here
+        # produces actionable error output and a clean non-zero exit. This is
+        # NOT a tracked-for-fix suppression in the CLAUDE.md sense; it is a
+        # deliberate top-level guard. Per-step exceptions are caught by the
+        # individual setup functions. Do not narrow without auditing every call
+        # site above for the full set of raisable exception types.
         print(f"\n❌ Error during post-generation: {e}", file=sys.stderr)
         sys.exit(1)
 
