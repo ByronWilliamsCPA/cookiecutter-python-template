@@ -17,28 +17,28 @@ This is the index. Each cluster gets its own design file when its turn comes.
 
 | # | Order | Cluster | Open + Verify | Status | Design file |
 |---|---|---|---|---|---|
-| B | 1 | CI / workflow stability | 5 | not started | `2026-05-09-template-cleanup-cluster-B-ci-stability.md` |
-| A | 2 | Generation correctness | 4 | not started | `2026-05-09-template-cleanup-cluster-A-generation.md` |
-| C | 3 | Compliance scaffolding | 4 | not started | `2026-05-09-template-cleanup-cluster-C-compliance.md` |
-| D | 4 | Code quality of generated code | 5 | not started | `2026-05-09-template-cleanup-cluster-D-quality.md` |
-| E | 5 | Docs build and MkDocs | 6 | not started | `2026-05-09-template-cleanup-cluster-E-docs.md` |
+| BA | 1 | Post-smoke-test cleanup (merged B+A) | 3 | design pending | `2026-05-09-template-cleanup-cluster-BA-post-smoke.md` |
+| C | 2 | Compliance scaffolding | 4 | not started | `2026-05-09-template-cleanup-cluster-C-compliance.md` |
+| D | 3 | Code quality of generated code | 5 | not started | `2026-05-09-template-cleanup-cluster-D-quality.md` |
+| E | 4 | Docs build and MkDocs | 6 | not started | `2026-05-09-template-cleanup-cluster-E-docs.md` |
 
-Total in-scope work: 24 items across 5 clusters. See audit for the full list.
+Total in-scope work: 18 items across 4 clusters (after smoke-test reductions). The
+original B+A clusters were merged into a single "BA" PR after a `cruft create` smoke
+test resolved 6 items as already-FIXED. See `Status log` below for details and the
+audit for the original 24-item list.
 
-## Ordering rationale
+## Ordering rationale (revised after smoke test)
 
-1. **B first (CI stability)**: the Dockerfile bug and TruffleHog quoting break downstream consumers immediately. A cruft-create smoke test happens at the start of this cluster, which simultaneously resolves all 7 VERIFY items in the audit. Lowest risk, highest unblock value.
-2. **A second (generation correctness)**: cluster B's smoke test exposes any remaining generation-time issues (master vs main, trailing newlines, fence terminator); cluster A consolidates the fixes in `hooks/post_gen_project.py` and the template tree.
-3. **C third (compliance scaffolding)**: mostly additive (`.editorconfig`, `community_health_style`, `sole_contributor`, missing `planning/index.md`). Low risk; lands while the generation surface is still warm.
-4. **D fourth (code quality of generated code)**: most invasive. `interrogate` replacement, `sonar_scan.py`, basedpyright cleanup in `cli.py`/`logging.py`, script complexity refactors. Bigger test surface.
-5. **E last (docs build and MkDocs)**: residual MD040/MD051/front-matter on planning docs; smallest after the other clusters land.
+1. **BA first (post-smoke-test cleanup)**: a single small PR covering the only bugs that survived the smoke test. Dockerfile README copy fix (manifests when `include_docker=yes`), fence terminator with `text` language tag at `.claude/context/python-standards.md:67`, and a one-time spot-verification of branch-protection status check name alignment. Tiny, fast, low risk.
+2. **C second (compliance scaffolding)**: mostly additive (`.editorconfig`, `community_health_style`, `sole_contributor`, missing `planning/index.md`, document the branch-protection script in `PROJECT_SETUP.md`).
+3. **D third (code quality of generated code)**: most invasive. `interrogate` replacement, `sonar_scan.py`, basedpyright cleanup (20 warnings confirmed in generated code), script complexity refactors.
+4. **E last (docs build and MkDocs)**: residual MD040/MD051/front-matter on planning docs; smallest after the other clusters land.
 
 ## Dependencies between clusters
 
-- B unblocks A: smoke test in B converts VERIFY items in A to OPEN or FIXED.
-- A unblocks C: master/main fix in A means C's branch protection work assumes `main` consistently.
-- D depends on A: basedpyright cleanup needs a clean generation (no more trailing-newline pre-commit churn) for stable output.
-- E depends on C: front matter on planning files in E may need the schema additions C might introduce.
+- BA unblocks D: D's basedpyright cleanup needs a clean Dockerfile build path for the optional Docker test. Cluster BA also normalizes any remaining generation-correctness state.
+- C unblocks E: front matter on planning files in E may need the schema additions C might introduce.
+- D and E are largely independent; D first because it touches more files and tests.
 
 ## Out-of-scope items (redirected)
 
@@ -64,5 +64,7 @@ redirected to homelab-infra. No work happens here.
 | Date | Event |
 |---|---|
 | 2026-05-09 | Umbrella + audit created on `feat/wip-stash-review`. Clusters not started. |
+| 2026-05-09 | Smoke test (`cruft create . --no-input` and again with `include_docker=yes`) resolved 6 items as already-FIXED: unparsed `{{cookiecutter.*}}` in `.claude/`, trailing newlines, master/main default branch, `.cruft.json` URL local-path, trufflehog YAML quoting (parses cleanly), `python-compatibility.yml` GITHUB_OUTPUT format (now uses YAML matrix literal). One item REDIRECTED: cruft check default lives in external org `.github` reusable workflow, not this template. |
+| 2026-05-09 | Clusters B and A merged into single cluster "BA" (3 in-scope items: Dockerfile README copy, fence terminator at `.claude/context/python-standards.md:67`, spot-verification of branch-protection status check name alignment for 3 contexts). Cluster ordering revised. |
 
 Append new rows here as clusters move through brainstorm to merge.
