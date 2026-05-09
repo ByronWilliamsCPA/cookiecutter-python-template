@@ -1,9 +1,11 @@
 """Regression tests for malformed markdown fence terminators in the template tree.
 
-A CommonMark closing fence must be exactly three backticks with no language tag.
-A closing fence that carries a language tag (e.g. ``` text) opens a new nested
-block instead of closing the previous one, which corrupts rendering and Claude
-Code context loading.
+In CommonMark, a closing fence must have at least as many backticks as the
+opener and no info string. A closing fence that carries a language tag
+(e.g. ``` text) opens a new nested block instead of closing the previous one,
+which corrupts rendering and Claude Code context loading. This module enforces
+the project-stricter rule of plain three-backtick closers for ordinary blocks
+and 4+ backtick wrappers for sample-of-markdown blocks.
 
 A second class of bug: a tagged opener whose backtick count equals an inner
 fence's backtick count is closed prematurely by that inner fence. The canonical
@@ -35,7 +37,19 @@ SCAN_DIRS = [
 # Subdirectories to skip when iterating SCAN_DIRS so we do not double-scan or
 # pick up generated/vendor content.
 SKIP_DIR_PARTS = frozenset(
-    {".git", ".venv", ".worktrees", "node_modules", "htmlcov", ".standards"}
+    {
+        ".git",
+        ".venv",
+        ".worktrees",
+        "node_modules",
+        "htmlcov",
+        ".standards",
+        # tmp_cleanup is the project's working scratch area (also excluded by
+        # codecov.yml). Skip so contributors can stage fixture or sample
+        # markdown there with intentionally malformed fences without tripping
+        # the detector.
+        "tmp_cleanup",
+    }
 )
 
 

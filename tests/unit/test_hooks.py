@@ -29,7 +29,9 @@ class TestPreGenHook:
             text=True,
             check=False,
         )
-        assert result.returncode == 0, f"Hook has invalid Python syntax: {result.stderr}"
+        assert result.returncode == 0, (
+            f"Hook has invalid Python syntax: {result.stderr}"
+        )
 
     def test_hook_imports(self, template_dir: Path) -> None:
         """Verify hook file can be imported."""
@@ -65,7 +67,9 @@ class TestPostGenHook:
             text=True,
             check=False,
         )
-        assert result.returncode == 0, f"Hook has invalid Python syntax: {result.stderr}"
+        assert result.returncode == 0, (
+            f"Hook has invalid Python syntax: {result.stderr}"
+        )
 
     def test_hook_imports(self, template_dir: Path) -> None:
         """Verify hook file can be imported."""
@@ -113,11 +117,19 @@ class TestHookCodeQuality:
         """Verify hooks pass basedpyright type checking."""
         import shutil
 
-        if not shutil.which("basedpyright"):
+        # basedpyright is installed via `uv sync --all-extras` into .venv/bin,
+        # which is not on PATH. shutil.which would silently skip the assertion
+        # on CI. Detect the venv binary and prefer it; fall back to PATH for
+        # local developer setups that may have a global install.
+        venv_bin = template_dir / ".venv" / "bin" / "basedpyright"
+        basedpyright_cmd = (
+            str(venv_bin) if venv_bin.exists() else shutil.which("basedpyright")
+        )
+        if basedpyright_cmd is None:
             pytest.skip("basedpyright not installed")
         hooks_dir = template_dir / "hooks"
         result = subprocess.run(
-            ["basedpyright", str(hooks_dir)],
+            [basedpyright_cmd, str(hooks_dir)],
             capture_output=True,
             text=True,
             check=False,
