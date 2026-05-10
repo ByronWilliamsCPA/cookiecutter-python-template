@@ -14,6 +14,15 @@ from datetime import datetime
 from pathlib import Path
 
 
+# Module-level constants for repeated cookiecutter feature-flag references.
+# These are rendered ONCE by Jinja2 at cookiecutter-generation time and then
+# used throughout the post-gen hook. Extracting them satisfies SonarCloud
+# python:S1192 (duplicated literal) and centralizes the source of truth.
+INCLUDE_DOCKER = "{{ cookiecutter.include_docker }}"
+INCLUDE_FRONTEND = "{{ cookiecutter.include_frontend }}"
+INCLUDE_SUPPLY_CHAIN_SECURITY = "{{ cookiecutter.include_supply_chain_security }}"
+
+
 def remove_file(filepath: Path) -> None:
     """Remove a file if it exists.
 
@@ -131,7 +140,7 @@ def _cleanup_tooling_files() -> None:
         remove_file(Path(".coderabbit.yaml"))
 
     # Remove Docker files if not needed
-    if "{{ cookiecutter.include_docker }}" == "no":
+    if INCLUDE_DOCKER == "no":
         remove_file(Path("Dockerfile"))
         remove_file(Path("docker-compose.yml"))
         remove_file(Path("docker-compose.prod.yml"))
@@ -188,7 +197,7 @@ def _cleanup_frontend_files() -> None:
         remove_dir(Path("tests/load"))
 
     # Remove frontend if not needed
-    if "{{ cookiecutter.include_frontend }}" == "no":
+    if INCLUDE_FRONTEND == "no":
         remove_dir(Path("frontend"))
         remove_file(Path("scripts/generate-client.sh"))
     else:
@@ -217,7 +226,7 @@ def _cleanup_workflow_files() -> None:
         remove_dir(Path("fuzz"))
 
     # Remove supply chain security files if not needed
-    if "{{ cookiecutter.include_supply_chain_security }}" == "no":
+    if INCLUDE_SUPPLY_CHAIN_SECURITY == "no":
         remove_file(Path(".infisical.json"))
         remove_file(Path("scripts/setup-supply-chain.sh"))
         remove_file(Path(".github/workflows/dependency-review.yml"))
@@ -442,13 +451,13 @@ def render_workflow_templates() -> None:
         "code_coverage_target": "{{ cookiecutter.code_coverage_target }}",
         "frontend_package_manager": "{{ cookiecutter.frontend_package_manager }}",
         "include_codecov": "{{ cookiecutter.include_codecov }}",
-        "include_docker": "{{ cookiecutter.include_docker }}",
-        "include_frontend": "{{ cookiecutter.include_frontend }}",
+        "include_docker": INCLUDE_DOCKER,
+        "include_frontend": INCLUDE_FRONTEND,
         "include_fuzzing": "{{ cookiecutter.include_fuzzing }}",
         "include_github_actions": "{{ cookiecutter.include_github_actions }}",
         "include_semantic_release": "{{ cookiecutter.include_semantic_release }}",
         "include_sonarcloud": "{{ cookiecutter.include_sonarcloud }}",
-        "include_supply_chain_security": "{{ cookiecutter.include_supply_chain_security }}",
+        "include_supply_chain_security": INCLUDE_SUPPLY_CHAIN_SECURITY,
         "infisical_domain": "{{ cookiecutter.infisical_domain }}",
         "license": "{{ cookiecutter.license }}",
         "node_version": "{{ cookiecutter.node_version }}",
@@ -847,7 +856,7 @@ def print_success_message() -> None:
     project_slug = "{{ cookiecutter.project_slug }}"
     use_pre_commit = "{{ cookiecutter.use_pre_commit }}" == "yes"
     use_mkdocs = "{{ cookiecutter.use_mkdocs }}" == "yes"
-    include_docker = "{{ cookiecutter.include_docker }}" == "yes"
+    include_docker = INCLUDE_DOCKER == "yes"
     include_sentry = "{{ cookiecutter.include_sentry }}" == "yes"
     include_health_checks = "{{ cookiecutter.include_health_checks }}" == "yes"
     include_background_jobs = "{{ cookiecutter.include_background_jobs }}"
@@ -856,9 +865,9 @@ def print_success_message() -> None:
     include_semantic_release = "{{ cookiecutter.include_semantic_release }}" == "yes"
     include_coderabbit = "{{ cookiecutter.include_coderabbit }}" == "yes"
     include_linear = "{{ cookiecutter.include_linear }}" == "yes"
-    include_frontend = "{{ cookiecutter.include_frontend }}"
+    include_frontend = INCLUDE_FRONTEND
     frontend_package_manager = "{{ cookiecutter.frontend_package_manager }}"
-    include_supply_chain = "{{ cookiecutter.include_supply_chain_security }}" == "yes"
+    include_supply_chain = INCLUDE_SUPPLY_CHAIN_SECURITY == "yes"
 
     print("\n" + "=" * 60)
     print(f"🎉 SUCCESS! {project_name} has been created!")
