@@ -137,10 +137,12 @@ jobs:
         run: |
           cd /tmp/latest-tools-test/my_python_project
 
-          # Run all quality checks
-          ruff format --check src/ tests/ || echo "::warning::Ruff format check failed with latest version"
-          ruff check . || echo "::warning::Ruff check failed with latest version"
-          basedpyright src/ || echo "::warning::BasedPyright check failed with latest version"
+          # Run all quality checks. Hard-fail on regression so the
+          # canary actually catches latest-tool breakages instead of
+          # silently swallowing them as warnings.
+          ruff format --check src/ tests/
+          ruff check .
+          basedpyright src/
 
   # Notification job
   notify-results:

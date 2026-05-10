@@ -29,11 +29,14 @@ repos:
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
+        # Do NOT exclude {{cookiecutter.project_slug}} here. The new
+        # .secrets.baseline already suppresses current false positives;
+        # excluding the entire template tree means real secrets added
+        # under the generated project would never be detected.
         exclude: >-
           (?x)^(
             uv\.lock|
-            \.secrets\.baseline|
-            {{cookiecutter\.project_slug}}/.*
+            \.secrets\.baseline
           )$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -75,10 +78,15 @@ repos:
 
       - id: check-hardcoded-values
         name: Check for hardcoded usernames/repos
+        # Hardcoded-value check runs across the entire generated template
+        # tree, including README.md and scripts/. Excluding them previously
+        # let williaby / PromptCraft references leak into user-facing docs
+        # and executable scripts. .claude/ remains excluded because it
+        # legitimately tracks the template author's settings repo.
         entry: >
           bash -c 'if [ -d "{{cookiecutter.project_slug}}" ] && grep -r "williaby\|PromptCraft"
           --include="*.md" --include="*.py" --include="*.sh"
-          --exclude-dir=".claude" --exclude-dir="scripts" --exclude="README.md"
+          --exclude-dir=".claude"
           "{{cookiecutter.project_slug}}"; then
           echo "ERROR: Found hardcoded values that should be templated"; exit 1; fi'
         language: system
