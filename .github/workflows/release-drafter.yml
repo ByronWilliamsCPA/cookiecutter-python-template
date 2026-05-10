@@ -18,5 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: release-drafter/release-drafter@563bf132657a13ded0b01fcb723c5a58cdd824e2 # v7.2.1
+        with:
+          # Use the actual commit SHA (or PR head SHA on PR events). The action
+          # default of refs/pull/N/merge is rejected by GitHub's release API
+          # with "invalid target_commitish" because that ref is synthetic.
+          commitish: ${{ github.event.pull_request.head.sha || github.sha }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
