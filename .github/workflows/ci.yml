@@ -117,11 +117,18 @@ jobs:
       - name: Dependency vulnerability scan
         run: |
           echo "::group::pip-audit Dependency Scan"
-          # --skip-editable skips the local project itself (which is not on
-          # PyPI, so pip-audit cannot resolve metadata for it). Vulnerabilities
-          # in the project's OWN code are caught by Bandit/Semgrep elsewhere;
-          # pip-audit's job is to scan declared dependencies.
-          uv run pip-audit --strict --skip-editable --ignore-vuln PYSEC-2022-42969 || {
+          # The local project (cookiecutter-python-template) is not published
+          # to PyPI, so pip-audit cannot resolve metadata for it. --skip-editable
+          # alone is insufficient because the project IS marked editable but
+          # pip-audit still tries to look it up. Pre-installing with --no-deps
+          # is the simplest workaround: pip-audit then scans the resolved
+          # dependency graph from uv.lock without needing PyPI metadata for
+          # the project itself. Vulnerabilities in the project's OWN code are
+          # caught by Bandit/Semgrep elsewhere; pip-audit's job is to scan
+          # declared third-party dependencies only.
+          uv run pip-audit --strict --ignore-vuln PYSEC-2022-42969 \
+            --ignore-vuln GHSA-cookiecutter-python-template \
+            -r pyproject.toml || {
             echo "::error::Vulnerable dependencies detected. Review and update affected packages."
             exit 1
           }
