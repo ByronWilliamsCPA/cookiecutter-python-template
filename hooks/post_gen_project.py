@@ -955,6 +955,20 @@ def inject_creation_date() -> None:
         print("  ✓ No date placeholders found")
 
 
+def _path_is_inside(filepath: Path, root: Path) -> bool:
+    """Return True iff filepath's resolved path is inside root.
+
+    #CRITICAL: Security: rglob follows symlinks by default; this guard blocks
+    a malicious template that ships a symlink pointing outside the generated
+    tree from causing writes outside project_root.
+    #VERIFY: filepath.resolve().is_relative_to(root) before any write.
+    """
+    try:
+        return filepath.resolve().is_relative_to(root)
+    except OSError:
+        return False
+
+
 def ensure_trailing_newlines() -> None:
     """Ensure all text files end with a trailing newline.
 
@@ -1007,20 +1021,9 @@ def ensure_trailing_newlines() -> None:
         if not filepath.is_file():
             continue
 
-        # Skip git directory
-        if ".git" in filepath.parts:
-            continue
-
-        # #CRITICAL: Security: rglob follows symlinks by default; refuse to
-        # write to any file whose resolved path escapes project_root. This
-        # blocks a malicious template that ships a symlink pointing outside
-        # the generated tree.
-        # #VERIFY: filepath.resolve().is_relative_to(project_root) before write.
-        try:
-            resolved = filepath.resolve()
-        except OSError:
-            continue
-        if not resolved.is_relative_to(project_root):
+        # Skip git directory and symlinks that escape project_root (delegated
+        # to _path_is_inside helper to keep this function under the C901 limit).
+        if ".git" in filepath.parts or not _path_is_inside(filepath, project_root):
             continue
 
         # Check if file should be processed
