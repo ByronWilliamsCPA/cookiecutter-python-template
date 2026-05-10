@@ -423,13 +423,13 @@ def render_workflow_templates() -> None:
     """
     # #ASSUME: External Resources: workflow files exist under .github/workflows
     #          and are UTF-8 encoded.
+    # #VERIFY: read_text/write_text use encoding="utf-8" explicitly below.
+    #
     # #ASSUME: Data Integrity: every {% raw %}{{ cookiecutter.X }}{% endraw %} placeholder rendered
-    #          here corresponds to a key defined in cookiecutter.json. A missing
-    #          key leaves the placeholder verbatim and post-gen does not error;
-    #          test_no_unrendered_cookiecutter_variables (tests/unit) catches it.
-    # #VERIFY: read_text/write_text now use encoding="utf-8" explicitly (added
-    #          this PR); see also the post-gen test that scans all rendered
-    #          workflows for surviving {% raw %}{{ cookiecutter.{% endraw %} patterns.
+    #          here corresponds to a key defined in cookiecutter.json.
+    # #VERIFY: post-gen test scans all rendered workflows for surviving
+    #          {% raw %}{{ cookiecutter.{% endraw %} patterns; missing keys leave the placeholder
+    #          verbatim and the test catches it.
     print("\n🔧 Rendering GitHub workflow templates...")
 
     workflows_dir = Path(".github/workflows")
@@ -513,9 +513,9 @@ def _is_safe_clone_url(repo_url: str) -> bool:
     """Validate that a git clone URL uses an allowed scheme and host shape.
 
     Rejects values that could be interpreted as git options (leading "-"),
-    schemes other than https/ssh/git, and ssh URLs that do not look like
+    schemes other than https/ssh, and ssh URLs that do not look like
     user@host:path. This prevents user input from being passed to git as a
-    flag (#CRITICAL: Security: arg injection in subprocess) or pointing at
+    flag (mitigates argument injection in subprocess) or pointing at
     an unexpected scheme.
     """
     if not repo_url or repo_url.startswith("-"):

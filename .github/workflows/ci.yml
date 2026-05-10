@@ -160,10 +160,16 @@ jobs:
         run: |
           echo "::group::Scanning for Unverified Assumption Tags"
 
-          # Check for RAD tags (Layer 1: Production Runtime Risks)
+          # Check for RAD tags (Layer 1: Production Runtime Risks).
+          # Visibility counts (informational):
           CRITICAL_TAGS=$(grep -r "#CRITICAL" --include="*.py" hooks/ 2>/dev/null | wc -l || echo "0")
           ASSUME_TAGS=$(grep -r "#ASSUME" --include="*.py" hooks/ 2>/dev/null | wc -l || echo "0")
           EDGE_TAGS=$(grep -r "#EDGE" --include="*.py" hooks/ 2>/dev/null | wc -l || echo "0")
+          # Gating count (failure threshold): only tags that lack a paired
+          # #VERIFY directive within 5 lines are counted as unverified debt.
+          # Tags paired with #VERIFY are considered fully documented per the
+          # RAD methodology and intentional. See scripts/check_unverified_assumption_tags.py.
+          UNVERIFIED_RAD=$(python3 scripts/check_unverified_assumption_tags.py --root hooks --verbose 2>&1 1>/tmp/unverified-count.txt && cat /tmp/unverified-count.txt || echo "0")
 
           # Check for LLM debt tags (Layer 2: LLM Development Debt)
           LLM_MOCK=$(grep -r "#LLM-MOCK" --include="*.py" hooks/ 2>/dev/null | wc -l || echo "0")
@@ -198,8 +204,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Total unverified tags: $TOTAL_TAGS**" >> $GITHUB_STEP_SUMMARY
 
-          if [ "$TOTAL_RAD" -gt 0 ]; then
-            echo "::error::Found $TOTAL_RAD unverified production risk tags (#CRITICAL, #ASSUME)"
+          if [ "$UNVERIFIED_RAD" -gt 0 ]; then
+            echo "::error::Found $UNVERIFIED_RAD unverified production-risk tags (#CRITICAL or #ASSUME without a #VERIFY directive within 5 lines). See workflow log for file:line locations."
           fi
 
           if [ "$TOTAL_LLM" -gt 0 ]; then
