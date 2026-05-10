@@ -954,7 +954,7 @@ def inject_creation_date() -> None:
             content = filepath.read_text(encoding="utf-8")
             if placeholder in content:
                 content = content.replace(placeholder, creation_date)
-                filepath.write_text(content, encoding="utf-8")
+                filepath.write_text(content, encoding="utf-8")  # NOSONAR S2083: filepath sourced from hardcoded files_to_update list above; not user-controlled
                 updated_count += 1
                 print(f"  ✓ Updated: {filepath}")
         except (OSError, UnicodeDecodeError) as e:
@@ -1208,7 +1208,7 @@ def add_cruft_skip_patterns() -> None:
             merged_skip = list(dict.fromkeys(skip_patterns + existing_skip))
             cruft_config["skip"] = merged_skip
 
-            cruft_file.write_text(
+            cruft_file.write_text(  # NOSONAR S2083: cruft_file is the literal Path(".cruft.json"); content is json.dumps of program-controlled dict
                 json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8"
             )
             print(f"  ✓ Updated .cruft.json skip patterns ({len(merged_skip)} entries)")

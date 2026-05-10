@@ -117,7 +117,11 @@ jobs:
       - name: Dependency vulnerability scan
         run: |
           echo "::group::pip-audit Dependency Scan"
-          uv run pip-audit --strict --ignore-vuln PYSEC-2022-42969 || {
+          # --skip-editable skips the local project itself (which is not on
+          # PyPI, so pip-audit cannot resolve metadata for it). Vulnerabilities
+          # in the project's OWN code are caught by Bandit/Semgrep elsewhere;
+          # pip-audit's job is to scan declared dependencies.
+          uv run pip-audit --strict --skip-editable --ignore-vuln PYSEC-2022-42969 || {
             echo "::error::Vulnerable dependencies detected. Review and update affected packages."
             exit 1
           }
@@ -184,6 +188,7 @@ jobs:
           TOTAL_TAGS=$((TOTAL_RAD + TOTAL_LLM))
 
           echo "rad_tags=$TOTAL_RAD" >> $GITHUB_OUTPUT
+          echo "unverified_rad=$UNVERIFIED_RAD" >> $GITHUB_OUTPUT
           echo "llm_tags=$TOTAL_LLM" >> $GITHUB_OUTPUT
           echo "total_tags=$TOTAL_TAGS" >> $GITHUB_OUTPUT
 
@@ -214,15 +219,19 @@ jobs:
 
           echo "::endgroup::"
 
-      - name: Block PR if critical tags found
-        if: steps.check-tags.outputs.rad_tags > 0
+      - name: Block PR if unverified critical tags found
+        # Only blocks on tags that lack a paired #VERIFY directive within
+        # 5 lines. Tags with adjacent #VERIFY are considered fully
+        # documented per the RAD methodology and do NOT block merge.
+        if: steps.check-tags.outputs.unverified_rad > 0
         run: |
-          echo "::error::❌ PR blocked: Found ${{ steps.check-tags.outputs.rad_tags }} unverified production risk tags"
+          echo "::error::❌ PR blocked: Found ${{ steps.check-tags.outputs.unverified_rad }} unverified production-risk tags (#CRITICAL or #ASSUME without paired #VERIFY)"
           echo ""
-          echo "Please verify and remove these tags before merging:"
-          grep -rn "#CRITICAL\|#ASSUME" --include="*.py" hooks/ || true
+          echo "Unverified tag locations:"
+          python3 scripts/check_unverified_assumption_tags.py --root hooks --verbose >/dev/null 2>&1 || true
+          python3 scripts/check_unverified_assumption_tags.py --root hooks --verbose 2>&1 1>/dev/null || true
           echo ""
-          echo "See CLAUDE.md for verification workflow"
+          echo "See CLAUDE.md and docs/response-aware-development.md for verification workflow"
           exit 1
 
       - name: Detect LLM anti-patterns
