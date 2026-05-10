@@ -115,7 +115,8 @@ jobs:
 
       - name: Check for CHANGELOG update
         env:
-          BASE_REF: ${{ github.base_ref }}
+          BASE_REF: {% raw %}${{ github.base_ref }}{% endraw %}
+
         run: |
           git fetch origin "$BASE_REF" --no-tags
           MERGE_BASE=$(git merge-base HEAD "origin/$BASE_REF")

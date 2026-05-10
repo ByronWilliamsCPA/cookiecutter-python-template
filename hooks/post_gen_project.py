@@ -414,13 +414,13 @@ def render_workflow_templates() -> None:
     """
     # #ASSUME: External Resources: workflow files exist under .github/workflows
     #          and are UTF-8 encoded.
-    # #ASSUME: Data Integrity: every {{ cookiecutter.X }} placeholder rendered
+    # #ASSUME: Data Integrity: every {% raw %}{{ cookiecutter.X }}{% endraw %} placeholder rendered
     #          here corresponds to a key defined in cookiecutter.json. A missing
     #          key leaves the placeholder verbatim and post-gen does not error;
     #          test_no_unrendered_cookiecutter_variables (tests/unit) catches it.
     # #VERIFY: read_text/write_text now use encoding="utf-8" explicitly (added
     #          this PR); see also the post-gen test that scans all rendered
-    #          workflows for surviving {{ cookiecutter. patterns.
+    #          workflows for surviving {% raw %}{{ cookiecutter.{% endraw %} patterns.
     print("\n🔧 Rendering GitHub workflow templates...")
 
     workflows_dir = Path(".github/workflows")
