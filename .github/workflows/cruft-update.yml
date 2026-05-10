@@ -50,7 +50,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install cruft pyyaml
+          uv pip install --system cruft pyyaml
 
       - name: Configure Git
         run: |
@@ -97,7 +97,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install cruft pyyaml
+          uv pip install --system cruft pyyaml
 
       - name: Configure Git
         run: |
