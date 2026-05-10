@@ -530,6 +530,22 @@ def _is_safe_clone_url(repo_url: str) -> bool:
     )
 
 
+def _collect_installed_items(install_path: Path) -> list[str]:
+    """Return labels for Claude settings artefacts present in install_path."""
+    items: list[str] = []
+    if (install_path / "CLAUDE.md").exists():
+        items.append("CLAUDE.md")
+    if (install_path / "skills").exists():
+        items.append("skills/")
+    if (install_path / "agents").exists():
+        items.append("agents/")
+    if (install_path / ".claude" / "commands").exists() or (
+        install_path / "commands"
+    ).exists():
+        items.append("slash commands")
+    return items
+
+
 def _install_claude_settings(repo_url: str, install_path: Path) -> None:
     """Clone and verify user-level Claude Code settings.
 
@@ -558,19 +574,7 @@ def _install_claude_settings(repo_url: str, install_path: Path) -> None:
     if run_command(["git", "clone", "--", repo_url, str(install_path)], check=False):
         print(f"  ✓ User-level settings installed at: {install_path}")
 
-        # Check what was installed
-        installed_items: list[str] = []
-        if (install_path / "CLAUDE.md").exists():
-            installed_items.append("CLAUDE.md")
-        if (install_path / "skills").exists():
-            installed_items.append("skills/")
-        if (install_path / "agents").exists():
-            installed_items.append("agents/")
-        if (install_path / ".claude" / "commands").exists() or (
-            install_path / "commands"
-        ).exists():
-            installed_items.append("slash commands")
-
+        installed_items = _collect_installed_items(install_path)
         if installed_items:
             print(f"  ✓ Installed: {', '.join(installed_items)}")
 
