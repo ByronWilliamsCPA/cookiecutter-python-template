@@ -427,7 +427,7 @@ timeout = 60
 
 Add this section to the template README:
 
-```markdown
+````markdown
 ## Supply Chain Security
 
 This project uses secure package indexes:
@@ -460,13 +460,13 @@ infisical run --env=dev -- uv run python main.py
 # Option 2: Export to .env
 infisical export --env=dev > .env
 ```
-```
+````
 
 ### 5.2 Contributing Guide Section
 
 Add to CONTRIBUTING.md:
 
-```markdown
+````markdown
 ## Adding Dependencies
 
 When adding new dependencies:
@@ -490,7 +490,7 @@ To use packages from python-libs:
    ```
 
 3. Run `uv lock` to update lockfile
-```
+````
 
 ---
 
