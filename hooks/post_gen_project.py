@@ -954,7 +954,9 @@ def inject_creation_date() -> None:
             content = filepath.read_text(encoding="utf-8")
             if placeholder in content:
                 content = content.replace(placeholder, creation_date)
-                filepath.write_text(content, encoding="utf-8")  # NOSONAR S2083: filepath sourced from hardcoded files_to_update list above; not user-controlled
+                filepath.write_text(
+                    content, encoding="utf-8"
+                )  # NOSONAR S2083: filepath sourced from hardcoded files_to_update list above; not user-controlled
                 updated_count += 1
                 print(f"  ✓ Updated: {filepath}")
         except (OSError, UnicodeDecodeError) as e:
