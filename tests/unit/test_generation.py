@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from typing import TYPE_CHECKING, Any
 
@@ -390,6 +391,11 @@ class TestDockerfileGeneration:
             "github_username": "testuser",
             "version": "0.1.0",
             "include_docker": "yes",
+            # Pin include_github_actions explicitly so the Dockerfile fixture
+            # is decoupled from cookiecutter.json defaults. If the default
+            # later flips, the fuzz/CI workflow files this test does NOT
+            # care about would not start being generated and break the test.
+            "include_github_actions": "no",
         }
         return generate_project(template_dir, temp_dir, config)
 
@@ -412,10 +418,14 @@ class TestDockerfileGeneration:
 
         lines = dockerfile.read_text(encoding="utf-8").splitlines()
 
+        # Match RUN lines whose first invoked command is `uv sync` (allowing
+        # `RUN --mount=...` cache mounts and arbitrary whitespace). Avoids
+        # false-matching e.g. `RUN echo "before uv sync"` which mentions the
+        # phrase in a comment-like string.
+        run_uv_sync_re = re.compile(r"^RUN(?:\s+--\S+)*\s+uv\s+sync\b")
         first_uv_sync_idx: int | None = None
         for idx, line in enumerate(lines):
-            stripped = line.strip()
-            if stripped.startswith("RUN ") and "uv sync" in stripped:
+            if run_uv_sync_re.match(line.strip()):
                 first_uv_sync_idx = idx
                 break
         assert first_uv_sync_idx is not None, "Expected a `RUN uv sync ...` line"
@@ -448,7 +458,21 @@ class TestDockerfileGeneration:
             for line in dockerignore.read_text(encoding="utf-8").splitlines()
             if line.strip() and not line.strip().startswith("#")
         ]
-        bad_patterns = {"README.md", "README*", "*.md", "*"}
+        # Patterns that would exclude README.md from the docker build context.
+        # Covers exact filename, common globs, leading-slash anchored variants,
+        # double-star recursive globs, and case-insensitive forms.
+        bad_patterns = {
+            "README.md",
+            "README*",
+            "*.md",
+            "*",
+            "/README.md",
+            "/*.md",
+            "**/README.md",
+            "**/*.md",
+            "readme.md",
+            "Readme.md",
+        }
         offending = [p for p in active_patterns if p in bad_patterns]
         assert not offending, (
             f".dockerignore would exclude README.md via patterns: {offending}. "
