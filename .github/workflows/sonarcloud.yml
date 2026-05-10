@@ -52,7 +52,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install cookiecutter black ruff mypy pytest pytest-cov
+          pip install cookiecutter ruff basedpyright pytest pytest-cov
 
       - name: Run tests with coverage (if tests exist)
         run: |
@@ -74,8 +74,8 @@ jobs:
           echo "Running Ruff on hooks..."
           ruff check hooks/ --output-format=json > ruff-report.json || true
 
-          echo "Running MyPy on hooks..."
-          mypy hooks/ --ignore-missing-imports --junit-xml=mypy-report.xml || true
+          echo "Running BasedPyright on hooks..."
+          basedpyright hooks/ || true
 
       - name: Verify coverage report
         run: |
@@ -94,11 +94,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}      # SonarCloud authentication
 
       - name: Check Quality Gate
-        uses: sonarsource/sonarqube-quality-gate-action@master
+        uses: sonarsource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b # v1.2.0
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        continue-on-error: true  # Don't fail workflow, just report status
 
       - name: Quality Gate Summary
         if: always()
@@ -123,5 +122,4 @@ jobs:
             coverage.xml
             .coverage
             ruff-report.json
-            mypy-report.xml
           retention-days: 7

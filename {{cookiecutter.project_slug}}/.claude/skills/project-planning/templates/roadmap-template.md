@@ -2,7 +2,7 @@
 
 ## Structure
 
-```markdown
+````markdown
 # Development Roadmap: [Project Name]
 
 > **Status**: Active | **Updated**: [Date]
@@ -162,7 +162,7 @@ A feature is complete when:
 - [Project Vision](./project-vision.md)
 - [Technical Spec](./tech-spec.md)
 - [Architecture Decisions](./adr/)
-```
+````
 
 ## Generation Notes
 

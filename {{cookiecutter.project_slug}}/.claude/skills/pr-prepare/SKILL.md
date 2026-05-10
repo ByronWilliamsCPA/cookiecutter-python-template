@@ -50,7 +50,7 @@ Identify:
 
 Use this template format:
 
-```markdown
+````markdown
 ## Summary
 
 [1-3 sentences: what changed and why]
@@ -74,7 +74,7 @@ Use this template format:
 ## Notes
 
 [Optional: known issues, follow-up work, dependencies]
-```
+````
 
 ### 4. Suggest PR Title
 
@@ -96,11 +96,11 @@ Follow conventional commits format:
 
 If addressing a Linear issue, include:
 
-```markdown
+````markdown
 ## Linear Issue
 
 Closes {{ cookiecutter.linear_team_key }}-[NUMBER]
-```
+````
 
 Ask the user if they want to link a Linear issue.
 {%- endif %}
@@ -128,7 +128,7 @@ Remind the user:
 
 **PR Description**:
 
-```markdown
+````markdown
 ## Summary
 
 Add OAuth2 authentication supporting Google and GitHub providers.
@@ -153,7 +153,7 @@ Add OAuth2 authentication supporting Google and GitHub providers.
 ## Notes
 
 Follow-up: Add Microsoft provider support
-```
+````
 
 ---
 

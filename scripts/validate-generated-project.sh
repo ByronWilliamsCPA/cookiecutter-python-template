@@ -235,8 +235,8 @@ main() {
     info "=== Test Execution ==="
 
     if check_command uv; then
-        # First sync dependencies
-        if uv sync &>/dev/null; then
+        # First sync dependencies (--all-extras installs dev group including pytest)
+        if uv sync --all-extras &>/dev/null; then
             if uv run pytest -v 2>&1; then
                 success "Tests passed"
             else

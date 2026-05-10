@@ -2,7 +2,7 @@
 
 ## Structure
 
-```markdown
+````markdown
 # Project Vision & Scope: [Project Name]
 
 > **Status**: Active | **Version**: 1.0 | **Updated**: [Date]
@@ -63,7 +63,7 @@
 - [Architecture Decisions](./adr/)
 - [Technical Spec](./tech-spec.md)
 - [Roadmap](./roadmap.md)
-```
+````
 
 ## Generation Notes
 

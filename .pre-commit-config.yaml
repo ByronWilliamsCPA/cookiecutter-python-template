@@ -18,51 +18,46 @@ repos:
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: detect-private-key
+        exclude: 'tests/test_zero_issues\.py'  # Contains key pattern strings as regex literals for security testing
       - id: check-toml
         exclude: '{{cookiecutter.project_slug}}'  # Exclude template files with jinja2
       - id: mixed-line-ending
         args: ['--fix=lf']
 
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.27.3
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: 68e8b45440415753fff70a312ece8da92ba85b4a  # v1.5.0
     hooks:
-      - id: check-jsonschema
-        name: Validate cookiecutter.json
-        files: ^cookiecutter\.json$
-        args:
-          - --schemafile
-          - https://json.schemastore.org/cookiecutter.json
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        # Do NOT exclude {{cookiecutter.project_slug}} here. The new
+        # .secrets.baseline already suppresses current false positives;
+        # excluding the entire template tree means real secrets added
+        # under the generated project would never be detected.
+        exclude: >-
+          (?x)^(
+            uv\.lock|
+            \.secrets\.baseline
+          )$
 
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.6
     hooks:
-      - id: black
+      - id: ruff-format
         files: ^hooks/.*\.py$
-        language_version: python3.12
-
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.1.9
-    hooks:
       - id: ruff
         files: ^hooks/.*\.py$
         args: [--fix, --exit-non-zero-on-fix]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-      - id: mypy
-        files: ^hooks/.*\.py$
-        additional_dependencies: []
-
-  - repo: https://github.com/econchick/interrogate
-    rev: 1.7.0
-    hooks:
-      - id: interrogate
-        args: ['-v', '--fail-under=80', 'hooks/']
-        pass_filenames: false
-
   - repo: local
     hooks:
+      - id: basedpyright
+        name: basedpyright type check
+        entry: basedpyright
+        language: system
+        types: [python]
+        files: ^hooks/.*\.py$
+        pass_filenames: false
+
       - id: validate-hook-files
         name: Validate Python hook files
         entry: python3 -m py_compile
@@ -83,12 +78,16 @@ repos:
 
       - id: check-hardcoded-values
         name: Check for hardcoded usernames/repos
+        # Hardcoded-value check runs across the entire generated template
+        # tree, including README.md and scripts/. Excluding them previously
+        # let williaby / PromptCraft references leak into user-facing docs
+        # and executable scripts. .claude/ remains excluded because it
+        # legitimately tracks the template author's settings repo.
         entry: >
-          bash -c 'if grep -r "williaby\|cookiecutter-python-template-2\|PromptCraft"
+          bash -c 'if [ -d "{{cookiecutter.project_slug}}" ] && grep -r "williaby\|PromptCraft"
           --include="*.md" --include="*.py" --include="*.sh"
-          --exclude="README.md" --exclude="OPENSSF_COMPLIANCE_ANALYSIS.md"
-          --exclude-dir="{{cookiecutter.project_slug}}"
-          --exclude-dir=".git" --exclude-dir="docs-reference" --exclude-dir="hooks" .; then
+          --exclude-dir=".claude"
+          "{{cookiecutter.project_slug}}"; then
           echo "ERROR: Found hardcoded values that should be templated"; exit 1; fi'
         language: system
         pass_filenames: false
@@ -103,11 +102,45 @@ repos:
         pass_filenames: false
         stages: [manual]
 
+      - id: pip-audit
+        name: pip-audit dependency scan
+        entry: pip-audit
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+
+      - id: no-em-dash
+        name: No em-dashes
+        language: pygrep
+        entry: "—"
+        files: \.(py|md|txt|toml|yaml|yml|json|rst|sh|bash)$
+        types_or: [python, markdown, plain-text, toml, yaml, json, rst, shell]
+        exclude: ^\.pre-commit-config\.yaml$
+
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.7.0
+    hooks:
+      - id: interrogate
+        args: ['-v', '--fail-under=85', 'hooks/']
+        pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: darglint
+        name: darglint docstring validation
+        entry: darglint
+        language: system
+        types: [python]
+        files: ^hooks/.*\.py$
+        exclude: ^tests/|^scripts/|^benchmarks/|^tools/
+        args: ['--strictness', 'long', '--docstring-style', 'google']
+
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.9.0.6
     hooks:
       - id: shellcheck
         files: \.(sh|bash)$
+        exclude: '{{cookiecutter\.project_slug}}'  # Template files contain Jinja2 syntax
         args: [--severity=warning]
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
@@ -130,7 +163,7 @@ repos:
     rev: v1.33.0
     hooks:
       - id: yamllint
-        args: ['-d', '{extends: default, rules: {line-length: {max: 120}}}']
+        args: ['-c', '.yamllint']
         exclude: '{{cookiecutter.project_slug}}'  # Exclude template files with jinja2
 
   - repo: https://github.com/igorshubovych/markdownlint-cli

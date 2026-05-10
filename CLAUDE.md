@@ -18,13 +18,13 @@ Guidance for Claude Code when working with this cookiecutter template repository
 
 ```bash
 # Always assign TODO items to appropriate agents:
-- Security tasks → Security Agent (via mcp__zen-core__secaudit)
-- Code reviews → Code Review Agent (via mcp__zen-core__codereview)
-- Testing → Test Engineer Agent (via mcp__zen-core__testgen)
-- Documentation → Documentation Agent (via mcp__zen-core__docgen)
-- Debugging → Debug Agent (via mcp__zen-core__debug)
-- Analysis → Analysis Agent (via mcp__zen-core__analyze)
-- Refactoring → Refactor Agent (via mcp__zen-core__refactor)
+- Security tasks → Security Agent (via mcp__zen__secaudit)
+- Code reviews → Code Review Agent (via mcp__zen__codereview)
+- Testing → Test Engineer Agent (via mcp__zen__testgen)
+- Documentation → Documentation Agent (via mcp__zen__docgen)
+- Debugging → Debug Agent (via mcp__zen__debug)
+- Analysis → Analysis Agent (via mcp__zen__analyze)
+- Refactoring → Refactor Agent (via mcp__zen__refactor)
 ```
 
 ### Temporary Reference Files (Anti-Compaction Strategy)
@@ -53,6 +53,78 @@ Guidance for Claude Code when working with this cookiecutter template repository
 2. **Parallel Execution**: Assign independent tasks to multiple agents simultaneously
 3. **Integration Points**: Create specific TODO items for integrating agent outputs
 4. **Quality Gates**: Assign review tasks to appropriate agents after implementation
+
+## Response-Aware Development (RAD)
+
+> **Reference**: Global CLAUDE.md standards apply. See `~/.claude/CLAUDE.md` for complete RAD documentation.
+
+When writing code (including template hooks), ALWAYS tag assumptions that could cause production failures:
+
+```python
+# #CRITICAL: [category]: [assumption that could cause outages/data loss]
+# #VERIFY: [defensive code required]
+
+# #ASSUME: [category]: [assumption that could cause bugs]
+# #VERIFY: [validation needed]
+
+# #EDGE: [category]: [assumption about uncommon scenarios]
+# #VERIFY: [optional improvement]
+```
+
+**Critical Assumption Categories** (MANDATORY tagging):
+
+- **Timing Dependencies**: Hook execution order, file system operations
+- **External Resources**: Git availability, command-line tools, file existence
+- **Data Integrity**: Template variable validation, file encoding, path handling
+- **Concurrency**: Multi-platform compatibility, race conditions during generation
+- **Security**: Input sanitization, path traversal prevention, credential handling
+
+**Template-Specific RAD Focus**:
+
+- Hook files MUST validate all cookiecutter variables before use
+- File operations MUST handle cross-platform path differences
+- External command calls MUST verify tool availability and handle failures gracefully
+
+## Code Generation Principles (MANDATORY)
+
+> **Reference**: Global CLAUDE.md standards apply. See `~/.claude/CLAUDE.md` for complete code generation principles.
+
+When generating template code or hook files, Claude MUST follow:
+
+### Function Structure
+
+- **Length**: Prefer 20-60 statements; hard limit 100 statements (PLR0915)
+- **Single Responsibility**: Each function performs ONE task
+- **Early Returns**: Exit early on error conditions
+- **Nesting Depth**: Maximum 3 levels of indentation
+
+### Complexity Controls
+
+- **Cyclomatic Complexity**: Target ≤10 (C901); refactor if approaching 15
+- **Branches**: Maximum 12 branches per function (PLR0912)
+
+### Template-Specific Considerations
+
+- **Jinja2 Logic**: Keep template conditionals simple; complex logic belongs in hooks
+- **Hook Functions**: Each hook function should handle one generation concern
+- **Variable Validation**: Extract validation logic into dedicated functions
+
+## OpenSSF Best Practices Compliance
+
+> **Reference**: Global CLAUDE.md standards apply. Generated projects automatically include OpenSSF compliance features.
+
+**Template Repository Compliance**:
+
+- ✅ Required files: LICENSE, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md, README.md
+- ✅ Pre-commit hooks for credential leak detection
+- ✅ Security scanning via GitHub Actions
+- ✅ Signed commits required
+
+**Generated Project Compliance**:
+
+- All feature flags (`include_github_actions`, `include_codecov`, etc.) generate OpenSSF-compliant configurations
+- SonarCloud integration provides continuous quality monitoring
+- Semantic release ensures proper versioning and changelog management
 
 ## Project Overview
 
@@ -301,6 +373,123 @@ Focus on:
 - `feature/*`: New template features or enhancements
 - `fix/*`: Bug fixes in template generation
 - `docs/*`: Documentation improvements
+
+## Git Worktree Workflow
+
+> **Reference**: Global CLAUDE.md standards apply. See `~/.claude/CLAUDE.md` for complete worktree documentation.
+
+Git worktrees enable parallel development for template work:
+
+**Quick Reference**:
+
+```bash
+# Create worktree for new template feature
+git worktree add .worktrees/feat-new-integration -b feat/new-integration
+cd .worktrees/feat-new-integration && uv sync
+
+# Test template generation from worktree
+cd /tmp && cruft create .worktrees/feat-new-integration --no-input
+
+# Cleanup after merging
+git worktree remove .worktrees/feat-new-integration
+git worktree prune
+```
+
+**Template-Specific Use Cases**:
+
+- Testing breaking template changes without affecting main workspace
+- Parallel development of multiple template features
+- PR review of template changes while working on another feature
+- Experimenting with major hook refactoring
+
+## Automated Branch Creation Strategy
+
+> **Reference**: Global CLAUDE.md standards apply. See `~/.claude/CLAUDE.md` for semantic release branch mapping.
+
+**Branch Type Mapping for Template Repository**:
+
+| Task Type | Branch Prefix | Commit Type | Example |
+|-----------|---------------|-------------|---------|
+| New template feature | `feat/` | `feat(template):` | `feat/add-ruff-config` |
+| Template bug fix | `fix/` | `fix(template):` | `fix/hook-path-handling` |
+| Hook changes | `feat/` or `fix/` | `feat(hooks):` | `feat/hooks-add-validation` |
+| Documentation | `docs/` | `docs:` | `docs/update-readme` |
+| CI/CD changes | `chore/` | `chore(ci):` | `chore/ci-add-workflow` |
+
+**When to Create Branches (MANDATORY)**:
+
+1. **Starting ANY template modification** - Never commit directly to `main`
+2. **Adding new cookiecutter variables** - `feat/add-variable-name`
+3. **Modifying generation hooks** - `feat/hooks-improve-validation`
+4. **Updating generated project templates** - `feat/template-update-dependencies`
+5. **Fixing template generation issues** - `fix/template-jinja2-syntax`
+
+**Template Testing Workflow**:
+
+```bash
+# 1. Create feature branch
+git checkout -b feat/add-sonarcloud-integration
+
+# 2. Make template changes
+# ... edit files ...
+
+# 3. Test generation in /tmp
+cd /tmp
+cruft create /home/byron/dev/cookiecutter-python-template --no-input
+cd my_project && uv sync && uv run pytest
+
+# 4. Commit with conventional commits
+cd /home/byron/dev/cookiecutter-python-template
+git add .
+git commit -m "feat(template): add SonarCloud integration support"
+
+# 5. Create PR (never merge directly)
+```
+
+## PR Preparation Workflow
+
+> **Reference**: Global CLAUDE.md standards for PR creation apply.
+
+**ALWAYS use `mcp__zen__pr_prepare` tool for PR creation**:
+
+```bash
+# Standard template PR creation
+mcp__zen__pr_prepare --include_wtd=true --target_branch=main --change_type=feat
+
+# Template enhancement PR
+mcp__zen__pr_prepare \
+  --include_wtd=true \
+  --target_branch=main \
+  --change_type=feat \
+  --title="Add new cookiecutter integration"
+```
+
+**Template-Specific PR Requirements**:
+
+1. **Generation Testing**: PR must include evidence that template generation succeeds
+2. **Multi-Configuration Testing**: Test with multiple feature flag combinations
+3. **Hook Validation**: Verify pre/post generation hooks execute without errors
+4. **Documentation Updates**: Both root README and generated project README updated
+5. **Breaking Change Notice**: If template changes break existing projects, document migration path
+
+**PR Description Template**:
+
+````markdown
+## Changes
+- Brief description of template modifications
+
+## Template Testing
+- [ ] Generated with default configuration (--no-input)
+- [ ] Generated with CLI enabled
+- [ ] Generated with all features enabled
+- [ ] Generated project passes quality checks (ruff, basedpyright, pytest)
+
+## Breaking Changes
+- [ ] None
+- [ ] Migration guide included in CHANGELOG.md
+
+<!-- wtd:summary -->
+````
 
 ## Pre-Commit Checklist
 

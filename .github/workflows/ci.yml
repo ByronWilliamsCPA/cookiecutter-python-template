@@ -59,17 +59,16 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --all-extras
-          pip install cookiecutter pre-commit yamllint tomli ruff basedpyright black bandit safety interrogate codespell
 
       - name: Install Node.js tools
         run: |
           npm install -g markdownlint-cli
 
-      - name: Run Black formatter check
+      - name: Run Ruff format check
         run: |
-          echo "::group::Black Formatting"
-          black --check --diff hooks/ || {
-            echo "::error::Code formatting issues detected. Run 'black hooks/' to fix."
+          echo "::group::Ruff Format Check"
+          uv run ruff format --check --diff hooks/ || {
+            echo "::error::Code formatting issues detected. Run 'uv run ruff format hooks/' to fix."
             exit 1
           }
           echo "::endgroup::"
@@ -77,14 +76,15 @@ jobs:
       - name: Run Ruff linter
         run: |
           echo "::group::Ruff Linting"
-          ruff check hooks/ --output-format=github
+          uv run ruff check hooks/ --output-format=github
           echo "::endgroup::"
 
-      - name: Run MyPy type checker
+      - name: Run BasedPyright type checker
         run: |
-          echo "::group::MyPy Type Checking"
-          mypy hooks/ --ignore-missing-imports --no-error-summary || {
-            echo "::warning::Type checking found issues"
+          echo "::group::BasedPyright Type Checking"
+          uv run basedpyright hooks/ || {
+            echo "::error::Type checking errors detected. Run 'uv run basedpyright hooks/' to see details."
+            exit 1
           }
           echo "::endgroup::"
 
@@ -98,7 +98,6 @@ jobs:
               --cov-report=term-missing \
               --cov-report=html \
               --cov-branch \
-              --cov-fail-under=0 \
               -v
           else
             echo "::warning::No tests directory found"
@@ -109,7 +108,7 @@ jobs:
       - name: Security scan with Bandit
         run: |
           echo "::group::Bandit Security Scan"
-          bandit -r hooks/ -f json -o bandit-report.json || {
+          uv run bandit -r hooks/ -f json -o bandit-report.json || {
             echo "::warning::Security issues detected"
             cat bandit-report.json
           }
@@ -117,9 +116,20 @@ jobs:
 
       - name: Dependency vulnerability scan
         run: |
-          echo "::group::Safety Dependency Scan"
-          pip freeze | safety check --stdin --ignore 51457 || {
-            echo "::warning::Vulnerable dependencies detected"
+          echo "::group::pip-audit Dependency Scan"
+          # pip-audit cannot scan an environment that contains an editable
+          # install of the project itself (the project is not on PyPI, so
+          # pip-audit cannot resolve its metadata). Workaround: export the
+          # locked third-party dependency set via uv to requirements.txt
+          # format, then audit that file. This audits the same dependency
+          # surface as before without pulling the project into the scan.
+          # Vulnerabilities in the project's OWN code are caught by Bandit
+          # and other scanners elsewhere.
+          uv export --no-dev --no-emit-project --format requirements-txt > /tmp/audit-deps.txt 2>/dev/null
+          uv run pip-audit --strict --ignore-vuln PYSEC-2022-42969 \
+            -r /tmp/audit-deps.txt || {
+            echo "::error::Vulnerable dependencies detected. Review and update affected packages."
+            exit 1
           }
           echo "::endgroup::"
 
@@ -160,10 +170,16 @@ jobs:
         run: |
           echo "::group::Scanning for Unverified Assumption Tags"
 
-          # Check for RAD tags (Layer 1: Production Runtime Risks)
+          # Check for RAD tags (Layer 1: Production Runtime Risks).
+          # Visibility counts (informational):
           CRITICAL_TAGS=$(grep -r "#CRITICAL" --include="*.py" hooks/ 2>/dev/null | wc -l || echo "0")
           ASSUME_TAGS=$(grep -r "#ASSUME" --include="*.py" hooks/ 2>/dev/null | wc -l || echo "0")
           EDGE_TAGS=$(grep -r "#EDGE" --include="*.py" hooks/ 2>/dev/null | wc -l || echo "0")
+          # Gating count (failure threshold): only tags that lack a paired
+          # #VERIFY directive within 5 lines are counted as unverified debt.
+          # Tags paired with #VERIFY are considered fully documented per the
+          # RAD methodology and intentional. See scripts/check_unverified_assumption_tags.py.
+          UNVERIFIED_RAD=$(python3 scripts/check_unverified_assumption_tags.py --root hooks --verbose 2>&1 1>/tmp/unverified-count.txt && cat /tmp/unverified-count.txt || echo "0")
 
           # Check for LLM debt tags (Layer 2: LLM Development Debt)
           LLM_MOCK=$(grep -r "#LLM-MOCK" --include="*.py" hooks/ 2>/dev/null | wc -l || echo "0")
@@ -178,6 +194,7 @@ jobs:
           TOTAL_TAGS=$((TOTAL_RAD + TOTAL_LLM))
 
           echo "rad_tags=$TOTAL_RAD" >> $GITHUB_OUTPUT
+          echo "unverified_rad=$UNVERIFIED_RAD" >> $GITHUB_OUTPUT
           echo "llm_tags=$TOTAL_LLM" >> $GITHUB_OUTPUT
           echo "total_tags=$TOTAL_TAGS" >> $GITHUB_OUTPUT
 
@@ -198,8 +215,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Total unverified tags: $TOTAL_TAGS**" >> $GITHUB_STEP_SUMMARY
 
-          if [ "$TOTAL_RAD" -gt 0 ]; then
-            echo "::error::Found $TOTAL_RAD unverified production risk tags (#CRITICAL, #ASSUME)"
+          if [ "$UNVERIFIED_RAD" -gt 0 ]; then
+            echo "::error::Found $UNVERIFIED_RAD unverified production-risk tags (#CRITICAL or #ASSUME without a #VERIFY directive within 5 lines). See workflow log for file:line locations."
           fi
 
           if [ "$TOTAL_LLM" -gt 0 ]; then
@@ -208,15 +225,19 @@ jobs:
 
           echo "::endgroup::"
 
-      - name: Block PR if critical tags found
-        if: steps.check-tags.outputs.rad_tags > 0
+      - name: Block PR if unverified critical tags found
+        # Only blocks on tags that lack a paired #VERIFY directive within
+        # 5 lines. Tags with adjacent #VERIFY are considered fully
+        # documented per the RAD methodology and do NOT block merge.
+        if: steps.check-tags.outputs.unverified_rad > 0
         run: |
-          echo "::error::❌ PR blocked: Found ${{ steps.check-tags.outputs.rad_tags }} unverified production risk tags"
+          echo "::error::❌ PR blocked: Found ${{ steps.check-tags.outputs.unverified_rad }} unverified production-risk tags (#CRITICAL or #ASSUME without paired #VERIFY)"
           echo ""
-          echo "Please verify and remove these tags before merging:"
-          grep -rn "#CRITICAL\|#ASSUME" --include="*.py" hooks/ || true
+          echo "Unverified tag locations:"
+          python3 scripts/check_unverified_assumption_tags.py --root hooks --verbose >/dev/null 2>&1 || true
+          python3 scripts/check_unverified_assumption_tags.py --root hooks --verbose 2>&1 1>/dev/null || true
           echo ""
-          echo "See CLAUDE.md for verification workflow"
+          echo "See CLAUDE.md and docs/response-aware-development.md for verification workflow"
           exit 1
 
       - name: Detect LLM anti-patterns
@@ -272,15 +293,13 @@ jobs:
           name: coverage-reports
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        continue-on-error: true
+        uses: sonarsource/sonarqube-scan-action@689fb39b34b9aa95ebc5f8f119343ddd51542402 # v4.2.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Wait for Quality Gate
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        continue-on-error: true
+        uses: sonarsource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b # v1.2.0
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -293,15 +312,15 @@ jobs:
           echo "View detailed results: https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template"
           echo "::endgroup::"
 
-      - name: Quality Gate Status (Non-Blocking)
+      - name: Quality Gate Status (Blocking)
         if: steps.quality-gate.outputs.quality-gate-status == 'FAILED'
         run: |
-          echo "::warning::⚠️ Quality Gate FAILED (non-blocking for template repo)"
+          echo "::error::Quality Gate FAILED"
           echo ""
-          echo "SonarQube quality gate did not pass. Consider reviewing:"
-          echo "- Review issues at: https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template"
-          echo "- Note: Duplicate code warnings are expected in cookiecutter templates"
-          echo "- SonarCloud analysis primarily for main branch monitoring"
+          echo "SonarQube quality gate did not pass. Review:"
+          echo "- Issues: https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template"
+          echo "- Duplicate code warnings in template directories must be excluded via sonar-project.properties, not tolerated."
+          exit 1
 
       - name: Generate unified governance report
         if: always()

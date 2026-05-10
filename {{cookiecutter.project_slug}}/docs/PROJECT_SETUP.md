@@ -308,9 +308,9 @@ The OpenSSF Best Practices badge requires manual project registration:
 5. **Get your badge ID** (e.g., `12345`)
 6. **Add the badge to your README**:
 
-```markdown
+````markdown
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/YOUR_PROJECT_ID/badge)](https://www.bestpractices.dev/en/projects/YOUR_PROJECT_ID)
-```
+````
 
 **Tip**: Many questions can be answered "Met" based on this template's default configuration (CI/CD, security scanning, documentation, etc.).
 
@@ -483,9 +483,9 @@ These badges work automatically once your repository is public:
 
 After registration, add this badge to your README's "Quality & Security" section:
 
-```markdown
+````markdown
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/YOUR_ID/badge)](https://www.bestpractices.dev/en/projects/YOUR_ID)
-```
+````
 
 ---
 

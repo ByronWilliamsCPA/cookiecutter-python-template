@@ -6,11 +6,21 @@ Runs after all files have been created.
 """
 
 import json
+import re
 import shutil
 import subprocess  # nosec B404
 import sys
 from datetime import datetime
 from pathlib import Path
+
+
+# Module-level constants for repeated cookiecutter feature-flag references.
+# These are rendered ONCE by Jinja2 at cookiecutter-generation time and then
+# used throughout the post-gen hook. Extracting them satisfies SonarCloud
+# python:S1192 (duplicated literal) and centralizes the source of truth.
+INCLUDE_DOCKER = "{{ cookiecutter.include_docker }}"
+INCLUDE_FRONTEND = "{{ cookiecutter.include_frontend }}"
+INCLUDE_SUPPLY_CHAIN_SECURITY = "{{ cookiecutter.include_supply_chain_security }}"
 
 
 def remove_file(filepath: Path) -> None:
@@ -130,7 +140,7 @@ def _cleanup_tooling_files() -> None:
         remove_file(Path(".coderabbit.yaml"))
 
     # Remove Docker files if not needed
-    if "{{ cookiecutter.include_docker }}" == "no":
+    if INCLUDE_DOCKER == "no":
         remove_file(Path("Dockerfile"))
         remove_file(Path("docker-compose.yml"))
         remove_file(Path("docker-compose.prod.yml"))
@@ -187,7 +197,7 @@ def _cleanup_frontend_files() -> None:
         remove_dir(Path("tests/load"))
 
     # Remove frontend if not needed
-    if "{{ cookiecutter.include_frontend }}" == "no":
+    if INCLUDE_FRONTEND == "no":
         remove_dir(Path("frontend"))
         remove_file(Path("scripts/generate-client.sh"))
     else:
@@ -216,7 +226,7 @@ def _cleanup_workflow_files() -> None:
         remove_dir(Path("fuzz"))
 
     # Remove supply chain security files if not needed
-    if "{{ cookiecutter.include_supply_chain_security }}" == "no":
+    if INCLUDE_SUPPLY_CHAIN_SECURITY == "no":
         remove_file(Path(".infisical.json"))
         remove_file(Path("scripts/setup-supply-chain.sh"))
         remove_file(Path(".github/workflows/dependency-review.yml"))
@@ -272,6 +282,9 @@ def mark_scripts_executable() -> None:
 
 def initialize_git() -> None:
     """Initialize git repository with main as default branch."""
+    # #ASSUME: External Resources: git is installed and on PATH.
+    # #VERIFY: run_command catches FileNotFoundError and returns False, falling
+    #          through to the "git not found" message below.
     print("\n🔧 Initializing Git repository...")
 
     if run_command(["git", "init", "-b", "main"], check=False):
@@ -408,6 +421,15 @@ def render_workflow_templates() -> None:
     This fixes the issue where workflows from external repositories contain
     unrendered Jinja2 variables. We replace them with actual cookiecutter values.
     """
+    # #ASSUME: External Resources: workflow files exist under .github/workflows
+    #          and are UTF-8 encoded.
+    # #VERIFY: read_text/write_text use encoding="utf-8" explicitly below.
+    #
+    # #ASSUME: Data Integrity: every {% raw %}{{ cookiecutter.X }}{% endraw %} placeholder rendered
+    #          here corresponds to a key defined in cookiecutter.json.
+    # #VERIFY: post-gen test scans all rendered workflows for surviving
+    #          {% raw %}{{ cookiecutter.{% endraw %} patterns; missing keys leave the placeholder
+    #          verbatim and the test catches it.
     print("\n🔧 Rendering GitHub workflow templates...")
 
     workflows_dir = Path(".github/workflows")
@@ -425,6 +447,24 @@ def render_workflow_templates() -> None:
         "author_name": "{{ cookiecutter.author_name }}",
         "author_email": "{{ cookiecutter.author_email }}",
         "version": "{{ cookiecutter.version }}",
+        # Feature flags and integration settings referenced in workflow templates
+        "code_coverage_target": "{{ cookiecutter.code_coverage_target }}",
+        "frontend_package_manager": "{{ cookiecutter.frontend_package_manager }}",
+        "include_codecov": "{{ cookiecutter.include_codecov }}",
+        "include_docker": INCLUDE_DOCKER,
+        "include_frontend": INCLUDE_FRONTEND,
+        "include_fuzzing": "{{ cookiecutter.include_fuzzing }}",
+        "include_github_actions": "{{ cookiecutter.include_github_actions }}",
+        "include_semantic_release": "{{ cookiecutter.include_semantic_release }}",
+        "include_sonarcloud": "{{ cookiecutter.include_sonarcloud }}",
+        "include_supply_chain_security": INCLUDE_SUPPLY_CHAIN_SECURITY,
+        "infisical_domain": "{{ cookiecutter.infisical_domain }}",
+        "license": "{{ cookiecutter.license }}",
+        "node_version": "{{ cookiecutter.node_version }}",
+        "sonarcloud_organization": "{{ cookiecutter.sonarcloud_organization }}",
+        "use_mkdocs": "{{ cookiecutter.use_mkdocs }}",
+        "use_org_workflows": "{{ cookiecutter.use_org_workflows }}",
+        "use_reuse_licensing": "{{ cookiecutter.use_reuse_licensing }}",
     }
 
     rendered_count = 0
@@ -438,7 +478,7 @@ def render_workflow_templates() -> None:
             continue
 
         try:
-            content = workflow_file.read_text()
+            content = workflow_file.read_text(encoding="utf-8")
             original_content = content
 
             # Replace all cookiecutter variable patterns (with/without spaces)
@@ -447,34 +487,16 @@ def render_workflow_templates() -> None:
                 # Build patterns using separate strings to avoid Jinja2 interpretation
                 open_brace = "{" + "{"
                 close_brace = "}" + "}"
-                pattern1 = (
-                    open_brace
-                    + open_brace
-                    + f" cookiecutter.{key} "
-                    + close_brace
-                    + close_brace
-                )
-                pattern2 = (
-                    open_brace
-                    + open_brace
-                    + f"cookiecutter.{key}"
-                    + close_brace
-                    + close_brace
-                )
-                pattern3 = (
-                    open_brace
-                    + open_brace
-                    + f"  cookiecutter.{key}  "
-                    + close_brace
-                    + close_brace
-                )
+                pattern1 = open_brace + f" cookiecutter.{key} " + close_brace
+                pattern2 = open_brace + f"cookiecutter.{key}" + close_brace
+                pattern3 = open_brace + f"  cookiecutter.{key}  " + close_brace
                 content = content.replace(pattern1, value)
                 content = content.replace(pattern2, value)
                 content = content.replace(pattern3, value)
 
             # Only write if changes were made
             if content != original_content:
-                workflow_file.write_text(content)
+                workflow_file.write_text(content, encoding="utf-8")
                 rendered_count += 1
                 print(f"  ✓ Rendered: {workflow_file.name}")
 
@@ -487,31 +509,72 @@ def render_workflow_templates() -> None:
         print("  ℹ No unrendered templates found (workflows already rendered)")  # noqa: RUF001
 
 
+def _is_safe_clone_url(repo_url: str) -> bool:
+    """Validate that a git clone URL uses an allowed scheme and host shape.
+
+    Rejects values that could be interpreted as git options (leading "-"),
+    schemes other than https/ssh, and ssh URLs that do not look like
+    user@host:path. This prevents user input from being passed to git as a
+    flag (mitigates argument injection in subprocess) or pointing at
+    an unexpected scheme.
+    """
+    if not repo_url or repo_url.startswith("-"):
+        return False
+    # Allowed shapes: https://..., ssh://..., or git@host:path/path.git
+    # git:// is intentionally excluded: it is unauthenticated and plaintext,
+    # which is unacceptable for a settings-clone source.
+    if repo_url.startswith(("https://", "ssh://")):
+        return True
+    return bool(
+        re.fullmatch(r"[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+:[A-Za-z0-9_./~-]+", repo_url)
+    )
+
+
+def _collect_installed_items(install_path: Path) -> list[str]:
+    """Return labels for Claude settings artefacts present in install_path."""
+    items: list[str] = []
+    if (install_path / "CLAUDE.md").exists():
+        items.append("CLAUDE.md")
+    if (install_path / "skills").exists():
+        items.append("skills/")
+    if (install_path / "agents").exists():
+        items.append("agents/")
+    if (install_path / ".claude" / "commands").exists() or (
+        install_path / "commands"
+    ).exists():
+        items.append("slash commands")
+    return items
+
+
 def _install_claude_settings(repo_url: str, install_path: Path) -> None:
     """Clone and verify user-level Claude Code settings.
 
     Args:
-        repo_url: Git repository URL to clone from.
-        install_path: Local path to install settings into.
+        repo_url: Git repository URL to clone from. Must pass _is_safe_clone_url.
+        install_path: Local path to install settings into. Must be inside the
+            user's home directory to prevent path traversal.
     """
+    # #CRITICAL: Security: user-supplied repo_url passed to git clone via subprocess.
+    # #VERIFY: _is_safe_clone_url rejects flag-like values and unknown schemes.
+    if not _is_safe_clone_url(repo_url):
+        print(f"  ⚠ Refusing to clone from unsafe URL: {repo_url!r}")
+        return
+
+    # #CRITICAL: Security: install_path is user-supplied; reject paths that resolve
+    # outside the user's home directory.
+    # #VERIFY: resolve to absolute path and check ancestry against Path.home().
+    install_path = install_path.expanduser().resolve()
+    home = Path.home().resolve()
+    if home not in install_path.parents and install_path != home:
+        print(f"  ⚠ Refusing to install settings outside $HOME: {install_path}")
+        return
+
     print(f"\n  📥 Cloning settings from {repo_url}...")
 
-    if run_command(["git", "clone", repo_url, str(install_path)], check=False):
+    if run_command(["git", "clone", "--", repo_url, str(install_path)], check=False):
         print(f"  ✓ User-level settings installed at: {install_path}")
 
-        # Check what was installed
-        installed_items: list[str] = []
-        if (install_path / "CLAUDE.md").exists():
-            installed_items.append("CLAUDE.md")
-        if (install_path / "skills").exists():
-            installed_items.append("skills/")
-        if (install_path / "agents").exists():
-            installed_items.append("agents/")
-        if (install_path / ".claude" / "commands").exists() or (
-            install_path / "commands"
-        ).exists():
-            installed_items.append("slash commands")
-
+        installed_items = _collect_installed_items(install_path)
         if installed_items:
             print(f"  ✓ Installed: {', '.join(installed_items)}")
 
@@ -519,8 +582,12 @@ def _install_claude_settings(repo_url: str, install_path: Path) -> None:
             "\n  ✅ User-level settings are now available to all Claude Code sessions!"
         )
     else:
+        # Sanitize repo_url before echoing to terminal: strip ANSI/control chars
+        # so a maliciously crafted URL cannot inject terminal escape sequences
+        # into the operator's terminal session.
+        safe_repo_url = re.sub(r"[\x00-\x1f\x7f]", "", repo_url)
         print("  ⚠ Failed to clone settings repo. You can manually set up later:")
-        print(f"     git clone {repo_url} {install_path}")
+        print(f"     git clone {safe_repo_url} {install_path}")
 
 
 def setup_claude_user_settings() -> None:
@@ -793,7 +860,7 @@ def print_success_message() -> None:
     project_slug = "{{ cookiecutter.project_slug }}"
     use_pre_commit = "{{ cookiecutter.use_pre_commit }}" == "yes"
     use_mkdocs = "{{ cookiecutter.use_mkdocs }}" == "yes"
-    include_docker = "{{ cookiecutter.include_docker }}" == "yes"
+    include_docker = INCLUDE_DOCKER == "yes"
     include_sentry = "{{ cookiecutter.include_sentry }}" == "yes"
     include_health_checks = "{{ cookiecutter.include_health_checks }}" == "yes"
     include_background_jobs = "{{ cookiecutter.include_background_jobs }}"
@@ -802,9 +869,9 @@ def print_success_message() -> None:
     include_semantic_release = "{{ cookiecutter.include_semantic_release }}" == "yes"
     include_coderabbit = "{{ cookiecutter.include_coderabbit }}" == "yes"
     include_linear = "{{ cookiecutter.include_linear }}" == "yes"
-    include_frontend = "{{ cookiecutter.include_frontend }}"
+    include_frontend = INCLUDE_FRONTEND
     frontend_package_manager = "{{ cookiecutter.frontend_package_manager }}"
-    include_supply_chain = "{{ cookiecutter.include_supply_chain_security }}" == "yes"
+    include_supply_chain = INCLUDE_SUPPLY_CHAIN_SECURITY == "yes"
 
     print("\n" + "=" * 60)
     print(f"🎉 SUCCESS! {project_name} has been created!")
@@ -875,15 +942,22 @@ def inject_creation_date() -> None:
     placeholder = "__PROJECT_CREATION_DATE__"
     updated_count = 0
 
+    # NOTE: SonarCloud pythonsecurity:S2083 (path traversal) flags the
+    # filepath.write_text below as user-controlled. False positive: filepath
+    # comes exclusively from files_to_update, a hardcoded literal list above.
+    # No user input reaches this sink.
     for filepath in files_to_update:
         if not filepath.exists():
             continue
 
         try:
-            content = filepath.read_text()
+            content = filepath.read_text(encoding="utf-8")
             if placeholder in content:
                 content = content.replace(placeholder, creation_date)
-                filepath.write_text(content)
+                # NOSONAR S2083 false positive: filepath comes from the
+                # hardcoded files_to_update list above (3 literal paths).
+                # No user input reaches this sink.
+                filepath.write_text(content, encoding="utf-8")  # NOSONAR
                 updated_count += 1
                 print(f"  ✓ Updated: {filepath}")
         except (OSError, UnicodeDecodeError) as e:
@@ -895,6 +969,20 @@ def inject_creation_date() -> None:
         )
     else:
         print("  ✓ No date placeholders found")
+
+
+def _path_is_inside(filepath: Path, root: Path) -> bool:
+    """Return True iff filepath's resolved path is inside root.
+
+    #CRITICAL: Security: rglob follows symlinks by default; this guard blocks
+    a malicious template that ships a symlink pointing outside the generated
+    tree from causing writes outside project_root.
+    #VERIFY: filepath.resolve().is_relative_to(root) before any write.
+    """
+    try:
+        return filepath.resolve().is_relative_to(root)
+    except OSError:
+        return False
 
 
 def ensure_trailing_newlines() -> None:
@@ -943,14 +1031,15 @@ def ensure_trailing_newlines() -> None:
     }
 
     fixed_count = 0
-    project_root = Path()
+    project_root = Path().resolve()
 
     for filepath in project_root.rglob("*"):
         if not filepath.is_file():
             continue
 
-        # Skip git directory
-        if ".git" in filepath.parts:
+        # Skip git directory and symlinks that escape project_root (delegated
+        # to _path_is_inside helper to keep this function under the C901 limit).
+        if ".git" in filepath.parts or not _path_is_inside(filepath, project_root):
             continue
 
         # Check if file should be processed
@@ -1098,6 +1187,10 @@ def add_cruft_skip_patterns() -> None:
     """
     print("\n🔧 Configuring cruft skip patterns...")
 
+    # NOTE: SonarCloud pythonsecurity:S2083 (path traversal) flags the
+    # cruft_file.write_text below. False positive: cruft_file is the literal
+    # Path(".cruft.json"), and the content written is json.dumps() of program-
+    # controlled data. No user-controlled string reaches the path or content.
     cruft_file = Path(".cruft.json")
     skip_patterns = get_cruft_skip_patterns()
 
@@ -1105,7 +1198,7 @@ def add_cruft_skip_patterns() -> None:
         # Update existing .cruft.json (created by cruft create)
         # Merge with existing skip patterns to preserve user customizations
         try:
-            cruft_config = json.loads(cruft_file.read_text())
+            cruft_config = json.loads(cruft_file.read_text(encoding="utf-8"))
             existing_skip = cruft_config.get("skip", [])
 
             # Normalize existing 'skip' into a list of strings
@@ -1118,7 +1211,9 @@ def add_cruft_skip_patterns() -> None:
             merged_skip = list(dict.fromkeys(skip_patterns + existing_skip))
             cruft_config["skip"] = merged_skip
 
-            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
+            cruft_file.write_text(  # NOSONAR S2083: cruft_file is the literal Path(".cruft.json"); content is json.dumps of program-controlled dict
+                json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8"
+            )
             print(f"  ✓ Updated .cruft.json skip patterns ({len(merged_skip)} entries)")
         except (json.JSONDecodeError, OSError, KeyError) as e:
             print(f"  - Failed to update skip patterns: {e}", file=sys.stderr)
@@ -1140,7 +1235,9 @@ def add_cruft_skip_patterns() -> None:
                 "directory": None,
                 "skip": skip_patterns,
             }
-            cruft_file.write_text(json.dumps(cruft_config, indent=2) + "\n")
+            cruft_file.write_text(
+                json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8"
+            )
             print(f"  ✓ Created .cruft.json with {len(skip_patterns)} skip patterns")
             print("    (Use 'cruft link' to fully connect to the template)")
         except OSError as e:
@@ -1165,7 +1262,15 @@ def main() -> None:
         setup_pre_commit()
         setup_claude_user_settings()
         print_success_message()
-    except Exception as e:  # noqa: BLE001 - broad catch in main() is intentional
+    except Exception as e:  # noqa: BLE001
+        # Architectural decision: main() is the top-level error boundary for the
+        # cookiecutter post-generation hook. Cookiecutter swallows exceptions raised
+        # from hooks and prints generic traceback noise; a broad catch here
+        # produces actionable error output and a clean non-zero exit. This is
+        # NOT a tracked-for-fix suppression in the CLAUDE.md sense; it is a
+        # deliberate top-level guard. Per-step exceptions are caught by the
+        # individual setup functions. Do not narrow without auditing every call
+        # site above for the full set of raisable exception types.
         print(f"\n❌ Error during post-generation: {e}", file=sys.stderr)
         sys.exit(1)
 

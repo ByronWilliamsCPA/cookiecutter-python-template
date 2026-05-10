@@ -23,6 +23,11 @@ from rich.console import Console
 from rich.logging import RichHandler
 from structlog.stdlib import BoundLogger
 
+{% if cookiecutter.include_api_framework == "yes" %}
+from {{ cookiecutter.project_slug }}.middleware.correlation import (
+    correlation_context_processor,
+)
+{% endif %}
 if TYPE_CHECKING:
     from structlog.types import EventDict, Processor, WrappedLogger
 
@@ -105,17 +110,17 @@ def setup_logging(
     ]
 
 {% if cookiecutter.include_api_framework == "yes" %}
-    # Add correlation ID processor for request tracing
+    # Add correlation ID processor for request tracing.
+    # Insert after add_log_level for consistent ordering. The index is
+    # computed dynamically so reordering or extending the processor list
+    # above does not silently shift correlation context to the wrong slot.
     if include_correlation:
-        try:
-            from {{ cookiecutter.project_slug }}.middleware.correlation import (  # noqa: PLC0415
-                correlation_context_processor,
-            )
-            # Insert after add_log_level for consistent ordering
-            processors.insert(3, correlation_context_processor)
-        except ImportError:
-            # Correlation middleware not available, skip
-            pass
+        add_log_level_idx = next(
+            (i for i, p in enumerate(processors) if p is structlog.stdlib.add_log_level),
+            None,
+        )
+        insert_at = (add_log_level_idx + 1) if add_log_level_idx is not None else 0
+        processors.insert(insert_at, correlation_context_processor)
 {% endif %}
     if json_logs:
         # Production: JSON logs for easy parsing and aggregation

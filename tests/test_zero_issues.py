@@ -65,15 +65,24 @@ class TestFormattingAndLinting:
         )
 
     @pytest.mark.slow
-    def test_mypy_type_checking(
+    def test_basedpyright_type_checking(
         self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
     ) -> None:
-        """Verify MyPy type checking passes on generated project."""
+        """Verify BasedPyright type checking passes on generated project."""
         from tests.conftest import generate_project
 
         project_dir = generate_project(template_dir, temp_dir, minimal_config)
 
-        # Try basedpyright first (preferred), fall back to mypy
+        # Skip if basedpyright is not installed
+        availability = subprocess.run(
+            ["basedpyright", "--version"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if availability.returncode != 0:
+            pytest.skip("basedpyright not installed")
+
         result = subprocess.run(
             ["basedpyright", "src/"],
             cwd=project_dir,
@@ -82,18 +91,8 @@ class TestFormattingAndLinting:
             check=False,
         )
 
-        if result.returncode == 127:  # basedpyright not found, try mypy
-            result = subprocess.run(
-                ["mypy", "src/", "--ignore-missing-imports"],
-                cwd=project_dir,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-
-        # Allow 0 (success) or 1 (warnings only, no errors)
-        assert result.returncode in [0, 1] or "error" not in result.stdout.lower(), (
-            f"Type checking errors detected:\n{result.stdout}\n{result.stderr}"
+        assert result.returncode == 0, (
+            f"BasedPyright type checking errors detected:\n{result.stdout}\n{result.stderr}"
         )
 
 

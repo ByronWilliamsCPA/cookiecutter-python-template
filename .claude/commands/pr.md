@@ -17,7 +17,7 @@ Analyze the current branch and prepare a PR description for template changes.
 
 3. **Generate PR description** using this template:
 
-```markdown
+````markdown
 ## Summary
 
 <!-- Brief description: what changed and why -->
@@ -47,7 +47,7 @@ Analyze the current branch and prepare a PR description for template changes.
 ## Notes
 
 <!-- Optional: known issues, follow-up work -->
-```
+````
 
 4. **Output the PR description** ready to copy-paste.
 

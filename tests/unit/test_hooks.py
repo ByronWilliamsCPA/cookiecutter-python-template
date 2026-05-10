@@ -29,7 +29,9 @@ class TestPreGenHook:
             text=True,
             check=False,
         )
-        assert result.returncode == 0, f"Hook has invalid Python syntax: {result.stderr}"
+        assert result.returncode == 0, (
+            f"Hook has invalid Python syntax: {result.stderr}"
+        )
 
     def test_hook_imports(self, template_dir: Path) -> None:
         """Verify hook file can be imported."""
@@ -65,7 +67,9 @@ class TestPostGenHook:
             text=True,
             check=False,
         )
-        assert result.returncode == 0, f"Hook has invalid Python syntax: {result.stderr}"
+        assert result.returncode == 0, (
+            f"Hook has invalid Python syntax: {result.stderr}"
+        )
 
     def test_hook_imports(self, template_dir: Path) -> None:
         """Verify hook file can be imported."""
@@ -109,14 +113,27 @@ class TestHookCodeQuality:
         assert result.returncode == 0, f"Ruff format check failed: {result.stderr}"
 
     @pytest.mark.slow
-    def test_hooks_pass_mypy(self, template_dir: Path) -> None:
-        """Verify hooks pass mypy type checking."""
+    def test_hooks_pass_basedpyright(self, template_dir: Path) -> None:
+        """Verify hooks pass basedpyright type checking."""
+        import shutil
+
+        # basedpyright is installed via `uv sync --all-extras` into .venv/bin,
+        # which is not on PATH. shutil.which would silently skip the assertion
+        # on CI. Detect the venv binary and prefer it; fall back to PATH for
+        # local developer setups that may have a global install.
+        venv_bin = template_dir / ".venv" / "bin" / "basedpyright"
+        basedpyright_cmd = (
+            str(venv_bin) if venv_bin.exists() else shutil.which("basedpyright")
+        )
+        if basedpyright_cmd is None:
+            pytest.skip("basedpyright not installed")
         hooks_dir = template_dir / "hooks"
         result = subprocess.run(
-            ["mypy", str(hooks_dir), "--ignore-missing-imports"],
+            [basedpyright_cmd, str(hooks_dir)],
             capture_output=True,
             text=True,
             check=False,
         )
-        # MyPy returns 0 on success
-        assert result.returncode == 0, f"MyPy check failed: {result.stdout}"
+        assert result.returncode == 0, (
+            f"BasedPyright check failed: {result.stdout}\n{result.stderr}"
+        )

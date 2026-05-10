@@ -1,6 +1,6 @@
 # Cookiecutter Template Supply Chain Security Handoff
 
-> **Last Updated:** 2025-12-04  
+> **Last Updated:** 2026-05-09
 > **Status:** Ready for Implementation
 
 ## Overview
@@ -19,7 +19,7 @@ This document provides everything needed to implement supply chain security in t
 |-----------|--------|---------|
 | Google Assured OSS | ✅ Ready | GCP Project: `assured-oss-457903` |
 | python-libs Registry | ✅ Ready | `us-central1-python.pkg.dev/assured-oss-457903/python-libs` |
-| Infisical | ✅ Ready | https://infisical.williamshome.family |
+| Infisical | ✅ Ready | https://secrets.byronwilliamscpa.com |
 | Service Account | ✅ Ready | `assured-oss-accessor@assured-oss-457903.iam.gserviceaccount.com` |
 
 ---
@@ -102,10 +102,10 @@ Document known CVE fixes in dependencies:
 dependencies = [
     # Security: CVE-2025-XXXX fixed in 2.9.0+
     "some-package>=2.9.0",
-    
+
     # Security: ReDoS vulnerability fixed in 0.115.0
     "fastapi>=0.115.0",
-    
+
     # Security: CVE-2024-7776 fixed in 1.17.0
     "onnx>=1.17.0",
 ]
@@ -146,7 +146,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       # Fetch all secrets from Infisical
       - name: Fetch secrets from Infisical
         uses: Infisical/secrets-action@v1.0.7
@@ -156,10 +156,10 @@ jobs:
           env-slug: prod  # or use github.ref mapping
           project-slug: ${{ github.event.repository.name }}
           domain: ${{ env.INFISICAL_DOMAIN }}
-      
+
       # Secrets are now available as environment variables
       # e.g., $GCP_SA_KEY_BASE64, $MODAL_TOKEN_ID, etc.
-      
+
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
@@ -310,7 +310,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
         with:
@@ -427,7 +427,7 @@ timeout = 60
 
 Add this section to the template README:
 
-```markdown
+````markdown
 ## Supply Chain Security
 
 This project uses secure package indexes:
@@ -460,13 +460,13 @@ infisical run --env=dev -- uv run python main.py
 # Option 2: Export to .env
 infisical export --env=dev > .env
 ```
-```
+````
 
 ### 5.2 Contributing Guide Section
 
 Add to CONTRIBUTING.md:
 
-```markdown
+````markdown
 ## Adding Dependencies
 
 When adding new dependencies:
@@ -490,7 +490,7 @@ To use packages from python-libs:
    ```
 
 3. Run `uv lock` to update lockfile
-```
+````
 
 ---
 
@@ -604,6 +604,6 @@ assured-oss-accessor@assured-oss-457903.iam.gserviceaccount.com
 ## Contacts
 
 - **Supply Chain Questions:** Byron Williams
-- **Infisical Issues:** Check https://infisical.williamshome.family
+- **Infisical Issues:** Check https://secrets.byronwilliamscpa.com
 - **Assured OSS Issues:** Check GCP Console for `assured-oss-457903`
 - **python-libs Issues:** Check [ByronWilliamsCPA/python-libs](https://github.com/ByronWilliamsCPA/python-libs)

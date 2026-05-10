@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -414,13 +415,51 @@ class TestSupplyChainSecurityFileContent:
         workflow = supply_chain_project / ".github" / "workflows" / "dependency-review.yml"
         content = workflow.read_text()
 
-        # Should deny copyleft licenses
-        assert "GPL-3.0" in content, "Should deny GPL-3.0"
-        assert "AGPL-3.0" in content, "Should deny AGPL-3.0"
+        # Uses deny-list approach: copyleft licenses explicitly blocked,
+        # permissive licenses (MIT, Apache-2.0) allowed implicitly.
 
-        # Should allow permissive licenses
-        assert "MIT" in content, "Should allow MIT"
-        assert "Apache-2.0" in content, "Should allow Apache-2.0"
+        assert "deny-licenses" in content, "Should use deny-list approach"
+
+        # Strong copyleft variants that must be denied (AGPL family + GPLv2/3)
+        denied_required = [
+            "AGPL-3.0",
+            "AGPL-3.0-only",
+            "AGPL-3.0-or-later",
+            "GPL-2.0-only",
+            "GPL-2.0-or-later",
+            "GPL-3.0-only",
+            "GPL-3.0-or-later",
+            "LGPL-2.0-only",
+            "LGPL-2.1-only",
+            "LGPL-3.0-only",
+            "LGPL-3.0-or-later",
+        ]
+        for spdx in denied_required:
+            assert spdx in content, f"Should deny {spdx}"
+
+        # Negative test: permissive licenses MUST NOT appear in the deny-list.
+        # The comment above claims they are allowed implicitly; this assertion
+        # verifies the claim by failing if any permissive SPDX identifier
+        # accidentally lands in deny-licenses.
+        permissive_must_not_be_denied = [
+            "MIT",
+            "Apache-2.0",
+            "BSD-3-Clause",
+            "BSD-2-Clause",
+            "ISC",
+        ]
+        # Look at only the deny-licenses section to avoid false positives from
+        # other YAML keys that may legitimately mention permissive licenses.
+        deny_section_match = re.search(
+            r"deny-licenses:\s*[\"']?([^\n]+(?:\n\s+[^\n]+)*)",
+            content,
+        )
+        deny_block = deny_section_match.group(1) if deny_section_match else content
+        for spdx in permissive_must_not_be_denied:
+            # Use word-boundary regex so MIT does not match e.g. MITRE
+            assert not re.search(rf"\b{re.escape(spdx)}\b", deny_block), (
+                f"{spdx} is a permissive license and must not appear in deny-licenses"
+            )
 
     def test_gcp_variables_rendered_in_pyproject(self, supply_chain_project: Path) -> None:
         """Verify GCP variables are properly rendered in pyproject.toml."""

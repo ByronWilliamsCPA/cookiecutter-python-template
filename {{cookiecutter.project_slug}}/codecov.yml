@@ -4,8 +4,13 @@
 # Security: Only read configuration from main branch
 codecov:
   strict_yaml_branch: main
-  require_ci_to_pass: yes
+  require_ci_to_pass: true
   max_report_age: 12h
+  notify:
+    # Wait for all 4 coverage uploads (unit + integration + security + combined)
+    # before firing statuses/comments. Prevents premature failure on first upload.
+    after_n_builds: 4
+    wait_for_ci: true
 
 # Coverage targets and thresholds
 coverage:
@@ -17,16 +22,21 @@ coverage:
     project:
       default:
         # Current baseline: ~{{cookiecutter.code_coverage_target}}%, targeting {{cookiecutter.code_coverage_target}}%+
-        target: {{cookiecutter.code_coverage_target}}%
+        target: "{{cookiecutter.code_coverage_target}}%"
         threshold: 2%
         if_ci_failed: error
+        # Prevent deadlock on doc-only/config-only PRs with no coverage uploaded
+        if_not_found: success
 
     patch:
       default:
-        # New code should meet {{cookiecutter.code_coverage_target}}% target
-        target: {{cookiecutter.code_coverage_target}}%
+        # New code must meet 90% patch coverage per OpenSSF standards
+        target: 90%
         threshold: 5%
         if_ci_failed: error
+        if_not_found: success
+        # Pass gracefully when well-tested code is deleted (avoids penalizing cleanup PRs)
+        removed_code_behavior: fully_covered_patch
 
 # Multi-flag tracking for test types
 # See: https://docs.codecov.com/docs/flags
@@ -66,10 +76,14 @@ flags:
 flag_management:
   default_rules:
     carryforward: true
+    # Don't create a failing status for flags not uploaded in this PR/commit.
+    # Prevents false failures when only some test types run (e.g., fast-path CI).
+    flag_coverage_not_uploaded_behavior: exclude
     statuses:
       - type: project
         target: auto
         threshold: 2%
+        if_not_found: success
 
   individual_flags:
     - name: unit
@@ -79,9 +93,11 @@ flag_management:
           target: 85%
           threshold: 2%
           if_ci_failed: error
+          if_not_found: success
         - type: patch
           target: 90%
           threshold: 5%
+          if_not_found: success
 
     - name: integration
       behavior: default
@@ -90,9 +106,11 @@ flag_management:
           target: 70%
           threshold: 3%
           if_ci_failed: error
+          if_not_found: success
         - type: patch
           target: 70%
           threshold: 5%
+          if_not_found: success
 
     - name: security
       behavior: default
@@ -100,9 +118,11 @@ flag_management:
         - type: project
           target: auto
           threshold: 2%
+          if_not_found: success
         - type: patch
           target: 80%
           threshold: 5%
+          if_not_found: success
 
 # Component-based coverage tracking
 component_management:
@@ -202,11 +222,17 @@ ignore:
 
 # Pull request comment configuration
 comment:
-  layout: "reach, diff, flags, files"
+  # testcase = Test Analytics panel; components = per-component coverage breakdown
+  layout: "reach, diff, flags, components, files, testcase"
   behavior: default
   require_changes: true
-  require_base: yes
-  require_head: yes
+  require_base: true
+  require_head: true
+  # Show carryforward flag data in PR comments (hidden by default when carryforward: true)
+  show_carryforward_flags: true
 
 github_checks:
-  annotations: true
+  # Annotations conflict with flags/components and cannot be cleared once posted
+  # (GitHub API limitation). Use PR comments + Codecov UI for line-level investigation.
+  # See: https://docs.codecov.com/docs/github-checks
+  annotations: false

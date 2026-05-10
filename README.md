@@ -482,6 +482,51 @@ jobs:
           cruft check
 ```
 
+### Downstream Project Tracking
+
+This template includes a system to track projects created from it and notify them when updates are available.
+
+**How it works:**
+
+1. **Registry**: Projects are registered in `downstream-projects.json`
+2. **Notifications**: When a new template release is published, registered projects receive GitHub issues with update instructions
+3. **Opt-out**: Projects can opt out by setting `"notify": false` in the registry
+
+**Registering your project:**
+
+> **Note**: `downstream-projects.json` and the associated notification workflow are planned but not yet implemented. The section below describes the intended interface.
+
+If you've created a project using this template and want to receive update notifications, add your project to `downstream-projects.json`:
+
+```json
+{
+  "repository": "your-org/your-project",
+  "description": "Brief description of your project",
+  "created_from_commit": "abc123...",
+  "notify": true,
+  "notification_method": "issue"
+}
+```
+
+**Important: Fix your `.cruft.json`**
+
+If you created your project locally, your `.cruft.json` may contain a local path instead of the GitHub URL. Update it to:
+
+```json
+{
+  "template": "https://github.com/ByronWilliamsCPA/cookiecutter-python-template",
+  "checkout": "main"
+}
+```
+
+This ensures `cruft check` and `cruft update` work correctly.
+
+**For template maintainers:**
+
+- Notifications are triggered automatically on new releases
+- Manual trigger available via GitHub Actions workflow dispatch
+- Dry run mode available for testing
+
 ## 🔄 Version History
 
 - **v2.1** (2025-11-18): Production-Ready Enhancement Release

@@ -111,7 +111,7 @@ docs/phase-4-documentation
 
 Create `docs/planning/PROJECT-PLAN.md` with synthesized content:
 
-```markdown
+````markdown
 ---
 schema_type: planning
 title: "{project_name} - Project Plan"
@@ -240,13 +240,13 @@ source_documents:
 - [Technical Specification](./tech-spec.md)
 - [Development Roadmap](./roadmap.md)
 - [Architecture Decisions](./adr/)
-```
+````
 
 ### 5. Create Initial TODO List
 
 Generate TodoWrite items for Phase 0:
 
-```markdown
+````markdown
 ## Phase 0: Foundation
 
 ### Setup
@@ -263,7 +263,7 @@ Generate TodoWrite items for Phase 0:
 - [ ] Tests passing
 - [ ] Pre-commit checks pass
 - [ ] Create PR via /git/pr-prepare
-```
+````
 
 ### 6. Optional: Start First Phase
 

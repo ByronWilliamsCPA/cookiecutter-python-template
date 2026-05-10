@@ -49,6 +49,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `astral-sh/setup-uv@v7` in `cruft-update.yml`
 - `cleanup_conditional_files()` refactored from 142 lines into four focused helpers
 - `print_success_message()` refactored from 160 lines into three focused helpers
+- Dockerfile dependency stage now copies `README.md` before `uv sync --frozen`;
+  pyproject.toml's `[project] readme` field made `uv sync` fail on every
+  `include_docker=yes` build until the file was present in the build context.
+  README.md is in its own COPY layer so README edits do not invalidate the
+  dependency-resolution cache
+- Markdown fences across 11 template files (2 with real CommonMark rendering
+  bugs; 9 precautionary upgrades to 4-backtick wrappers for sample-of-markdown
+  blocks). Regression coverage in `tests/unit/test_template_markdown.py`
+- `ci.yml`: every project tool (ruff, basedpyright, bandit, pip-audit) now
+  invoked via `uv run`. Previously the `pip install ...` line that put these
+  on PATH was removed without switching the call sites, which would have
+  failed on a fresh runner with command-not-found
+- `ci.yml`: SonarQube `Quality Gate Status` step now hard-fails (`exit 1`)
+  on `FAILED` rather than emitting only a warning
+- `hooks/post_gen_project.py`: every `read_text` and `write_text` now passes
+  `encoding="utf-8"` (Windows default codec is `cp1252`; non-ASCII content
+  in workflow YAML or `.cruft.json` corrupted silently)
+- `hooks/post_gen_project.py`: `_install_claude_settings` validates the
+  user-supplied repo URL against an allowlist of schemes/shapes and rejects
+  values starting with `-` (git argument injection); also resolves the
+  install path and refuses to clone outside the user's home directory
+- `.pre-commit-config.yaml`: `detect-secrets` pinned to commit SHA
+  `68e8b454...` (was floating tag `v1.5.0`)
+- `.pre-commit-config.yaml`: `no-em-dash` hook extended to cover shell scripts
+  (`.sh`/`.bash` + `shell` type)
+- `CLAUDE.md`: Git worktree examples now use `.worktrees/<branch-slug>` per
+  the global hard rule (was `../cookiecutter-python-template-worktrees/...`)
 
 ## [0.1.0] - 2024-01-01
 

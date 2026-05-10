@@ -154,13 +154,14 @@ def setup_branch_protection(
     # Status check contexts match the job name: field in each workflow file.
     # GitHub Actions records checks using the job display name (not "Workflow / Job").
     #
-    # Gate job structure (context names match the workflow job "name:" fields):
-    #   - ci.yml -> ci-gate (name: "CI Gate") [if include_github_actions]
-    #   - security-analysis.yml -> security-gate-success (name: "Security Gate Validation") [if include_github_actions]
-    #   - pr-validation.yml -> validate-dependencies (name: "Dependency & Standards Validation") [if include_github_actions]
-    #   - reuse.yml -> reuse (name: "Check REUSE Compliance") [if include_github_actions and use_reuse_licensing]
+    # Verified 2026-05-09 against generated workflows:
+    #   - ci.yml -> job ci-gate (name: "CI Gate"). MATCHES.
+    #   - security-analysis.yml -> job security-gate-validation (name: "Security Gate Validation"). MATCHES.
+    #   - pr-validation.yml -> job validate-dependencies (name: "Dependency & Standards Validation"). MATCHES.
+    #   - reuse.yml -> job reuse (name: "Check REUSE Compliance"). MATCHES.
     #
-    # To verify: run a test PR and check the status check names in GitHub's UI.
+    # All four required status check contexts are confirmed to match workflow job names.
+    # To re-verify: grep -E "^\s+name:" .github/workflows/{ci,security-analysis,pr-validation,reuse}.yml
     protection = {
         "required_status_checks": {
             "strict": True,

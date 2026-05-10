@@ -59,7 +59,7 @@ def main() -> None:
     github_username = "{{ cookiecutter.github_username }}"
     python_version = "{{ cookiecutter.python_version }}"
 
-    errors = []
+    errors: list[str] = []
 
     # Validate project_slug
     if not validate_project_slug(project_slug):

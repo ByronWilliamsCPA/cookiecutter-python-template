@@ -47,7 +47,7 @@ Identify:
 
 Use this template format:
 
-```markdown
+````markdown
 ## Summary
 
 [1-3 sentences: what changed and why]
@@ -77,7 +77,7 @@ Use this template format:
 ## Notes
 
 [Optional: known issues, follow-up work]
-```
+````
 
 ### 4. Suggest PR Title
 
@@ -105,7 +105,7 @@ Remind the user:
 
 **PR Description**:
 
-```markdown
+````markdown
 ## Summary
 
 Add CodeRabbit AI code reviews and Linear project management integration as optional features.
@@ -139,4 +139,4 @@ Add CodeRabbit AI code reviews and Linear project management integration as opti
 ## Notes
 
 CodeRabbit requires GitHub App installation after project creation.
-```
+````
