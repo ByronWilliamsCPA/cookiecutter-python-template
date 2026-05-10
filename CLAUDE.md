@@ -474,7 +474,7 @@ mcp__zen__pr_prepare \
 
 **PR Description Template**:
 
-```markdown
+````markdown
 ## Changes
 - Brief description of template modifications
 
@@ -489,7 +489,7 @@ mcp__zen__pr_prepare \
 - [ ] Migration guide included in CHANGELOG.md
 
 <!-- wtd:summary -->
-```
+````
 
 ## Pre-Commit Checklist
 
