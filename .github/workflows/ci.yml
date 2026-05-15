@@ -39,8 +39,15 @@ jobs:
     name: Code Quality Checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -149,12 +156,19 @@ jobs:
     name: LLM Governance & Assumption Verification
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     outputs:
       rad_tags: ${{ steps.check-tags.outputs.rad_tags }}
       llm_tags: ${{ steps.check-tags.outputs.llm_tags }}
       total_tags: ${{ steps.check-tags.outputs.total_tags }}
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -280,8 +294,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [quality-checks, llm-governance]
     timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -359,8 +381,15 @@ jobs:
     name: Validate Cookiecutter Template
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -427,8 +456,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [quality-checks, llm-governance, sonarqube-quality-gate, validate-template]
     if: always()
+    permissions:
+      contents: read
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
       - name: Generate final summary
         run: |
           echo "### 🚀 CI Pipeline Complete" >> $GITHUB_STEP_SUMMARY

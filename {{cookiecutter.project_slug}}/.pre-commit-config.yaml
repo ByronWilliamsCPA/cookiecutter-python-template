@@ -19,7 +19,7 @@ repos:
   # Fast File Checks (Lightweight, run on every commit)
   # ============================================================================
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
       - id: trailing-whitespace
         stages: [pre-commit]
@@ -75,7 +75,7 @@ repos:
   # Runs on changed files during pre-commit, full scan on pre-push
   # Configuration in pyproject.toml [tool.bandit]
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.10
+    rev: 92ae8b82fb422a639f0ed8d99e96cea769594e08  # frozen: 1.9.4
     hooks:
       - id: bandit
         name: Bandit Security Scan (changed files)
@@ -99,7 +99,7 @@ repos:
   # ============================================================================
   # Enforces conventional commit message format for semantic versioning
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.4.0
+    rev: 91ab4bf57e58b32adf1a122681f6ebe164d081c8  # frozen: v4.4.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
@@ -109,7 +109,7 @@ repos:
   # pyproject.toml Validation
   # ============================================================================
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.20.2
+    rev: 4b2e70d08cb2ccd26d1fba73588de41c7a5d50b7  # frozen: v0.25
     hooks:
       - id: validate-pyproject
         stages: [pre-commit]
@@ -118,7 +118,7 @@ repos:
   # GitHub Workflow Validation
   # ============================================================================
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.4
+    rev: f805888065fdb6162e1f800e50bb9460cbd223d6  # frozen: 0.37.2
     hooks:
       - id: check-github-workflows
         stages: [pre-commit]
@@ -127,7 +127,7 @@ repos:
   # Ruff Linting and Formatting (Fast, pre-commit stage)
   # ============================================================================
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: fa1ed65ba95bfa7771a71003a9d74402541f5a5c  # v0.14.6
+    rev: 5e2fb545eba1ea9dc051f6f962d52fe8f76a9794  # frozen: v0.15.13
     hooks:
       - id: ruff
         stages: [pre-commit]
@@ -196,7 +196,7 @@ repos:
   # Interrogate ensures all Python code has proper docstrings
   # Target: {{ cookiecutter.docstring_coverage_target }}% coverage
   - repo: https://github.com/econchick/interrogate
-    rev: 1.7.0
+    rev: 4894019dc8876092bc9b6d56878798c550fad998  # frozen: 1.7.0
     hooks:
       - id: interrogate
         args: ['-v', '-c', 'pyproject.toml', 'src/']
@@ -218,6 +218,32 @@ repos:
         types: [python]
         stages: [pre-commit]
         exclude: ^(tests|scripts|benchmarks|tools)/
+
+  # ============================================================================
+  # Type Checking - BasedPyright (strict mode)
+  # ============================================================================
+  # BasedPyright is configured in pyproject.toml [tool.basedpyright]
+  # Runs against src/ in strict mode
+  - repo: local
+    hooks:
+      - id: basedpyright
+        name: BasedPyright type check
+        entry: uv run basedpyright
+        language: system
+        types: [python]
+        files: ^src/.*\.py$
+        pass_filenames: false
+        stages: [pre-commit]
+
+  # ============================================================================
+  # Markdown Linting
+  # ============================================================================
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: e72a3ca1632f0b11a07d171449fe447a7ff6795e  # frozen: v0.48.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix', '--disable', 'MD013', 'MD029', 'MD033', 'MD041']
+        stages: [pre-commit]
 
 # Exclude patterns
 exclude: |

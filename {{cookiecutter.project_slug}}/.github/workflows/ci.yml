@@ -65,7 +65,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ci]
     if: always()
+    permissions:
+      contents: read
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
       - name: Check CI results
         run: |
           if [ "{% raw %}${{ needs.ci.result }}{% endraw %}" != "success" ]; then
@@ -84,7 +91,14 @@ jobs:
   test:
     name: Test (Python {{ cookiecutter.python_version }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -167,10 +181,17 @@ jobs:
   frontend:
     name: Frontend (Node {{ cookiecutter.node_version }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: ./frontend
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -211,7 +232,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test{% if cookiecutter.include_frontend == "react" %}, frontend{% endif %}]
     if: always()
+    permissions:
+      contents: read
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: audit
+
       - name: Check CI results
         env:
           TEST_RESULT: {% raw %}${{ needs.test.result }}{% endraw %}

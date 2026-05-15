@@ -5,7 +5,7 @@
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -40,7 +40,7 @@ repos:
           )$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.6
+    rev: 5e2fb545eba1ea9dc051f6f962d52fe8f76a9794  # frozen: v0.15.13
     hooks:
       - id: ruff-format
         files: ^hooks/.*\.py$
@@ -118,7 +118,7 @@ repos:
         exclude: ^\.pre-commit-config\.yaml$
 
   - repo: https://github.com/econchick/interrogate
-    rev: 1.7.0
+    rev: 4894019dc8876092bc9b6d56878798c550fad998  # frozen: 1.7.0
     hooks:
       - id: interrogate
         args: ['-v', '--fail-under=85', 'hooks/']
@@ -136,7 +136,7 @@ repos:
         args: ['--strictness', 'long', '--docstring-style', 'google']
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
+    rev: 745eface02aef23e168a8afb6b5737818efbea95  # frozen: v0.11.0.1
     hooks:
       - id: shellcheck
         files: \.(sh|bash)$
@@ -144,7 +144,7 @@ repos:
         args: [--severity=warning]
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
+    rev: 38980559e3a605691d6579f96222c30778e5a69e  # frozen: 3.0.0
     hooks:
       - id: script-must-have-extension
         name: Shell scripts must have .sh extension
@@ -152,7 +152,7 @@ repos:
         types: [shell]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
     hooks:
       - id: codespell
         exclude: '(docs-reference/|\.git/)'
@@ -160,14 +160,22 @@ repos:
           - --ignore-words-list=crate,nd,rouge,compiletime,intoto,ure
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.33.0
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
     hooks:
       - id: yamllint
         args: ['-c', '.yamllint']
         exclude: '{{cookiecutter.project_slug}}'  # Exclude template files with jinja2
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.38.0
+    rev: e72a3ca1632f0b11a07d171449fe447a7ff6795e  # frozen: v0.48.0
     hooks:
       - id: markdownlint
         args: ['--fix', '--disable', 'MD013', 'MD029', 'MD033', 'MD041']
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 92ae8b82fb422a639f0ed8d99e96cea769594e08  # frozen: 1.9.4
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml', '-r', 'hooks/']
+        additional_dependencies: ['bandit[toml]']
+        pass_filenames: false
