@@ -5,7 +5,7 @@
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: c4a0b883114b00d8d76b479c820ce7950211c99b  # v4.5.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -40,7 +40,7 @@ repos:
           )$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.6
+    rev: fa1ed65ba95bfa7771a71003a9d74402541f5a5c  # v0.14.6
     hooks:
       - id: ruff-format
         files: ^hooks/.*\.py$
@@ -118,7 +118,7 @@ repos:
         exclude: ^\.pre-commit-config\.yaml$
 
   - repo: https://github.com/econchick/interrogate
-    rev: 1.7.0
+    rev: a6268877efd41a21197445cc04cbf28f9c6facba  # 1.7.0
     hooks:
       - id: interrogate
         args: ['-v', '--fail-under=85', 'hooks/']
@@ -136,7 +136,7 @@ repos:
         args: ['--strictness', 'long', '--docstring-style', 'google']
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
+    rev: 4de1378e4cd853bfc2b111b05fff35e2dbf809a3  # v0.9.0.6
     hooks:
       - id: shellcheck
         files: \.(sh|bash)$
@@ -144,7 +144,7 @@ repos:
         args: [--severity=warning]
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
+    rev: 38980559e3a605691d6579f96222c30778e5a69e  # 3.0.0
     hooks:
       - id: script-must-have-extension
         name: Shell scripts must have .sh extension
@@ -152,7 +152,7 @@ repos:
         types: [shell]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: 6e41aba91fb32e9feb741a6258eefeb9c6e4a482  # v2.2.6
     hooks:
       - id: codespell
         exclude: '(docs-reference/|\.git/)'
@@ -160,14 +160,14 @@ repos:
           - --ignore-words-list=crate,nd,rouge,compiletime,intoto,ure
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.33.0
+    rev: 8713140e99914c0cb6e07364daedfb140847c3c5  # v1.33.0
     hooks:
       - id: yamllint
         args: ['-c', '.yamllint']
         exclude: '{{cookiecutter.project_slug}}'  # Exclude template files with jinja2
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.38.0
+    rev: 1d2f2483dbca436b5e89d208f1ff56688ba4af9e  # v0.38.0
     hooks:
       - id: markdownlint
         args: ['--fix', '--disable', 'MD013', 'MD029', 'MD033', 'MD041']
