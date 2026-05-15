@@ -631,17 +631,7 @@ class TestAllConfigsCombined:
             f"pyproject.toml not found in {project_dir}. Contents: {list(project_dir.iterdir())}"
         )
 
-        # 1. Black formatting (skip for now - template files with Jinja2 are hard to pre-format)
-        # TODO: Format template files properly or use post-generation hook
-        # result = subprocess.run(
-        #     ["black", "--check", "src/", "tests/"],
-        #     cwd=project_dir,
-        #     capture_output=True,
-        #     check=False,
-        # )
-        # assert result.returncode == 0, f"Black check failed for {config_name}"
-
-        # 2. Ruff linting
+        # 1. Ruff linting
         result = subprocess.run(
             ["ruff", "check", "."],
             cwd=project_dir,
@@ -650,14 +640,14 @@ class TestAllConfigsCombined:
         )
         assert result.returncode == 0, f"Ruff check failed for {config_name}"
 
-        # 3. TOML validation
+        # 2. TOML validation
         import tomli
 
         pyproject = project_dir / "pyproject.toml"
         with pyproject.open("rb") as f:
             tomli.load(f)
 
-        # 4. No template variables
+        # 3. No template variables
         import re
 
         jinja_pattern = re.compile(r"\{\{.*?\}\}|\{%.*?%\}")
@@ -674,7 +664,7 @@ class TestAllConfigsCombined:
             matches = jinja_pattern.findall(content)
             assert not matches, f"Template variables found in {py_file}: {matches}"
 
-        # 5. No hardcoded template values
+        # 4. No hardcoded template values
         for py_file in project_dir.rglob("*.py"):
             content = py_file.read_text()
             assert "williaby" not in content.lower(), f"Hardcoded template author in {py_file}"
