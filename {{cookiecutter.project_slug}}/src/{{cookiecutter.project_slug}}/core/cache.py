@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")  # Covariant type variable for cached function return types
+T = TypeVar("T")
 
 # Global Redis connection pool
 _redis_pool: Redis | None = None
