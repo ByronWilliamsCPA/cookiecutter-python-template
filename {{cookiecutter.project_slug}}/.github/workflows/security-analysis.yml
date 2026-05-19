@@ -1,10 +1,10 @@
 ---
 # Security Analysis Workflow
-# Runs security scans including Bandit, Safety, and dependency checks.
+# Runs security scans including Bandit and dependency checks.
 #
 # Features:
 #   - Bandit static analysis for Python
-#   - Safety dependency vulnerability scanning
+#   - OSV-Scanner dependency vulnerability scanning
 #   - Weekly scheduled scans
 {% if cookiecutter.include_github_actions == "yes" -%}
 name: Security Analysis
@@ -43,7 +43,6 @@ jobs:
       run-codeql: true
       run-dependency-review: true
       run-bandit: true
-      run-safety: true
       run-osv: true
 
   security-gate-success:
@@ -84,8 +83,15 @@ jobs:
       - name: Run Bandit security scan
         run: uv run bandit -r src/ -c pyproject.toml -f json -o bandit-report.json || true
 
-      - name: Run Safety dependency check
-        run: uv run safety check --output json > safety-report.json || true
+      - name: Run OSV-Scanner dependency scan
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
+        with:
+          scan-args: |-
+            --output=osv-scanner-report.json
+            --format=json
+            --recursive
+            ./
+        continue-on-error: true
 
       - name: Upload security reports
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -93,7 +99,7 @@ jobs:
           name: security-reports
           path: |
             bandit-report.json
-            safety-report.json
+            osv-scanner-report.json
           retention-days: 30
 
   security-gate-success:

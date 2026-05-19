@@ -59,7 +59,7 @@ uv run basedpyright src/
 
 # Security scanning
 uv run bandit -r src/
-uv run safety check
+uv run pip-audit
 
 # Testing
 uv run pytest -v --cov=src/
