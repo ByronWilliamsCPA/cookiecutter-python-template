@@ -83,12 +83,23 @@ jobs:
       - name: Run Bandit security scan
         run: uv run bandit -r src/ -c pyproject.toml -f json -o bandit-report.json || true
 
+      - name: Run OSV-Scanner dependency scan
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
+        with:
+          scan-args: |-
+            --output=osv-scanner-report.json
+            --format=json
+            --recursive
+            ./
+        continue-on-error: true
+
       - name: Upload security reports
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: security-reports
           path: |
             bandit-report.json
+            osv-scanner-report.json
           retention-days: 30
 
   security-gate-success:
