@@ -605,7 +605,7 @@ class TestAllConfigsCombined:
 
     @pytest.mark.parametrize(
         "config_name",
-        ["minimal", "cli-app", "api-service", "ml-project"],
+        ["minimal", "cli-app", "api-service", "ml-project", "full-featured"],
     )
     @pytest.mark.slow
     def test_full_validation_suite(
