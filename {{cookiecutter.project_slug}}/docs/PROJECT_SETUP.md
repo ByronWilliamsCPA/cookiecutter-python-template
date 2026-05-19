@@ -529,7 +529,9 @@ The script configures:
 The template includes `scripts/setup_github_protection.py`, which configures branch
 protection via the GitHub API with the project's required status checks, required
 signatures, code-owner reviews, and the chosen approval count (controlled by the
-`sole_contributor` cookiecutter flag).
+`sole_contributor` cookiecutter flag). Selecting `sole_contributor=yes` also disables
+required code-owner reviews, because the GitHub API rejects the combination of zero
+required approvers and required code-owner review with HTTP 422.
 
 Manual invocation after creating the GitHub repo:
 
@@ -549,6 +551,39 @@ generating the project, and you supply `GITHUB_TOKEN` in your environment, and t
 project has a configured remote, the post-gen hook runs this script automatically.
 The auto-run is non-fatal: if any precondition fails or the API call errors out,
 generation completes with a printed warning and you can run the script manually later.
+
+##### Prerequisites for auto-run
+
+The post-gen hook runs `git init` against the freshly generated project, which
+creates a repo with **no** `origin` remote. The auto-run therefore only succeeds
+when all of the following are true at generation time:
+
+1. `auto_setup_branch_protection` is set to `yes` in your cookiecutter answers.
+2. `GITHUB_TOKEN` is exported in the shell that runs `cruft create` (or
+   `cookiecutter`), with `repo` scope (or repo-admin permission for a
+   fine-grained PAT).
+3. An `origin` remote is configured on the generated project before the auto-run
+   reaches the helper. In the default flow this is not the case, so the auto-run
+   prints a hint and skips. Two ways to satisfy the requirement:
+
+   - **Pre-create the GitHub repo and the local remote.** Create the empty
+     GitHub repo first (`gh repo create <name> --public`), then add the remote
+     manually after generation completes:
+
+     ```bash
+     cd <project_slug>
+     git remote add origin git@github.com:<owner>/<name>.git
+     GITHUB_TOKEN=ghp_xxx uv run python scripts/setup_github_protection.py
+     ```
+
+   - **Skip auto-run and use the manual command later.** Leave
+     `auto_setup_branch_protection=no` (the default) and run the script
+     manually once the remote is in place. This is the documented happy path
+     for most users.
+
+When the auto-run is skipped because a precondition is missing, the hook prints
+a one-line hint identifying the missing piece (token, remote, or script) along
+with the exact command to recover. No `GITHUB_TOKEN` value is ever echoed back.
 
 ### Required Status Checks
 

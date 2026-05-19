@@ -88,7 +88,9 @@ def maybe_run_branch_protection(flag: str, remote_url: str) -> bool:
         3. remote_url is non-empty (project has a git remote)
 
     The invocation is non-fatal. Any failure produces a stdout warning
-    and the post-gen hook continues.
+    and the post-gen hook continues. When the flag is "yes" but a
+    precondition fails, an actionable hint is printed identifying which
+    precondition was missed so the user can re-run the script manually.
 
     Args:
         flag: The cookiecutter auto_setup_branch_protection value.
@@ -97,18 +99,60 @@ def maybe_run_branch_protection(flag: str, remote_url: str) -> bool:
     Returns:
         True if the script was invoked and exited 0, False otherwise.
     """
+    # #ASSUME: Data Integrity: flag is the literal cookiecutter value, normalized to
+    #          lowercase yes/no by cookiecutter.json's choice list.
+    # #VERIFY: only explicit "yes" triggers the auto-run; any other value is a no-op.
     if flag != "yes":
         return False
+
+    # #CRITICAL: Security: GITHUB_TOKEN is read from the environment and MUST NOT be
+    #            echoed back to stdout or written to disk. Hint messages reference
+    #            the variable name only, never its value.
+    # #VERIFY: hint strings below contain no token interpolation; subprocess
+    #          inherits the env implicitly via the parent process.
     if not os.environ.get("GITHUB_TOKEN"):
-        return False
-    if not remote_url:
+        print(
+            "  ℹ auto_setup_branch_protection=yes but GITHUB_TOKEN is not set; "  # noqa: RUF001
+            "skipping. Re-run manually with: "
+            "GITHUB_TOKEN=ghp_xxx uv run python scripts/setup_github_protection.py"
+        )
         return False
 
+    # #CRITICAL: Timing Dependencies: initialize_git() runs `git init` earlier in
+    #            main(); a fresh repo has no `origin` remote, so remote_url is
+    #            empty unless the user supplied one out-of-band. Without this
+    #            message the feature appears silently dead.
+    # #VERIFY: caller derives remote_url via `git config --get remote.origin.url`
+    #          (see _detect_origin_url); empty string flows through to here.
+    if not remote_url:
+        print(
+            "  ℹ auto_setup_branch_protection=yes but no `origin` remote is "  # noqa: RUF001
+            "configured. A fresh `git init` repo has no remote. Add one with:"
+        )
+        print("     git remote add origin <https-or-ssh-url>")
+        print(
+            "     uv run python scripts/setup_github_protection.py"
+            "   # then re-run the script"
+        )
+        return False
+
+    # #ASSUME: External Resources: scripts/setup_github_protection.py is shipped
+    #          by the template and survives post-gen cleanup. Concurrency note:
+    #          Path("scripts") resolves relative to the generated project root
+    #          (cookiecutter sets cwd before invoking the hook), which is
+    #          consistent across POSIX and Windows hosts.
+    # #VERIFY: Path.exists() handles cross-platform path separators; the missing
+    #          case prints an actionable hint instead of raising.
     script = Path("scripts") / "setup_github_protection.py"
     if not script.exists():
         print(f"  Warning: {script} not found; skipping auto branch protection.")
         return False
 
+    # #ASSUME: External Resources: `uv` is on PATH because the cookiecutter
+    #          template advertises uv as the canonical runner. run_command
+    #          handles FileNotFoundError and returns False on missing uv.
+    # #VERIFY: run_command catches FileNotFoundError; failure path below prints
+    #          a manual re-run hint.
     print("  * Auto-configuring branch protection...")
     success = run_command(["uv", "run", "python", str(script)], check=False)
     if success:
@@ -120,6 +164,39 @@ def maybe_run_branch_protection(flag: str, remote_url: str) -> bool:
         "GITHUB_TOKEN=ghp_xxx uv run python scripts/setup_github_protection.py"
     )
     return False
+
+
+def _detect_origin_url() -> str:
+    """Return the configured `remote.origin.url`, or empty string if absent.
+
+    A freshly initialised `git init` repo has no `origin` remote, so this
+    helper returns an empty string in the default post-gen flow. The empty
+    return value short-circuits maybe_run_branch_protection with an
+    actionable hint instead of a silent skip.
+    """
+    # #CRITICAL: External Resources: shutil.which("git") may return None on
+    #            systems where git is not installed; we must not crash the
+    #            post-gen hook in that case.
+    # #VERIFY: git_bin is checked for truthiness before subprocess.run; an
+    #          absent binary returns "" immediately.
+    git_bin = shutil.which("git")
+    if not git_bin:
+        return ""
+    try:
+        # #ASSUME: Concurrency: subprocess.run is synchronous and bounded by a
+        #          5s timeout to prevent a hung `git config` call from blocking
+        #          generation on misconfigured hosts.
+        # #VERIFY: timeout=5 and TimeoutExpired handled below.
+        result = subprocess.run(  # nosec B603
+            [git_bin, "config", "--get", "remote.origin.url"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=5,
+        )
+    except (subprocess.TimeoutExpired, OSError):
+        return ""
+    return result.stdout.strip()
 
 
 def _cleanup_documentation_files() -> None:
@@ -1169,23 +1246,16 @@ def main() -> None:
         setup_pre_commit()
         setup_claude_user_settings()
         # Optional auto-run of branch protection (opt-in via cookiecutter flag).
-        remote_url = ""
-        git_bin = shutil.which("git")
-        if git_bin:
-            try:
-                result = subprocess.run(
-                    [git_bin, "config", "--get", "remote.origin.url"],
-                    capture_output=True,
-                    text=True,
-                    check=False,
-                    timeout=5,
-                )
-                remote_url = result.stdout.strip()
-            except (subprocess.TimeoutExpired, OSError):
-                remote_url = ""
+        # #CRITICAL: Timing Dependencies: this MUST run after initialize_git();
+        #            _detect_origin_url reads `git config --get remote.origin.url`
+        #            from the freshly initialised repo. A fresh `git init` has no
+        #            origin remote, so the helper returns "" and the auto-run
+        #            prints an actionable hint and skips cleanly.
+        # #VERIFY: see initialize_git() ordering above; _detect_origin_url uses
+        #          a 5s timeout and falls back to "" on any error.
         maybe_run_branch_protection(
             flag="{{ cookiecutter.auto_setup_branch_protection }}",
-            remote_url=remote_url,
+            remote_url=_detect_origin_url(),
         )
         print_success_message()
     except Exception as e:  # noqa: BLE001
