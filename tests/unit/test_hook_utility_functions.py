@@ -253,3 +253,212 @@ class TestAutoSetupBranchProtectionHelper:
         monkeypatch.setenv("GITHUB_TOKEN", "ghp_test")
         result = mod.maybe_run_branch_protection(flag="yes", remote_url="")
         assert result is False
+
+    def test_helper_runs_script_and_returns_true_on_success(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """Happy path: all preconditions met, run_command succeeds, helper returns True.
+
+        Also verifies the helper invokes run_command with the exact argv it
+        documents: ["uv", "run", "python", "scripts/setup_github_protection.py"].
+        """
+        mod = _load_post_gen_module()
+
+        # Stage a cwd containing the expected script path so the existence
+        # check passes without touching the real repo layout.
+        (tmp_path / "scripts").mkdir()
+        (tmp_path / "scripts" / "setup_github_protection.py").write_text(
+            "# stub\n", encoding="utf-8"
+        )
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("GITHUB_TOKEN", "ghp_test_token")
+
+        calls: list[list[str]] = []
+
+        def fake_run_command(cmd: list[str], check: bool = True) -> bool:  # noqa: ARG001
+            calls.append(list(cmd))
+            return True
+
+        monkeypatch.setattr(mod, "run_command", fake_run_command)
+
+        result = mod.maybe_run_branch_protection(
+            flag="yes", remote_url="https://github.com/x/y.git"
+        )
+
+        assert result is True
+        # Path("scripts") / "setup_github_protection.py" stringifies with the
+        # platform separator; on POSIX this matches the literal below. The
+        # assertion uses str(Path) to stay portable.
+        from pathlib import Path as _P
+
+        expected_script = str(_P("scripts") / "setup_github_protection.py")
+        assert calls == [["uv", "run", "python", expected_script]], (
+            f"helper should invoke the script exactly once with the documented "
+            f"argv; observed calls: {calls}"
+        )
+        captured = capsys.readouterr().out
+        assert "Branch protection configured" in captured
+
+    def test_helper_returns_false_when_script_missing(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """All preconditions met but the setup script is absent: warn and return False."""
+        mod = _load_post_gen_module()
+
+        # cwd has no scripts/ directory, so the existence check fails.
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("GITHUB_TOKEN", "ghp_test_token")
+
+        run_command_called: list[list[str]] = []
+
+        def fake_run_command(cmd: list[str], check: bool = True) -> bool:  # noqa: ARG001
+            run_command_called.append(list(cmd))
+            return True
+
+        monkeypatch.setattr(mod, "run_command", fake_run_command)
+
+        result = mod.maybe_run_branch_protection(
+            flag="yes", remote_url="https://github.com/x/y.git"
+        )
+
+        assert result is False
+        assert run_command_called == [], (
+            "run_command must NOT be invoked when the script is missing"
+        )
+        captured = capsys.readouterr().out
+        assert "Warning" in captured
+        assert "setup_github_protection.py" in captured
+
+    def test_helper_returns_false_when_run_command_fails(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """Script exists but run_command returns False: print recovery hint, return False."""
+        mod = _load_post_gen_module()
+
+        (tmp_path / "scripts").mkdir()
+        (tmp_path / "scripts" / "setup_github_protection.py").write_text(
+            "# stub\n", encoding="utf-8"
+        )
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("GITHUB_TOKEN", "ghp_test_token")
+
+        monkeypatch.setattr(
+            mod,
+            "run_command",
+            lambda cmd, check=True: False,  # noqa: ARG005
+        )
+
+        result = mod.maybe_run_branch_protection(
+            flag="yes", remote_url="https://github.com/x/y.git"
+        )
+
+        assert result is False
+        captured = capsys.readouterr().out
+        assert "Branch protection auto-run failed" in captured
+        assert "re-run manually" in captured
+
+    def test_helper_treats_empty_token_string_as_missing(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """An empty GITHUB_TOKEN string must be treated as unset.
+
+        os.environ.get("GITHUB_TOKEN") returns "" which is falsy; the helper
+        must short-circuit BEFORE calling run_command.
+        """
+        mod = _load_post_gen_module()
+        monkeypatch.setenv("GITHUB_TOKEN", "")
+
+        invoked: list[list[str]] = []
+
+        def fake_run_command(cmd: list[str], check: bool = True) -> bool:  # noqa: ARG001
+            invoked.append(list(cmd))
+            return True
+
+        monkeypatch.setattr(mod, "run_command", fake_run_command)
+
+        result = mod.maybe_run_branch_protection(
+            flag="yes", remote_url="https://github.com/x/y.git"
+        )
+
+        assert result is False
+        assert invoked == [], (
+            "run_command must NOT be invoked when GITHUB_TOKEN is the empty string"
+        )
+
+
+# ----------------------------------------------------------------------------
+# _detect_origin_url
+# ----------------------------------------------------------------------------
+
+
+class TestDetectOriginUrl:
+    """Tests for the _detect_origin_url helper in post_gen_project.py.
+
+    The helper wraps `git config --get remote.origin.url` with a short
+    timeout and swallows TimeoutExpired plus OSError so a missing or hung
+    git binary cannot break the post-generation hook.
+    """
+
+    def test_detect_origin_url_when_git_missing(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Returns "" when shutil.which("git") yields None."""
+        mod = _load_post_gen_module()
+        monkeypatch.setattr(mod.shutil, "which", lambda _cmd: None)
+        assert mod._detect_origin_url() == ""
+
+    def test_detect_origin_url_handles_timeout(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Returns "" when subprocess.run raises TimeoutExpired."""
+        import subprocess as _sp
+
+        mod = _load_post_gen_module()
+        monkeypatch.setattr(mod.shutil, "which", lambda _cmd: "/usr/bin/git")
+
+        def raise_timeout(*_args: object, **_kwargs: object) -> object:
+            raise _sp.TimeoutExpired(cmd=["git"], timeout=5)
+
+        monkeypatch.setattr(mod.subprocess, "run", raise_timeout)
+        assert mod._detect_origin_url() == ""
+
+    def test_detect_origin_url_handles_oserror(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Returns "" when subprocess.run raises OSError (e.g., permission denied)."""
+        mod = _load_post_gen_module()
+        monkeypatch.setattr(mod.shutil, "which", lambda _cmd: "/usr/bin/git")
+
+        def raise_oserror(*_args: object, **_kwargs: object) -> object:
+            msg = "permission denied"
+            raise OSError(msg)
+
+        monkeypatch.setattr(mod.subprocess, "run", raise_oserror)
+        assert mod._detect_origin_url() == ""
+
+    def test_detect_origin_url_returns_stdout(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Returns subprocess stdout stripped of trailing whitespace."""
+        mod = _load_post_gen_module()
+        monkeypatch.setattr(mod.shutil, "which", lambda _cmd: "/usr/bin/git")
+
+        class _FakeResult:
+            stdout = "https://github.com/foo/bar.git\n"
+            stderr = ""
+            returncode = 0
+
+        monkeypatch.setattr(
+            mod.subprocess, "run", lambda *_a, **_k: _FakeResult()
+        )
+        assert mod._detect_origin_url() == "https://github.com/foo/bar.git"
