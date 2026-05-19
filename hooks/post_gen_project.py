@@ -100,6 +100,10 @@ def _cleanup_documentation_files() -> None:
     if "{{ cookiecutter.include_security_policy }}" == "no":
         remove_file(Path("SECURITY.md"))
 
+    # Remove .editorconfig if not needed
+    if "{{ cookiecutter.include_editorconfig }}" == "no":
+        remove_file(Path(".editorconfig"))
+
     # Remove CONTRIBUTING if not needed
     if "{{ cookiecutter.include_contributing_guide }}" == "no":
         remove_file(Path("CONTRIBUTING.md"))

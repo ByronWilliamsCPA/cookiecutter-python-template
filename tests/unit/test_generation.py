@@ -479,3 +479,35 @@ class TestDockerfileGeneration:
             "README.md is required by Dockerfile during uv sync (see "
             "test_dockerfile_dependency_stage_copies_readme)."
         )
+
+
+class TestEditorConfigFlag:
+    """Tests for include_editorconfig cookiecutter flag."""
+
+    def test_editorconfig_present_when_flag_yes(
+        self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
+    ) -> None:
+        """Verify .editorconfig is generated when include_editorconfig is yes."""
+        from tests.conftest import generate_project
+
+        config = {**minimal_config, "include_editorconfig": "yes"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        editorconfig = project_dir / ".editorconfig"
+        assert editorconfig.exists(), ".editorconfig should exist when flag is yes"
+        content = editorconfig.read_text(encoding="utf-8")
+        assert "root = true" in content
+        assert "[*]" in content
+        assert "indent_style = space" in content
+        assert "[*.md]" in content
+        assert "[Makefile]" in content
+
+    def test_editorconfig_absent_when_flag_no(
+        self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
+    ) -> None:
+        """Verify .editorconfig is removed by hook when include_editorconfig is no."""
+        from tests.conftest import generate_project
+
+        config = {**minimal_config, "include_editorconfig": "no"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        editorconfig = project_dir / ".editorconfig"
+        assert not editorconfig.exists(), ".editorconfig should be removed when flag is no"
