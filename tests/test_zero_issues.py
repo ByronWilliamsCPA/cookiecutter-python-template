@@ -340,10 +340,10 @@ class TestSecurityScans:
             assert not high_severity_found, f"High/Critical security issues found:\n{result.stdout}"
 
     @pytest.mark.slow
-    def test_safety_dependency_scan(
+    def test_pip_audit_dependency_scan(
         self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
     ) -> None:
-        """Verify Safety dependency scan passes."""
+        """Verify pip-audit dependency scan runs against the rendered project."""
         from tests.conftest import generate_project
 
         project_dir = generate_project(template_dir, temp_dir, minimal_config)
@@ -358,22 +358,22 @@ class TestSecurityScans:
         )
 
         if result.returncode != 0:
-            pytest.skip("UV sync failed, cannot run safety check")
+            pytest.skip("UV sync failed, cannot run pip-audit")
 
-        # Run safety check
+        # Run pip-audit
         result = subprocess.run(
-            ["uv", "run", "safety", "check"],
+            ["uv", "run", "pip-audit"],
             cwd=project_dir,
             capture_output=True,
             text=True,
             check=False,
         )
 
-        # Safety returns non-zero if vulnerabilities found
+        # pip-audit returns non-zero if vulnerabilities found
         # Allow this but report as warning
         if result.returncode != 0:
             pytest.skip(
-                f"Safety found vulnerabilities (expected for fresh install):\n{result.stdout}"
+                f"pip-audit found vulnerabilities (expected for fresh install):\n{result.stdout}"
             )
 
 

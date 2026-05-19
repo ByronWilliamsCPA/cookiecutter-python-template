@@ -601,7 +601,7 @@ This project enforces:
 - **{{ cookiecutter.code_coverage_target }}%+ test coverage** (enforced via pytest-cov)
 - **Zero linting errors** (enforced via Ruff)
 - **Type safety** (enforced via BasedPyright)
-- **Security scanning** (enforced via Bandit, Safety)
+- **Security scanning** (enforced via Bandit, pip-audit, OSV-Scanner)
 
 ### Project Structure
 

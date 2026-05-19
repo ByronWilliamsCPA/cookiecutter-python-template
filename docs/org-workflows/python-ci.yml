@@ -12,7 +12,7 @@
 #   - LLM governance and assumption tag verification
 #   - Optional SonarCloud integration
 #   - Optional Codecov integration
-#   - Security scanning (Bandit, Safety)
+#   - Security scanning (Bandit; OSV-Scanner via security workflow)
 # ============================================================================
 
 name: Reusable Python CI
@@ -196,16 +196,6 @@ jobs:
           uv run bandit -r ${{ inputs.source-directory }}/ -f json -o bandit-report.json || {
             echo "::warning::Security issues detected"
             cat bandit-report.json
-          }
-          echo "::endgroup::"
-
-      - name: Dependency vulnerability scan
-        run: |
-          echo "::group::Safety Dependency Scan"
-          # Export requirements and scan
-          uv pip compile pyproject.toml -o requirements.txt
-          uv run safety check -r requirements.txt || {
-            echo "::warning::Vulnerable dependencies detected"
           }
           echo "::endgroup::"
 
