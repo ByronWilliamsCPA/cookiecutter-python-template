@@ -87,7 +87,6 @@ Add an optional dependency group for supply chain tools:
 supply-chain = [
     "cyclonedx-bom>=4.6.0",      # SBOM generation
     "pip-audit>=2.7.0",          # Vulnerability scanning
-    "safety>=3.7.0",             # Additional vuln scanning
     "pip-licenses>=4.0.0",       # License compliance
     "keyrings.google-artifactregistry-auth>=1.1.0",  # GCP auth for indexes
 ]

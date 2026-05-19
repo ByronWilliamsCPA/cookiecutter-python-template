@@ -37,7 +37,7 @@ This feedback will be shared with the template team to improve the cookiecutter 
 - **Package Manager**: UV
 - **Code Quality**: Ruff (linter/formatter), BasedPyright (type checker)
 - **Testing**: pytest, coverage
-- **Security**: Bandit, Safety
+- **Security**: Bandit, pip-audit, OSV-Scanner
 {% if cookiecutter.include_cli == "yes" -%}
 - **CLI Framework**: Click
 {% endif -%}
@@ -155,7 +155,7 @@ Claude MUST adopt a security-first approach in all development:
 
 When working on this project, always suggest appropriate security measures:
 
-- **Dependencies**: Suggest vulnerability scanning (`safety check`, `pip-audit`)
+- **Dependencies**: Suggest vulnerability scanning (`pip-audit`, `osv-scanner`)
 - **APIs**: Suggest authentication, rate limiting, input validation
 - **Data**: Suggest encryption at rest and in transit, access controls
 {% if cookiecutter.include_docker == "yes" -%}
@@ -341,7 +341,7 @@ END BASELINE DEVELOPMENT STANDARDS
 
 - Test coverage: Minimum {{cookiecutter.code_coverage_target}}%
 - All linters must pass: `uv run ruff check .`, `uv run basedpyright src/`
-- Security scans: `uv run bandit -r src`, `uv run safety check`
+- Security scans: `uv run bandit -r src`, `uv run pip-audit`
 
 {% if cookiecutter.use_decimal_precision == "yes" -%}
 **Financial Calculations** (CRITICAL):
@@ -722,7 +722,7 @@ uv run pytest tests/unit/test_example.py::test_function_name -v
 **GitHub Actions Workflows**:
 
 1. **CI** (`.github/workflows/ci.yml`): Tests, linting, type checking
-2. **Security** (`.github/workflows/security-analysis.yml`): CodeQL, Bandit, Safety
+2. **Security** (`.github/workflows/security-analysis.yml`): CodeQL, Bandit, OSV-Scanner
 {% if cookiecutter.use_mkdocs == "yes" -%}
 3. **Docs** (`.github/workflows/docs.yml`): Build and deploy documentation
 {% endif -%}

@@ -46,8 +46,8 @@ uv run semgrep scan --config auto src/
 # Check for vulnerable dependencies
 uv run pip-audit
 
-# Safety check
-uv run safety check
+# OSV-Scanner (alternative vulnerability scanner)
+osv-scanner --recursive .
 ```
 
 ### Secrets Detection

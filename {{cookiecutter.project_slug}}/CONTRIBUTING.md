@@ -163,7 +163,7 @@ All contributions MUST meet these requirements:
 - **No Hardcoded Secrets**: Use environment variables or secure vaults
 - **Input Validation**: Validate all user inputs and file paths
 - **Path Sanitization**: Use `pathlib.Path.resolve()` to prevent directory traversal
-- **Dependency Security**: Run `uv run safety check` before submitting PRs
+- **Dependency Security**: Run `uv run pip-audit` before submitting PRs
 {%- if cookiecutter.include_supply_chain_security == "yes" %}
 
 ### Dependency Management
@@ -187,7 +187,6 @@ uv add --dev package-name
 
 # Verify dependency security
 uv run pip-audit
-uv run safety check
 ```
 
 **Guidelines for Dependencies:**
