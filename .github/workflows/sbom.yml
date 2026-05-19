@@ -35,9 +35,10 @@ permissions:
 jobs:
   sbom:
     name: SBOM & Security
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@e8fc83c98c2971ad1ece71573d28171463e30c16  # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@1b2d33c47cc11a96b9757b49f41873c54e75f57c  # main
     with:
       python-version: '3.12'
+      no-build: false  # this repo is itself an installable package (hatchling backend); upstream default of true would block 'uv sync' from installing the editable project
       fail-on-vulnerabilities: true
       severity-threshold: 'CRITICAL,HIGH'
       artifact-retention-days: 90
