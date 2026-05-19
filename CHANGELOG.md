@@ -33,6 +33,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI workflows: replaced `black` + `mypy` with `ruff format` + `basedpyright`
 - CI: coverage threshold changed from 0 to enforced minimum
 - SonarCloud quality gate changed from non-blocking to blocking
+- CI workflows (root repo): added `step-security/harden-runner@v2.19.1` audit-mode steps
+  to all 21 jobs with declared `steps:` across `ci.yml`, `cruft-update.yml`,
+  `release-drafter.yml`, `scheduled-validation.yml`, `sonarcloud.yml`,
+  `test-template.yml`, and `validate-template.yml`
+- CI workflows (root repo): added per-job least-privilege `permissions:` blocks where
+  missing; `validate-template.yml` previously had no `permissions:` declaration at any level
+- Pre-commit (root repo): SHA-pinned all 9 hook `rev:` fields (previously only
+  `detect-secrets` was pinned); trailing tag annotations preserved
+- Root `pyproject.toml`: added missing `A` (flake8-builtins) and `PT`
+  (flake8-pytest-style) rule sets to `[tool.ruff.lint].select`
 
 ### Fixed
 
