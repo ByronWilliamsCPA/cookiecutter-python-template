@@ -12,7 +12,7 @@
 #   - LLM governance and assumption tag verification
 #   - Optional SonarCloud integration
 #   - Optional Codecov integration
-#   - Security scanning (Bandit)
+#   - Security scanning (Bandit; OSV-Scanner via security workflow)
 # ============================================================================
 
 name: Reusable Python CI
