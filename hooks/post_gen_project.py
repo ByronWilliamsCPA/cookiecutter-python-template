@@ -5,7 +5,6 @@ Performs cleanup and setup tasks after project generation.
 Runs after all files have been created.
 """
 
-import json
 import os
 import re
 import shutil
@@ -1153,149 +1152,6 @@ def run_code_fixes() -> None:
         print("  - Ruff auto-fix completed with some issues (review manually)")
 
 
-def get_cruft_skip_patterns() -> list[str]:
-    """Return the comprehensive list of skip patterns for cruft.
-
-    These patterns prevent "Unable to interpret changes as unicode" errors
-    during cruft update by excluding binary, cache, and build artifacts.
-
-    Returns:
-        List of glob patterns to skip during cruft diff operations.
-    """
-    return [
-        # Git internals (binary objects)
-        ".git",
-        ".git/*",
-        "**/.git/**",
-        # Python bytecode and caches
-        "*.pyc",
-        "**/__pycache__/**",
-        "*.egg-info/**",
-        ".mypy_cache/**",
-        ".pytest_cache/**",
-        ".ruff_cache/**",
-        ".tox/**",
-        # Virtual environments
-        ".venv/**",
-        "venv/**",
-        # Lock files (frequently change, can have binary-like content)
-        "*.lock",
-        "uv.lock",
-        "poetry.lock",
-        # Build artifacts
-        "*.whl",
-        "dist/**",
-        "build/**",
-        # Coverage and test artifacts
-        ".coverage",
-        "htmlcov/**",
-        # Database files (binary)
-        "*.db",
-        "*.sqlite",
-        "*.sqlite3",
-        # IDE and tool caches
-        ".qlty/**",
-        ".sonarlint/**",
-        ".idea/**",
-        ".vscode/**",
-        # Node modules (if any JS tooling)
-        "node_modules/**",
-        # Frontend user customizations (don't overwrite with cruft update)
-        "frontend/src/components/**",
-        "frontend/src/hooks/**",
-        "frontend/src/pages/**",
-        "frontend/src/routes/**",
-        "frontend/src/App.tsx",
-        "frontend/src/App.css",
-        "frontend/public/**",
-        # Frontend generated/build files
-        "frontend/src/client/**",
-        "frontend/dist/**",
-        "frontend/node_modules/**",
-        "frontend/.vite/**",
-        "frontend/coverage/**",
-        # Template-specific files that should remain project-owned
-        "CLAUDE.md",
-        "REUSE.toml",
-        "docs/template_feedback.md",
-        # Community health files (added when style is org_pointer so the user's
-        # local pointer content is preserved across cruft update).
-        "{% if cookiecutter.community_health_style == 'org_pointer' %}CODE_OF_CONDUCT.md{% endif %}",
-        "{% if cookiecutter.community_health_style == 'org_pointer' %}GOVERNANCE.md{% endif %}",
-    ]
-
-
-def add_cruft_skip_patterns() -> None:
-    """Add skip patterns to .cruft.json to exclude binary/build files from cruft diff.
-
-    This prevents "Unable to interpret changes as unicode" errors during cruft update.
-    These patterns ensure cruft can successfully diff and update projects without
-    encountering binary file unicode errors.
-
-    If .cruft.json doesn't exist (e.g., project generated with plain cookiecutter),
-    creates a minimal .cruft.json with skip patterns so users can adopt cruft later.
-
-    See: https://github.com/ByronWilliamsCPA/cookiecutter-python-template/issues/13
-    """
-    print("\n🔧 Configuring cruft skip patterns...")
-
-    # NOTE: SonarCloud pythonsecurity:S2083 (path traversal) flags the
-    # cruft_file.write_text below. False positive: cruft_file is the literal
-    # Path(".cruft.json"), and the content written is json.dumps() of program-
-    # controlled data. No user-controlled string reaches the path or content.
-    cruft_file = Path(".cruft.json")
-    skip_patterns = [p for p in get_cruft_skip_patterns() if p]
-
-    if cruft_file.exists():
-        # Update existing .cruft.json (created by cruft create)
-        # Merge with existing skip patterns to preserve user customizations
-        try:
-            cruft_config = json.loads(cruft_file.read_text(encoding="utf-8"))
-            existing_skip = cruft_config.get("skip", [])
-
-            # Normalize existing 'skip' into a list of strings
-            if isinstance(existing_skip, str):
-                existing_skip = [existing_skip]
-            elif not isinstance(existing_skip, list):
-                existing_skip = []
-
-            # Merge and deduplicate, preserving order with new patterns first
-            merged_skip = list(dict.fromkeys(skip_patterns + existing_skip))
-            cruft_config["skip"] = merged_skip
-
-            cruft_file.write_text(  # NOSONAR S2083: cruft_file is the literal Path(".cruft.json"); content is json.dumps of program-controlled dict
-                json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8"
-            )
-            print(f"  ✓ Updated .cruft.json skip patterns ({len(merged_skip)} entries)")
-        except (json.JSONDecodeError, OSError, KeyError) as e:
-            print(f"  - Failed to update skip patterns: {e}", file=sys.stderr)
-    else:
-        # Create minimal .cruft.json for projects generated with plain cookiecutter
-        # This allows users to adopt cruft later with `cruft link`
-        try:
-            cruft_config = {
-                "template": "https://github.com/{{ cookiecutter.github_org_or_user }}/cookiecutter-python-template",
-                "commit": None,
-                "checkout": None,
-                "context": {
-                    "cookiecutter": {
-                        "project_name": "{{ cookiecutter.project_name }}",
-                        "project_slug": "{{ cookiecutter.project_slug }}",
-                        "python_version": "{{ cookiecutter.python_version }}",
-                    }
-                },
-                "directory": None,
-                "skip": skip_patterns,
-            }
-            cruft_file.write_text(
-                json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8"
-            )
-            print(f"  ✓ Created .cruft.json with {len(skip_patterns)} skip patterns")
-            print("    (Use 'cruft link' to fully connect to the template)")
-        except OSError as e:
-            print(f"  - Failed to create .cruft.json: {e}", file=sys.stderr)
-
-
 def main() -> None:
     """Run post-generation tasks."""
     print("\n🚀 Running post-generation setup...")
@@ -1308,7 +1164,6 @@ def main() -> None:
         run_code_fixes()  # Auto-fix code quality issues before git init
         ensure_trailing_newlines()  # Ensure all files have trailing newlines
         mark_scripts_executable()  # Ensure shebang scripts have executable permissions
-        add_cruft_skip_patterns()  # Add skip patterns to prevent binary file issues
         initialize_git()
         setup_claude_subtree()  # Add Claude standards via git subtree
         setup_pre_commit()

@@ -2,8 +2,7 @@
 
 Covers the basic file/dir helpers (`remove_file`, `remove_dir`,
 `make_executable`, `run_command`) plus the standalone data-processing
-functions (`get_cruft_skip_patterns`, `inject_creation_date`,
-`add_cruft_skip_patterns`, `ensure_trailing_newlines`).
+functions (`inject_creation_date`, `ensure_trailing_newlines`).
 
 These functions don't depend on Jinja2-rendered context, so they can be
 exercised directly via importlib without invoking cookiecutter.
@@ -12,7 +11,6 @@ exercised directly via importlib without invoking cookiecutter.
 from __future__ import annotations
 
 import importlib.util
-import json
 import sys
 from pathlib import Path
 
@@ -119,35 +117,6 @@ def test_run_command_returns_false_on_command_not_found() -> None:
 
 
 # ----------------------------------------------------------------------------
-# get_cruft_skip_patterns
-# ----------------------------------------------------------------------------
-
-
-def test_get_cruft_skip_patterns_returns_list() -> None:
-    """get_cruft_skip_patterns returns a non-empty list of strings."""
-    mod = _load_post_gen_module()
-    patterns = mod.get_cruft_skip_patterns()
-    assert isinstance(patterns, list)
-    assert len(patterns) > 0
-    assert all(isinstance(p, str) for p in patterns)
-
-
-def test_get_cruft_skip_patterns_includes_uvlock() -> None:
-    """The returned patterns include the well-known uv.lock case."""
-    mod = _load_post_gen_module()
-    patterns = mod.get_cruft_skip_patterns()
-    assert any("uv.lock" in p for p in patterns)
-
-
-def test_get_cruft_skip_patterns_includes_template_specific() -> None:
-    """The returned patterns include template-owned files like CLAUDE.md."""
-    mod = _load_post_gen_module()
-    patterns = mod.get_cruft_skip_patterns()
-    assert "CLAUDE.md" in patterns
-    assert "REUSE.toml" in patterns
-
-
-# ----------------------------------------------------------------------------
 # inject_creation_date
 # ----------------------------------------------------------------------------
 
@@ -196,66 +165,6 @@ def test_inject_creation_date_leaves_files_without_placeholder_alone(
     (tmp_path / "CLAUDE.md").write_text(original, encoding="utf-8")
     mod.inject_creation_date()
     assert (tmp_path / "CLAUDE.md").read_text(encoding="utf-8") == original
-
-
-# ----------------------------------------------------------------------------
-# add_cruft_skip_patterns
-# ----------------------------------------------------------------------------
-
-
-def test_add_cruft_skip_patterns_creates_minimal_when_absent(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """When .cruft.json is absent, a minimal one is created with skip patterns."""
-    mod = _load_post_gen_module()
-    monkeypatch.chdir(tmp_path)
-    mod.add_cruft_skip_patterns()
-    cruft_file = tmp_path / ".cruft.json"
-    assert cruft_file.exists()
-    config = json.loads(cruft_file.read_text(encoding="utf-8"))
-    assert "skip" in config
-    assert isinstance(config["skip"], list)
-    assert len(config["skip"]) > 0
-
-
-def test_add_cruft_skip_patterns_merges_with_existing(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """When .cruft.json exists, new patterns are merged with the user's existing skip."""
-    mod = _load_post_gen_module()
-    monkeypatch.chdir(tmp_path)
-    existing = {
-        "template": "https://example.com/template",
-        "skip": ["my_user_pattern.txt", "uv.lock"],  # uv.lock overlaps with new
-    }
-    (tmp_path / ".cruft.json").write_text(json.dumps(existing), encoding="utf-8")
-    mod.add_cruft_skip_patterns()
-    config = json.loads((tmp_path / ".cruft.json").read_text(encoding="utf-8"))
-    # User's pattern preserved
-    assert "my_user_pattern.txt" in config["skip"]
-    # Original 'template' field preserved
-    assert config.get("template") == "https://example.com/template"
-    # Some standard skip pattern present
-    assert any("uv.lock" in p for p in config["skip"])
-    # No duplicates
-    assert len(config["skip"]) == len(set(config["skip"]))
-
-
-def test_add_cruft_skip_patterns_normalizes_string_skip(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """If existing skip is a single string (not list), it is normalized."""
-    mod = _load_post_gen_module()
-    monkeypatch.chdir(tmp_path)
-    existing = {
-        "template": "https://example.com/template",
-        "skip": "single_pattern.txt",  # malformed: should be list
-    }
-    (tmp_path / ".cruft.json").write_text(json.dumps(existing), encoding="utf-8")
-    mod.add_cruft_skip_patterns()
-    config = json.loads((tmp_path / ".cruft.json").read_text(encoding="utf-8"))
-    assert isinstance(config["skip"], list)
-    assert "single_pattern.txt" in config["skip"]
 
 
 # ----------------------------------------------------------------------------

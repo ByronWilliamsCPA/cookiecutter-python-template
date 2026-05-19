@@ -574,15 +574,18 @@ class TestCommunityHealthStyle:
     def test_org_pointer_adds_cruft_skip_entries(
         self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
     ) -> None:
-        """Org pointer variant adds files to cruft skip list."""
+        """Org pointer variant adds files to pyproject.toml [tool.cruft] skip list."""
+        import tomllib
+
         from tests.conftest import generate_project
 
         config = {**minimal_config, "community_health_style": "org_pointer"}
         project_dir = generate_project(template_dir, temp_dir, config)
-        cruft_json = project_dir / ".cruft.json"
-        assert cruft_json.exists()
-        data = json.loads(cruft_json.read_text(encoding="utf-8"))
-        skip = data.get("skip", [])
+        pyproject = project_dir / "pyproject.toml"
+        assert pyproject.exists()
+        with pyproject.open("rb") as f:
+            data = tomllib.load(f)
+        skip = data.get("tool", {}).get("cruft", {}).get("skip", [])
         assert "CODE_OF_CONDUCT.md" in skip
         assert "GOVERNANCE.md" in skip
 

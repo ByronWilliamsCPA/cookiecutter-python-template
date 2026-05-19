@@ -831,3 +831,73 @@ token = { env = "GH_TOKEN" }
 dist_glob_patterns = ["dist/*"]
 upload_to_vcs_release = true
 {% endif -%}
+
+# Cruft skip list: paths to preserve across `cruft update` runs.
+# Cruft reads this section at update time from the live project directory,
+# so these values survive cruft regenerating .cruft.json. The post-gen hook
+# no longer writes to .cruft.json for this purpose; this section is the
+# canonical skip list.
+[tool.cruft]
+skip = [
+    # Git internals (binary objects)
+    ".git",
+    ".git/*",
+    "**/.git/**",
+    # Python bytecode and caches
+    "*.pyc",
+    "**/__pycache__/**",
+    "*.egg-info/**",
+    ".mypy_cache/**",
+    ".pytest_cache/**",
+    ".ruff_cache/**",
+    ".tox/**",
+    # Virtual environments
+    ".venv/**",
+    "venv/**",
+    # Lock files (frequently change, can have binary-like content)
+    "*.lock",
+    "uv.lock",
+    "poetry.lock",
+    # Build artifacts
+    "*.whl",
+    "dist/**",
+    "build/**",
+    # Coverage and test artifacts
+    ".coverage",
+    "htmlcov/**",
+    # Database files (binary)
+    "*.db",
+    "*.sqlite",
+    "*.sqlite3",
+    # IDE and tool caches
+    ".qlty/**",
+    ".sonarlint/**",
+    ".idea/**",
+    ".vscode/**",
+    # Node modules (if any JS tooling)
+    "node_modules/**",
+    # Frontend user customizations (don't overwrite with cruft update)
+    "frontend/src/components/**",
+    "frontend/src/hooks/**",
+    "frontend/src/pages/**",
+    "frontend/src/routes/**",
+    "frontend/src/App.tsx",
+    "frontend/src/App.css",
+    "frontend/public/**",
+    # Frontend generated/build files
+    "frontend/src/client/**",
+    "frontend/dist/**",
+    "frontend/node_modules/**",
+    "frontend/.vite/**",
+    "frontend/coverage/**",
+    # Template-specific files that should remain project-owned
+    "CLAUDE.md",
+    "REUSE.toml",
+    "docs/template_feedback.md",
+{% if cookiecutter.community_health_style == "org_pointer" -%}
+    # Community health pointer files: user-customised to reference the org's
+    # .github/ defaults; preserve across cruft updates so local edits survive.
+    "CODE_OF_CONDUCT.md",
+    "GOVERNANCE.md",
+{%- endif %}
+]
