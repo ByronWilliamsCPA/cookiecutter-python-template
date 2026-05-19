@@ -49,19 +49,24 @@ logger = logging.getLogger(__name__)
 
 
 async def example_background_task(
-    ctx: dict[str, Any], user_id: str, _data: dict
+    ctx: dict[str, Any], user_id: str, data: dict
 ) -> dict:
     """Example background task.
 
     Args:
         ctx: ARQ context (contains redis connection, job_id, etc.)
         user_id: User identifier
-        _data: Task data (unused in this example)
+        data: Task data
 
     Returns:
         Result dictionary
     """
-    logger.info("background_task_started", user_id=user_id, job_id=ctx.get("job_id"))
+    logger.info(
+        "background_task_started",
+        user_id=user_id,
+        job_id=ctx.get("job_id"),
+        data=data,
+    )
 
     # Simulate some work
     await asyncio.sleep(2)

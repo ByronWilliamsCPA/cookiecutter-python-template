@@ -10,8 +10,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "check_unverified_assumption_tags.py"
 
