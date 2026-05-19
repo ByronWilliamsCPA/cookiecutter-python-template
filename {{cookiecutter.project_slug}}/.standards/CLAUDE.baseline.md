@@ -99,7 +99,7 @@ Claude MUST adopt a security-first approach in all development:
 
 ### 1. Proactive Security Suggestions
 
-- **Dependencies**: Suggest vulnerability scanning (`safety check`, `pip-audit`)
+- **Dependencies**: Suggest vulnerability scanning (`pip-audit`, `osv-scanner`)
 - **APIs**: Suggest authentication, rate limiting, input validation
 - **Data**: Suggest encryption at rest and in transit, access controls
 
