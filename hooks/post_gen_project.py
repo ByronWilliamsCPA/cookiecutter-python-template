@@ -1174,6 +1174,10 @@ def get_cruft_skip_patterns() -> list[str]:
         "CLAUDE.md",
         "REUSE.toml",
         "docs/template_feedback.md",
+        # Community health files (added when style is org_pointer so the user's
+        # local pointer content is preserved across cruft update).
+        "{% if cookiecutter.community_health_style == 'org_pointer' %}CODE_OF_CONDUCT.md{% endif %}",
+        "{% if cookiecutter.community_health_style == 'org_pointer' %}GOVERNANCE.md{% endif %}",
     ]
 
 
@@ -1196,7 +1200,7 @@ def add_cruft_skip_patterns() -> None:
     # Path(".cruft.json"), and the content written is json.dumps() of program-
     # controlled data. No user-controlled string reaches the path or content.
     cruft_file = Path(".cruft.json")
-    skip_patterns = get_cruft_skip_patterns()
+    skip_patterns = [p for p in get_cruft_skip_patterns() if p]
 
     if cruft_file.exists():
         # Update existing .cruft.json (created by cruft create)

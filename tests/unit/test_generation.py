@@ -511,3 +511,77 @@ class TestEditorConfigFlag:
         project_dir = generate_project(template_dir, temp_dir, config)
         editorconfig = project_dir / ".editorconfig"
         assert not editorconfig.exists(), ".editorconfig should be removed when flag is no"
+
+
+class TestCommunityHealthStyle:
+    """Tests for community_health_style cookiecutter flag."""
+
+    # Minimum line counts for the "full" variant content.
+    MIN_COC_FULL_LINES = 30
+    MIN_GOV_FULL_LINES = 10
+    # Maximum line count for the short "org_pointer" variant pointer files.
+    MAX_POINTER_LINES = 15
+
+    def test_full_variant_generates_contributor_covenant(
+        self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
+    ) -> None:
+        """Full variant generates a substantial Code of Conduct file."""
+        from tests.conftest import generate_project
+
+        config = {**minimal_config, "community_health_style": "full"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        code_of_conduct = project_dir / "CODE_OF_CONDUCT.md"
+        assert code_of_conduct.exists()
+        content = code_of_conduct.read_text(encoding="utf-8")
+        assert "Contributor Covenant" in content
+        assert len(content.splitlines()) > self.MIN_COC_FULL_LINES
+        assert "@" in content, "Should include a contact email"
+
+    def test_full_variant_generates_governance_template(
+        self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
+    ) -> None:
+        """Full variant generates a GOVERNANCE.md template."""
+        from tests.conftest import generate_project
+
+        config = {**minimal_config, "community_health_style": "full"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        governance = project_dir / "GOVERNANCE.md"
+        assert governance.exists()
+        content = governance.read_text(encoding="utf-8")
+        assert "Governance" in content
+        assert "aintainer" in content
+        assert len(content.splitlines()) > self.MIN_GOV_FULL_LINES
+
+    def test_org_pointer_variant_is_short_pointer(
+        self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
+    ) -> None:
+        """Org pointer variant generates short pointer files."""
+        from tests.conftest import generate_project
+
+        config = {**minimal_config, "community_health_style": "org_pointer"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        code_of_conduct = project_dir / "CODE_OF_CONDUCT.md"
+        governance = project_dir / "GOVERNANCE.md"
+        assert code_of_conduct.exists()
+        assert governance.exists()
+        coc_content = code_of_conduct.read_text(encoding="utf-8")
+        gov_content = governance.read_text(encoding="utf-8")
+        assert len(coc_content.splitlines()) < self.MAX_POINTER_LINES
+        assert len(gov_content.splitlines()) < self.MAX_POINTER_LINES
+        assert ".github" in coc_content
+        assert ".github" in gov_content
+
+    def test_org_pointer_adds_cruft_skip_entries(
+        self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
+    ) -> None:
+        """Org pointer variant adds files to cruft skip list."""
+        from tests.conftest import generate_project
+
+        config = {**minimal_config, "community_health_style": "org_pointer"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        cruft_json = project_dir / ".cruft.json"
+        assert cruft_json.exists()
+        data = json.loads(cruft_json.read_text(encoding="utf-8"))
+        skip = data.get("skip", [])
+        assert "CODE_OF_CONDUCT.md" in skip
+        assert "GOVERNANCE.md" in skip
