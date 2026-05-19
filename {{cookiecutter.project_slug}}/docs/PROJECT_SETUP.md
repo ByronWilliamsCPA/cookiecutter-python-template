@@ -524,6 +524,32 @@ The script configures:
    - [x] Require branches to be up to date
    - [x] Include administrators
 
+#### Automated Setup Script
+
+The template includes `scripts/setup_github_protection.py`, which configures branch
+protection via the GitHub API with the project's required status checks, required
+signatures, code-owner reviews, and the chosen approval count (controlled by the
+`sole_contributor` cookiecutter flag).
+
+Manual invocation after creating the GitHub repo:
+
+```bash
+export GITHUB_TOKEN=ghp_your_token_with_admin_repo_scope
+uv run python scripts/setup_github_protection.py
+```
+
+Prerequisites:
+
+- GitHub repository must exist (create it via `gh repo create` or the web UI).
+- `GITHUB_TOKEN` must have the `repo` scope (or repository admin permission for fine-grained PATs).
+- The local `origin` remote must point at the new GitHub repo.
+
+If you set the `auto_setup_branch_protection` cookiecutter variable to `yes` when
+generating the project, and you supply `GITHUB_TOKEN` in your environment, and the
+project has a configured remote, the post-gen hook runs this script automatically.
+The auto-run is non-fatal: if any precondition fails or the API call errors out,
+generation completes with a printed warning and you can run the script manually later.
+
 ### Required Status Checks
 
 Add these as required checks:

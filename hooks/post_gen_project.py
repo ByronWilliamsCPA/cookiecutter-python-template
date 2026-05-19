@@ -6,6 +6,7 @@ Runs after all files have been created.
 """
 
 import json
+import os
 import re
 import shutil
 import subprocess  # nosec B404
@@ -77,6 +78,49 @@ def run_command(cmd: list[str], check: bool = True) -> bool:
         return False
     else:
         return True
+
+
+def maybe_run_branch_protection(flag: str, remote_url: str) -> bool:
+    """Invoke setup_github_protection.py if all preconditions are met.
+
+    Preconditions:
+        1. flag == "yes" (the cookiecutter auto_setup_branch_protection value)
+        2. GITHUB_TOKEN environment variable is set and non-empty
+        3. remote_url is non-empty (project has a git remote)
+
+    The invocation is non-fatal. Any failure produces a stdout warning
+    and the post-gen hook continues.
+
+    Args:
+        flag: The cookiecutter auto_setup_branch_protection value.
+        remote_url: The git remote.origin.url value (empty string if none).
+
+    Returns:
+        True if the script was invoked and exited 0, False otherwise.
+    """
+    if flag != "yes":
+        return False
+    if not os.environ.get("GITHUB_TOKEN"):
+        return False
+    if not remote_url:
+        return False
+
+    script = Path("scripts") / "setup_github_protection.py"
+    if not script.exists():
+        print(f"  Warning: {script} not found; skipping auto branch protection.")
+        return False
+
+    print("  * Auto-configuring branch protection...")
+    success = run_command(["uv", "run", "python", str(script)], check=False)
+    if success:
+        print("  Branch protection configured.")
+        return True
+    print(
+        "  Warning: Branch protection auto-run failed; "
+        "re-run manually with: "
+        "GITHUB_TOKEN=ghp_xxx uv run python scripts/setup_github_protection.py"
+    )
+    return False
 
 
 def _cleanup_documentation_files() -> None:
@@ -1269,6 +1313,25 @@ def main() -> None:
         setup_claude_subtree()  # Add Claude standards via git subtree
         setup_pre_commit()
         setup_claude_user_settings()
+        # Optional auto-run of branch protection (opt-in via cookiecutter flag).
+        remote_url = ""
+        git_bin = shutil.which("git")
+        if git_bin:
+            try:
+                result = subprocess.run(
+                    [git_bin, "config", "--get", "remote.origin.url"],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=5,
+                )
+                remote_url = result.stdout.strip()
+            except (subprocess.TimeoutExpired, OSError):
+                remote_url = ""
+        maybe_run_branch_protection(
+            flag="{{ cookiecutter.auto_setup_branch_protection }}",
+            remote_url=remote_url,
+        )
         print_success_message()
     except Exception as e:  # noqa: BLE001
         # Architectural decision: main() is the top-level error boundary for the

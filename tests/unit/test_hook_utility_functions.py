@@ -314,3 +314,33 @@ def test_ensure_trailing_newlines_skips_git_directory(
     mod.ensure_trailing_newlines()
     # Must remain unchanged because .git/ is skipped
     assert target.read_bytes() == b"ref: refs/heads/main"
+
+
+# ----------------------------------------------------------------------------
+# maybe_run_branch_protection
+# ----------------------------------------------------------------------------
+
+
+class TestAutoSetupBranchProtectionHelper:
+    """Tests for the maybe_run_branch_protection helper in post_gen_project.py."""
+
+    def test_helper_skips_when_flag_off(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Helper returns False when flag is no."""
+        mod = _load_post_gen_module()
+        monkeypatch.setenv("GITHUB_TOKEN", "ghp_test")
+        result = mod.maybe_run_branch_protection(flag="no", remote_url="https://github.com/x/y")
+        assert result is False
+
+    def test_helper_skips_when_token_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Helper returns False when GITHUB_TOKEN is unset."""
+        mod = _load_post_gen_module()
+        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+        result = mod.maybe_run_branch_protection(flag="yes", remote_url="https://github.com/x/y")
+        assert result is False
+
+    def test_helper_skips_when_remote_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Helper returns False when no remote URL is supplied."""
+        mod = _load_post_gen_module()
+        monkeypatch.setenv("GITHUB_TOKEN", "ghp_test")
+        result = mod.maybe_run_branch_protection(flag="yes", remote_url="")
+        assert result is False

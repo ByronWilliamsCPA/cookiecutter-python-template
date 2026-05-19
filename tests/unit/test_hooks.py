@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import subprocess
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
+
+from tests.conftest import generate_project
 
 
 if TYPE_CHECKING:
@@ -137,3 +139,33 @@ class TestHookCodeQuality:
         assert result.returncode == 0, (
             f"BasedPyright check failed: {result.stdout}\n{result.stderr}"
         )
+
+
+class TestAutoSetupBranchProtection:
+    """Tests for the optional branch-protection auto-run in post-gen hook."""
+
+    def test_auto_run_skipped_when_flag_disabled(
+        self,
+        template_dir: Path,
+        temp_dir: Path,
+        minimal_config: dict[str, Any],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """No subprocess invocation when auto_setup_branch_protection is no."""
+        monkeypatch.setenv("GITHUB_TOKEN", "ghp_test_token")
+        config = {**minimal_config, "auto_setup_branch_protection": "no"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        assert (project_dir / "scripts" / "setup_github_protection.py").exists()
+
+    def test_auto_run_skipped_when_token_missing(
+        self,
+        template_dir: Path,
+        temp_dir: Path,
+        minimal_config: dict[str, Any],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """No subprocess invocation when GITHUB_TOKEN is unset, even if flag is yes."""
+        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+        config = {**minimal_config, "auto_setup_branch_protection": "yes"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        assert (project_dir / "scripts" / "setup_github_protection.py").exists()

@@ -130,6 +130,7 @@
   "include_security_policy": ["yes", "no"],
   "community_health_style": ["full", "org_pointer"],
   "sole_contributor": ["yes", "no"],
+  "auto_setup_branch_protection": ["no", "yes"],
 
   "_comment_editorconfig": "EditorConfig",
   "include_editorconfig": ["yes", "no"],
