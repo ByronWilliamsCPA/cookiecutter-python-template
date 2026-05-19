@@ -113,7 +113,7 @@ These are handled by CI/CD and pre-commit hooks:
 - Basic linting violations (Ruff)
 - Type annotation presence (BasedPyright)
 - Test coverage percentage (pytest-cov)
-- Known security vulnerabilities (Bandit, Safety)
+- Known security vulnerabilities (Bandit, pip-audit, OSV-Scanner)
 - Credential detection (pre-commit hooks)
 - Assumption tag presence (#CRITICAL, #ASSUME - LLM governance checks)
 
