@@ -696,17 +696,17 @@ Open `{{cookiecutter.project_slug}}/docs/PROJECT_SETUP.md`. Find the `## Securit
 
 Add a new subsection immediately after the existing `### Branch Protection Rules` content (before the next `### ` heading):
 
-```markdown
+````markdown
 #### Automated Setup Script
 
 The template includes `scripts/setup_github_protection.py`, which configures branch protection via the GitHub API with the project's required status checks, required signatures, code-owner reviews, and the chosen approval count (controlled by the `sole_contributor` cookiecutter flag).
 
 Manual invocation after creating the GitHub repo:
 
-\`\`\`bash
+```bash
 export GITHUB_TOKEN=ghp_your_token_with_admin_repo_scope
 uv run python scripts/setup_github_protection.py
-\`\`\`
+```
 
 Prerequisites:
 
@@ -715,9 +715,9 @@ Prerequisites:
 - The local `origin` remote must point at the new GitHub repo.
 
 If you set the `auto_setup_branch_protection` cookiecutter variable to `yes` when generating the project, and you supply `GITHUB_TOKEN` in your environment, and the project has a configured remote, the post-gen hook runs this script automatically. The auto-run is non-fatal: if any precondition fails or the API call errors out, generation completes with a printed warning and you can run the script manually later.
-```
+````
 
-Replace the `\`\`\`` placeholders in the markdown above with the actual three-backtick fence sequences when you paste this content.
+The outer fence above uses four backticks so the embedded `bash` block (three-backtick fence) renders correctly. When pasting into PROJECT_SETUP.md, strip the outer four-backtick fence and keep the inner three-backtick `bash` block.
 
 - [ ] **Step 4.6: Run tests, verify pass**
 
@@ -772,9 +772,9 @@ After removal, the `## Cluster C` section should either be empty (in which case 
 
 Open `docs/superpowers/specs/2026-05-09-template-cleanup-umbrella.md`. Find the Status log table near the bottom. Add a new row:
 
-```markdown
+````markdown
 | 2026-05-19 | Cluster C shipped: include_editorconfig flag, community_health_style flag with new CODE_OF_CONDUCT.md and GOVERNANCE.md source files in two variants, sole_contributor flag for branch-protection approval count, auto_setup_branch_protection opt-in hook, PROJECT_SETUP.md documentation update. 4 feedback entries removed. |
-```
+````
 
 Also update the cluster table at the top of the file to mark cluster C status as "shipped" (or whatever convention the file uses for completed clusters).
 

@@ -66,12 +66,12 @@ indent_style = tab
 
 **Org_pointer variant**: three-line pointer files. Example for `CODE_OF_CONDUCT.md`:
 
-```markdown
+````markdown
 # Code of Conduct
 
 This project follows the
 [{{ cookiecutter.github_org_or_user }} organization Code of Conduct](https://github.com/{{ cookiecutter.github_org_or_user }}/.github/blob/main/CODE_OF_CONDUCT.md).
-```
+````
 
 GOVERNANCE.md follows the same pattern, pointing to the org's `GOVERNANCE.md`.
 
