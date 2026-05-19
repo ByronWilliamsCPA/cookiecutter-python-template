@@ -134,6 +134,10 @@ def setup_branch_protection(
         "X-GitHub-Api-Version": "2022-11-28",
     }
 
+    # Approval count: 0 for sole-maintainer projects (self-merge),
+    # 1 for team projects. Controlled by cookiecutter.sole_contributor.
+    required_approvals = {% if cookiecutter.sole_contributor == "yes" %}0{% else %}1{% endif %}
+
     # Check existing protection
     print(f"\n🔍 Checking current protection for {owner}/{repo}:{branch}...")
     existing = check_existing_protection(owner, repo, branch, headers)
@@ -181,7 +185,7 @@ def setup_branch_protection(
             "dismissal_restrictions": {},
             "dismiss_stale_reviews": True,
             "require_code_owner_reviews": True,
-            "required_approving_review_count": 1,
+            "required_approving_review_count": required_approvals,
             "require_last_push_approval": False,
         },
         "restrictions": None,  # No push restrictions
@@ -201,7 +205,7 @@ def setup_branch_protection(
     print("    ✅ Required status checks:")
     for check in protection["required_status_checks"]["contexts"]:
         print(f"       - {check}")
-    print("    ✅ Required pull request reviews: 1")
+    print(f"    ✅ Required pull request reviews: {required_approvals}")
     print("    ✅ Code owner reviews required")
     print("    ✅ Dismiss stale reviews")
     print("    ✅ Enforce for admins")

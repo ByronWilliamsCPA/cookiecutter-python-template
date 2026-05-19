@@ -129,6 +129,7 @@
   "include_contributing_guide": ["yes", "no"],
   "include_security_policy": ["yes", "no"],
   "community_health_style": ["full", "org_pointer"],
+  "sole_contributor": ["yes", "no"],
 
   "_comment_editorconfig": "EditorConfig",
   "include_editorconfig": ["yes", "no"],

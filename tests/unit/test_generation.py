@@ -585,3 +585,35 @@ class TestCommunityHealthStyle:
         skip = data.get("skip", [])
         assert "CODE_OF_CONDUCT.md" in skip
         assert "GOVERNANCE.md" in skip
+
+
+class TestSoleContributorFlag:
+    """Tests for sole_contributor cookiecutter flag in the protection script."""
+
+    def test_sole_contributor_yes_sets_zero_approvals(
+        self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
+    ) -> None:
+        """sole_contributor=yes sets required_approvals to 0."""
+        from tests.conftest import generate_project
+
+        config = {**minimal_config, "sole_contributor": "yes"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        script = project_dir / "scripts" / "setup_github_protection.py"
+        assert script.exists()
+        content = script.read_text(encoding="utf-8")
+        assert "required_approvals = 0" in content, \
+            "sole_contributor=yes should produce required_approvals = 0"
+
+    def test_sole_contributor_no_sets_one_approval(
+        self, template_dir: Path, temp_dir: Path, minimal_config: dict[str, Any]
+    ) -> None:
+        """sole_contributor=no sets required_approvals to 1."""
+        from tests.conftest import generate_project
+
+        config = {**minimal_config, "sole_contributor": "no"}
+        project_dir = generate_project(template_dir, temp_dir, config)
+        script = project_dir / "scripts" / "setup_github_protection.py"
+        assert script.exists()
+        content = script.read_text(encoding="utf-8")
+        assert "required_approvals = 1" in content, \
+            "sole_contributor=no should produce required_approvals = 1"
