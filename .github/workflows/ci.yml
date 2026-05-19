@@ -423,7 +423,7 @@ jobs:
   # Summary Job
   # ============================================================================
   ci-summary:
-    name: CI Summary
+    name: CI Gate
     runs-on: ubuntu-latest
     needs: [quality-checks, llm-governance, sonarqube-quality-gate, validate-template]
     if: always()
