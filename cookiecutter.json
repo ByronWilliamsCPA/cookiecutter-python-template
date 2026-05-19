@@ -128,6 +128,12 @@
   "include_code_of_conduct": ["yes", "no"],
   "include_contributing_guide": ["yes", "no"],
   "include_security_policy": ["yes", "no"],
+  "community_health_style": ["full", "org_pointer"],
+  "sole_contributor": ["yes", "no"],
+  "auto_setup_branch_protection": ["no", "yes"],
+
+  "_comment_editorconfig": "EditorConfig",
+  "include_editorconfig": ["yes", "no"],
 
   "_comment_urls": "Project URLs",
   "github_repo_name": "{{ cookiecutter.project_slug.replace('_', '-') }}",

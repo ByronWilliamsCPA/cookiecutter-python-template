@@ -134,6 +134,17 @@ def setup_branch_protection(
         "X-GitHub-Api-Version": "2022-11-28",
     }
 
+    # Approval count: 0 for sole-maintainer projects (self-merge),
+    # 1 for team projects. Controlled by cookiecutter.sole_contributor.
+    required_approvals = {% if cookiecutter.sole_contributor == "yes" %}0{% else %}1{% endif %}
+
+    # Code-owner reviews: disabled for sole-maintainer projects because the
+    # GitHub API rejects (HTTP 422) the combination of
+    # required_approving_review_count=0 and require_code_owner_reviews=true.
+    # A sole maintainer cannot meaningfully enforce code-owner review on
+    # themselves, so disabling it keeps the API payload consistent.
+    require_code_owner_reviews = {% if cookiecutter.sole_contributor == "yes" %}False{% else %}True{% endif %}
+
     # Check existing protection
     print(f"\n🔍 Checking current protection for {owner}/{repo}:{branch}...")
     existing = check_existing_protection(owner, repo, branch, headers)
@@ -180,8 +191,8 @@ def setup_branch_protection(
         "required_pull_request_reviews": {
             "dismissal_restrictions": {},
             "dismiss_stale_reviews": True,
-            "require_code_owner_reviews": True,
-            "required_approving_review_count": 1,
+            "require_code_owner_reviews": require_code_owner_reviews,
+            "required_approving_review_count": required_approvals,
             "require_last_push_approval": False,
         },
         "restrictions": None,  # No push restrictions
@@ -201,8 +212,11 @@ def setup_branch_protection(
     print("    ✅ Required status checks:")
     for check in protection["required_status_checks"]["contexts"]:
         print(f"       - {check}")
-    print("    ✅ Required pull request reviews: 1")
-    print("    ✅ Code owner reviews required")
+    print(f"    ✅ Required pull request reviews: {required_approvals}")
+    if require_code_owner_reviews:
+        print("    ✅ Code owner reviews required")
+    else:
+        print("    Code owner reviews disabled (sole-maintainer mode)")
     print("    ✅ Dismiss stale reviews")
     print("    ✅ Enforce for admins")
     print("    ✅ Linear history required")

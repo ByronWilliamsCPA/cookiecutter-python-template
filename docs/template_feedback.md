@@ -20,86 +20,15 @@ tags:
 > OpenClaw retention), or closed by that PR. Remaining entries align to clusters C, D,
 > E of the template-cleanup umbrella at
 > `docs/superpowers/specs/2026-05-09-template-cleanup-umbrella.md`.
+>
+> **Cleanup 2026-05-19:** 4 cluster C entries removed in PR `feat/cluster-C-compliance`:
+> `.editorconfig` missing, `community_health_style` variable absent (plus the missing
+> CODE_OF_CONDUCT.md and GOVERNANCE.md source files), `sole_contributor` variable
+> absent, and branch-protection script undocumented. All addressed by the cluster C PR.
 
 ---
 
 ## Feedback Items
-
----
-
-## Cluster C: Compliance Scaffolding
-
-### Missing `.editorconfig` in Generated Projects
-
-- **Priority**: Low
-- **Cluster**: C
-- **Date**: 2026-05-07
-
-**Issue**: The cookiecutter template does not generate a `.editorconfig` file. This
-is a standard file every modern repo expects: it standardizes indentation, line endings,
-and trailing whitespace handling across editors that respect the EditorConfig spec.
-Without it, contributors using different editors end up with inconsistent whitespace
-in commits, which then triggers ruff/yamllint/markdownlint reformatting noise.
-
-**Context**: Discovered in PR #352 (2026-05-07) during the repo-compliance audit.
-The audit flagged the absence as an unclassified candidate; the project added a
-standard `.editorconfig` defining 4-space Python, 2-space YAML/JSON/TOML, LF endings,
-UTF-8, with `trim_trailing_whitespace = false` for `*.md` (preserves Markdown line
-breaks) and `indent_style = tab` for Makefile.
-
-**Suggested Fix**: Ship a `.editorconfig` in the template root with the same defaults
-used in PR #352. Optionally make it conditional on an `include_editorconfig`
-cookiecutter variable that defaults to `yes`.
-
-### Template Does Not Support Org-Level Pointer Pattern for Community Health Files
-
-- **Priority**: Medium
-- **Cluster**: C
-- **Date**: 2026-05-03
-
-**Issue**: When `include_code_of_conduct: yes` is set, the template generates a full
-Contributor Covenant `CODE_OF_CONDUCT.md`. It has no option for an org-level pointer
-pattern where the file contains only a reference to a shared policy document maintained
-in the org's `.github` repository. Projects that want single-source-of-truth governance
-(pointing to `ByronWilliamsCPA/.github` rather than duplicating content) must add
-`CODE_OF_CONDUCT.md` and `GOVERNANCE.md` to the `.cruft.json` skip list manually, or
-the cruft check will fail whenever the branch predates the check being disabled.
-
-**Context**: Discovered in PR #289 (2026-05-03). The PR added minimal 3-line pointer
-files to satisfy FOUND-012 (CODE_OF_CONDUCT) and FOUND-013 (GOVERNANCE) compliance
-checks without duplicating org-level content. The PR branch predated commit `829c218`
-which disabled the cruft check; as a result, the stale branch ran the cruft check and
-failed because the pointer content diverged from the template-generated full covenant.
-
-**Suggested Fix**: Add a `community_health_style` cookiecutter variable with choices
-`full` (default, current behavior) and `org_pointer` (generates a 3-line pointer file
-referencing `https://github.com/{{ cookiecutter.github_org_or_user }}/.github`). When
-`org_pointer` is selected, also add `CODE_OF_CONDUCT.md` and `GOVERNANCE.md` to the
-generated `.cruft.json` skip list so future `cruft update` runs do not overwrite them.
-
-### Branch Protection Script Not Documented or Auto-Run
-
-- **Priority**: High
-- **Cluster**: C
-- **Date**: 2025-01-22
-
-**Issue**: Template includes `scripts/setup_github_protection.py` but it is not mentioned
-in `PROJECT_SETUP.md` and not automatically run during project creation. The script also
-lacks a `sole_contributor` cookiecutter variable to branch its approval logic (0 approvals
-for sole-contributor repos vs 1+ for team repos).
-
-**Context**: User had to manually configure branch protection via API. The setup guide only
-mentions manual UI steps (lines 433-452) despite a script existing. Comparison against a
-reference implementation (williaby/image-preprocessing-detector) revealed the missing
-`sole_contributor` variable.
-
-**Suggested Fix**:
-
-- Add script reference to `PROJECT_SETUP.md` Security Configuration section.
-- Add `sole_contributor` as a cookiecutter variable (boolean); use it to set required
-  approval count (0 vs 1+) in the protection call.
-- Consider adding as post-gen hook if `GITHUB_TOKEN` is available during cruft creation.
-- At minimum, document: `uv run python scripts/setup_github_protection.py`
 
 ---
 

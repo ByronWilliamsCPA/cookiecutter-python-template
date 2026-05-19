@@ -190,6 +190,17 @@ cookiecutter ~/my-templates/cookiecutter-template
 - `include_audit_logging`: Audit trail
 - `use_decimal_precision`: Decimal for money
 
+**Community Health & Compliance Scaffolding** (cluster C):
+
+- `include_editorconfig`: 4-space Python `.editorconfig` with YAML/JSON/TOML overrides
+- `community_health_style`: `full` Contributor Covenant 2.1 + `GOVERNANCE.md`, or
+  `org_pointer` short pointer files that reference the org `.github` repo
+- `sole_contributor`: solo-maintainer mode for branch protection
+  (`required_approving_review_count = 0` and `require_code_owner_reviews = false`)
+- `auto_setup_branch_protection`: opt-in auto-run of `setup_github_protection.py`
+  during generation (requires `GITHUB_TOKEN` and a configured `origin` remote;
+  fails non-fatally with an actionable hint if either is missing)
+
 ### Template Files ({{cookiecutter.project_slug}}/)
 
 Complete project structure with:

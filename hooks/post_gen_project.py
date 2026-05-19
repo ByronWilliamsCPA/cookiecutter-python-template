@@ -5,7 +5,7 @@ Performs cleanup and setup tasks after project generation.
 Runs after all files have been created.
 """
 
-import json
+import os
 import re
 import shutil
 import subprocess  # nosec B404
@@ -79,6 +79,126 @@ def run_command(cmd: list[str], check: bool = True) -> bool:
         return True
 
 
+def maybe_run_branch_protection(flag: str, remote_url: str) -> bool:
+    """Invoke setup_github_protection.py if all preconditions are met.
+
+    Preconditions:
+        1. flag == "yes" (the cookiecutter auto_setup_branch_protection value)
+        2. GITHUB_TOKEN environment variable is set and non-empty
+        3. remote_url is non-empty (project has a git remote)
+
+    The invocation is non-fatal. Any failure produces a stdout warning
+    and the post-gen hook continues. When the flag is "yes" but a
+    precondition fails, an actionable hint is printed identifying which
+    precondition was missed so the user can re-run the script manually.
+
+    Args:
+        flag: The cookiecutter auto_setup_branch_protection value.
+        remote_url: The git remote.origin.url value (empty string if none).
+
+    Returns:
+        True if the script was invoked and exited 0, False otherwise.
+    """
+    # #ASSUME: Data Integrity: flag is the literal cookiecutter value, normalized to
+    #          lowercase yes/no by cookiecutter.json's choice list.
+    # #VERIFY: only explicit "yes" triggers the auto-run; any other value is a no-op.
+    if flag != "yes":
+        return False
+
+    # #CRITICAL: Security: GITHUB_TOKEN is read from the environment and MUST NOT be
+    #            echoed back to stdout or written to disk. Hint messages reference
+    #            the variable name only, never its value.
+    # #VERIFY: hint strings below contain no token interpolation; subprocess
+    #          inherits the env implicitly via the parent process.
+    if not os.environ.get("GITHUB_TOKEN"):
+        print(
+            "  ℹ auto_setup_branch_protection=yes but GITHUB_TOKEN is not set; "  # noqa: RUF001
+            "skipping. Re-run manually with: "
+            "GITHUB_TOKEN=ghp_xxx uv run python scripts/setup_github_protection.py"
+        )
+        return False
+
+    # #CRITICAL: Timing Dependencies: initialize_git() runs `git init` earlier in
+    #            main(); a fresh repo has no `origin` remote, so remote_url is
+    #            empty unless the user supplied one out-of-band. Without this
+    #            message the feature appears silently dead.
+    # #VERIFY: caller derives remote_url via `git config --get remote.origin.url`
+    #          (see _detect_origin_url); empty string flows through to here.
+    if not remote_url:
+        print(
+            "  ℹ auto_setup_branch_protection=yes but no `origin` remote is "  # noqa: RUF001
+            "configured. A fresh `git init` repo has no remote. Add one with:"
+        )
+        print("     git remote add origin <https-or-ssh-url>")
+        print(
+            "     uv run python scripts/setup_github_protection.py"
+            "   # then re-run the script"
+        )
+        return False
+
+    # #ASSUME: External Resources: scripts/setup_github_protection.py is shipped
+    #          by the template and survives post-gen cleanup. Concurrency note:
+    #          Path("scripts") resolves relative to the generated project root
+    #          (cookiecutter sets cwd before invoking the hook), which is
+    #          consistent across POSIX and Windows hosts.
+    # #VERIFY: Path.exists() handles cross-platform path separators; the missing
+    #          case prints an actionable hint instead of raising.
+    script = Path("scripts") / "setup_github_protection.py"
+    if not script.exists():
+        print(f"  Warning: {script} not found; skipping auto branch protection.")
+        return False
+
+    # #ASSUME: External Resources: `uv` is on PATH because the cookiecutter
+    #          template advertises uv as the canonical runner. run_command
+    #          handles FileNotFoundError and returns False on missing uv.
+    # #VERIFY: run_command catches FileNotFoundError; failure path below prints
+    #          a manual re-run hint.
+    print("  * Auto-configuring branch protection...")
+    success = run_command(["uv", "run", "python", str(script)], check=False)
+    if success:
+        print("  Branch protection configured.")
+        return True
+    print(
+        "  Warning: Branch protection auto-run failed; "
+        "re-run manually with: "
+        "GITHUB_TOKEN=ghp_xxx uv run python scripts/setup_github_protection.py"
+    )
+    return False
+
+
+def _detect_origin_url() -> str:
+    """Return the configured `remote.origin.url`, or empty string if absent.
+
+    A freshly initialised `git init` repo has no `origin` remote, so this
+    helper returns an empty string in the default post-gen flow. The empty
+    return value short-circuits maybe_run_branch_protection with an
+    actionable hint instead of a silent skip.
+    """
+    # #CRITICAL: External Resources: shutil.which("git") may return None on
+    #            systems where git is not installed; we must not crash the
+    #            post-gen hook in that case.
+    # #VERIFY: git_bin is checked for truthiness before subprocess.run; an
+    #          absent binary returns "" immediately.
+    git_bin = shutil.which("git")
+    if not git_bin:
+        return ""
+    try:
+        # #ASSUME: Concurrency: subprocess.run is synchronous and bounded by a
+        #          5s timeout to prevent a hung `git config` call from blocking
+        #          generation on misconfigured hosts.
+        # #VERIFY: timeout=5 and TimeoutExpired handled below.
+        result = subprocess.run(  # nosec B603
+            [git_bin, "config", "--get", "remote.origin.url"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=5,
+        )
+    except (subprocess.TimeoutExpired, OSError):
+        return ""
+    return result.stdout.strip()
+
+
 def _cleanup_documentation_files() -> None:
     """Remove documentation files based on cookiecutter choices."""
     # Remove CLI if not needed
@@ -99,6 +219,10 @@ def _cleanup_documentation_files() -> None:
     # Remove SECURITY if not needed
     if "{{ cookiecutter.include_security_policy }}" == "no":
         remove_file(Path("SECURITY.md"))
+
+    # Remove .editorconfig if not needed
+    if "{{ cookiecutter.include_editorconfig }}" == "no":
+        remove_file(Path(".editorconfig"))
 
     # Remove CONTRIBUTING if not needed
     if "{{ cookiecutter.include_contributing_guide }}" == "no":
@@ -1105,145 +1229,6 @@ def run_code_fixes() -> None:
         print("  - Ruff auto-fix completed with some issues (review manually)")
 
 
-def get_cruft_skip_patterns() -> list[str]:
-    """Return the comprehensive list of skip patterns for cruft.
-
-    These patterns prevent "Unable to interpret changes as unicode" errors
-    during cruft update by excluding binary, cache, and build artifacts.
-
-    Returns:
-        List of glob patterns to skip during cruft diff operations.
-    """
-    return [
-        # Git internals (binary objects)
-        ".git",
-        ".git/*",
-        "**/.git/**",
-        # Python bytecode and caches
-        "*.pyc",
-        "**/__pycache__/**",
-        "*.egg-info/**",
-        ".mypy_cache/**",
-        ".pytest_cache/**",
-        ".ruff_cache/**",
-        ".tox/**",
-        # Virtual environments
-        ".venv/**",
-        "venv/**",
-        # Lock files (frequently change, can have binary-like content)
-        "*.lock",
-        "uv.lock",
-        "poetry.lock",
-        # Build artifacts
-        "*.whl",
-        "dist/**",
-        "build/**",
-        # Coverage and test artifacts
-        ".coverage",
-        "htmlcov/**",
-        # Database files (binary)
-        "*.db",
-        "*.sqlite",
-        "*.sqlite3",
-        # IDE and tool caches
-        ".qlty/**",
-        ".sonarlint/**",
-        ".idea/**",
-        ".vscode/**",
-        # Node modules (if any JS tooling)
-        "node_modules/**",
-        # Frontend user customizations (don't overwrite with cruft update)
-        "frontend/src/components/**",
-        "frontend/src/hooks/**",
-        "frontend/src/pages/**",
-        "frontend/src/routes/**",
-        "frontend/src/App.tsx",
-        "frontend/src/App.css",
-        "frontend/public/**",
-        # Frontend generated/build files
-        "frontend/src/client/**",
-        "frontend/dist/**",
-        "frontend/node_modules/**",
-        "frontend/.vite/**",
-        "frontend/coverage/**",
-        # Template-specific files that should remain project-owned
-        "CLAUDE.md",
-        "REUSE.toml",
-        "docs/template_feedback.md",
-    ]
-
-
-def add_cruft_skip_patterns() -> None:
-    """Add skip patterns to .cruft.json to exclude binary/build files from cruft diff.
-
-    This prevents "Unable to interpret changes as unicode" errors during cruft update.
-    These patterns ensure cruft can successfully diff and update projects without
-    encountering binary file unicode errors.
-
-    If .cruft.json doesn't exist (e.g., project generated with plain cookiecutter),
-    creates a minimal .cruft.json with skip patterns so users can adopt cruft later.
-
-    See: https://github.com/ByronWilliamsCPA/cookiecutter-python-template/issues/13
-    """
-    print("\n🔧 Configuring cruft skip patterns...")
-
-    # NOTE: SonarCloud pythonsecurity:S2083 (path traversal) flags the
-    # cruft_file.write_text below. False positive: cruft_file is the literal
-    # Path(".cruft.json"), and the content written is json.dumps() of program-
-    # controlled data. No user-controlled string reaches the path or content.
-    cruft_file = Path(".cruft.json")
-    skip_patterns = get_cruft_skip_patterns()
-
-    if cruft_file.exists():
-        # Update existing .cruft.json (created by cruft create)
-        # Merge with existing skip patterns to preserve user customizations
-        try:
-            cruft_config = json.loads(cruft_file.read_text(encoding="utf-8"))
-            existing_skip = cruft_config.get("skip", [])
-
-            # Normalize existing 'skip' into a list of strings
-            if isinstance(existing_skip, str):
-                existing_skip = [existing_skip]
-            elif not isinstance(existing_skip, list):
-                existing_skip = []
-
-            # Merge and deduplicate, preserving order with new patterns first
-            merged_skip = list(dict.fromkeys(skip_patterns + existing_skip))
-            cruft_config["skip"] = merged_skip
-
-            cruft_file.write_text(  # NOSONAR S2083: cruft_file is the literal Path(".cruft.json"); content is json.dumps of program-controlled dict
-                json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8"
-            )
-            print(f"  ✓ Updated .cruft.json skip patterns ({len(merged_skip)} entries)")
-        except (json.JSONDecodeError, OSError, KeyError) as e:
-            print(f"  - Failed to update skip patterns: {e}", file=sys.stderr)
-    else:
-        # Create minimal .cruft.json for projects generated with plain cookiecutter
-        # This allows users to adopt cruft later with `cruft link`
-        try:
-            cruft_config = {
-                "template": "https://github.com/{{ cookiecutter.github_org_or_user }}/cookiecutter-python-template",
-                "commit": None,
-                "checkout": None,
-                "context": {
-                    "cookiecutter": {
-                        "project_name": "{{ cookiecutter.project_name }}",
-                        "project_slug": "{{ cookiecutter.project_slug }}",
-                        "python_version": "{{ cookiecutter.python_version }}",
-                    }
-                },
-                "directory": None,
-                "skip": skip_patterns,
-            }
-            cruft_file.write_text(
-                json.dumps(cruft_config, indent=2) + "\n", encoding="utf-8"
-            )
-            print(f"  ✓ Created .cruft.json with {len(skip_patterns)} skip patterns")
-            print("    (Use 'cruft link' to fully connect to the template)")
-        except OSError as e:
-            print(f"  - Failed to create .cruft.json: {e}", file=sys.stderr)
-
-
 def main() -> None:
     """Run post-generation tasks."""
     print("\n🚀 Running post-generation setup...")
@@ -1256,11 +1241,22 @@ def main() -> None:
         run_code_fixes()  # Auto-fix code quality issues before git init
         ensure_trailing_newlines()  # Ensure all files have trailing newlines
         mark_scripts_executable()  # Ensure shebang scripts have executable permissions
-        add_cruft_skip_patterns()  # Add skip patterns to prevent binary file issues
         initialize_git()
         setup_claude_subtree()  # Add Claude standards via git subtree
         setup_pre_commit()
         setup_claude_user_settings()
+        # Optional auto-run of branch protection (opt-in via cookiecutter flag).
+        # #CRITICAL: Timing Dependencies: this MUST run after initialize_git();
+        #            _detect_origin_url reads `git config --get remote.origin.url`
+        #            from the freshly initialised repo. A fresh `git init` has no
+        #            origin remote, so the helper returns "" and the auto-run
+        #            prints an actionable hint and skips cleanly.
+        # #VERIFY: see initialize_git() ordering above; _detect_origin_url uses
+        #          a 5s timeout and falls back to "" on any error.
+        maybe_run_branch_protection(
+            flag="{{ cookiecutter.auto_setup_branch_protection }}",
+            remote_url=_detect_origin_url(),
+        )
         print_success_message()
     except Exception as e:  # noqa: BLE001
         # Architectural decision: main() is the top-level error boundary for the

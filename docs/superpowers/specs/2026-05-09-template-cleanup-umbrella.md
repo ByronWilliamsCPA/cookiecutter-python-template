@@ -19,7 +19,7 @@ This is the index. Each cluster gets its own design file when its turn comes.
 | # | Order | Cluster | Open + Verify | Status | Design file |
 |---|---|---|---|---|---|
 | BA | 1 | Post-smoke-test cleanup (merged B+A) | 3 | design pending | `2026-05-09-template-cleanup-cluster-BA-post-smoke.md` |
-| C | 2 | Compliance scaffolding | 4 | not started | `2026-05-09-template-cleanup-cluster-C-compliance.md` |
+| C | 2 | Compliance scaffolding | 4 | shipped | `2026-05-09-template-cleanup-cluster-C-compliance.md` |
 | D | 3 | Code quality of generated code | 5 | not started | `2026-05-09-template-cleanup-cluster-D-quality.md` |
 | E | 4 | Docs build and MkDocs | 6 | not started | `2026-05-09-template-cleanup-cluster-E-docs.md` |
 
@@ -68,5 +68,7 @@ redirected to homelab-infra. No work happens here.
 | 2026-05-09 | Smoke test (`cruft create . --no-input` and again with `include_docker=yes`) resolved 6 items as already-FIXED: unparsed `{{cookiecutter.*}}` in `.claude/`, trailing newlines, master/main default branch, `.cruft.json` URL local-path, trufflehog YAML quoting (parses cleanly), `python-compatibility.yml` GITHUB_OUTPUT format (now uses YAML matrix literal). One item REDIRECTED: cruft check default lives in external org `.github` reusable workflow, not this template. |
 | 2026-05-09 | Clusters B and A merged into single cluster "BA" (3 in-scope items: Dockerfile README copy, fence terminator at `.claude/context/python-standards.md:67`, spot-verification of branch-protection status check name alignment for 3 contexts). Cluster ordering revised. |
 | 2026-05-09 | Cluster BA Task 3 verification found all four required status check contexts (CI Gate, Security Gate Validation, Dependency & Standards Validation, Check REUSE Compliance) MATCH the generated workflow job display names. The earlier `head -15` discovery had missed `pr-validation.yml` job `validate-dependencies` (line 152). No deferred resolution to cluster C is needed for this item. |
+
+| 2026-05-19 | Cluster C shipped: include_editorconfig flag, community_health_style flag with new CODE_OF_CONDUCT.md and GOVERNANCE.md source files in two variants, sole_contributor flag for branch-protection approval count, auto_setup_branch_protection opt-in hook, PROJECT_SETUP.md documentation update. 4 feedback entries removed. |
 
 Append new rows here as clusters move through brainstorm to merge.

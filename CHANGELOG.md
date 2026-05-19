@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `include_editorconfig` cookiecutter flag (default `yes`): ships a 4-space Python
+  baseline `.editorconfig` with 2-space YAML/JSON/TOML overrides, LF line endings,
+  UTF-8 encoding, and tab-indented Makefiles
+- `community_health_style` cookiecutter flag (default `full`): selects between a
+  full Contributor Covenant 2.1 with a templated `GOVERNANCE.md` (full variant) or
+  short pointer files that reference the org's `.github` repo (org_pointer variant);
+  pointer variant also adds `CODE_OF_CONDUCT.md` and `GOVERNANCE.md` to
+  `[tool.cruft] skip` so `cruft update` preserves the pointer
+- `sole_contributor` cookiecutter flag (default `yes`): sets
+  `required_approving_review_count` to 0 and disables `require_code_owner_reviews`
+  in the generated `scripts/setup_github_protection.py` so the GitHub API does not
+  reject the configuration with HTTP 422 for solo-maintained projects
+- `auto_setup_branch_protection` cookiecutter flag (default `no`): opt-in
+  post-generation auto-run of `scripts/setup_github_protection.py`. Fails non-fatally
+  with an actionable hint when `GITHUB_TOKEN` is missing, when the generated repo has
+  no `origin` remote, or when the script is missing; never echoes the token value
+- Cluster C feasibility check, design spec, and implementation plan under
+  `docs/superpowers/`
 - CI gate aggregator jobs in generated project CI and org-workflow variants; branch protection
   now blocks on a single `CI Gate` check instead of individual job names
 - Jinja2 conditionals in `setup_github_protection.py` contexts list; required status checks
@@ -24,6 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Cruft skip patterns moved from a runtime-written `.cruft.json` (silently overwritten
+  by cruft on create) to `[tool.cruft] skip` in the generated `pyproject.toml`, which
+  cruft reads at update time and preserves; removed the dead
+  `add_cruft_skip_patterns()` post-gen helper and its three unit tests
+- `_detect_origin_url()` helper extracted from `main()` in `hooks/post_gen_project.py`
+  for single-responsibility and isolated testability
 - Root `pyproject.toml`: line-length 100 to 88; target-version py310 to py312
 - Root `pyproject.toml`: replaced `black` and `mypy` with `ruff-format` and `basedpyright`
 - Root `pyproject.toml`: added missing Ruff rule groups (BLE, EM, SLF, INP, ISC, PGH,
