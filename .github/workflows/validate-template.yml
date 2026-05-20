@@ -80,10 +80,10 @@ jobs:
 
       - name: Check for hardcoded values
         run: |
-          # Only check template files (not root repo files)
-          # Root files (README.md, CLAUDE.md, sonar-project.properties) can have williaby references
-          # .claude/ directory contains documentation for williaby/.claude standards repo (intentional)
-          # scripts/ and README.md can reference williaby/.claude for standards integration
+          # Template tree should reference ByronWilliamsCPA/.claude (not williaby/.claude).
+          # The PromptCraft check guards against another author's identifiers leaking
+          # into generated projects. Exclusions are retained for defense-in-depth
+          # against future regressions even though current strings are clean.
           if [ -d "{{cookiecutter.project_slug}}" ]; then
             ! grep -r "williaby\|PromptCraft" \
               --include="*.md" \

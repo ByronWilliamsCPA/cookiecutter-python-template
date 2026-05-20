@@ -479,7 +479,7 @@ This project includes standardized Claude Code configuration via git subtree:
 
 # Or manually
 git subtree pull --prefix .claude/standard \
-    https://github.com/williaby/.claude.git main --squash
+    https://github.com/ByronWilliamsCPA/.claude.git main --squash
 ```
 
 **What's Included**:
