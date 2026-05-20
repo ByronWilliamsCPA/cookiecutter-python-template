@@ -28,7 +28,7 @@ This directory contains Claude Code configuration and standards for this project
 
 ### Standard Configuration (`standard/`)
 
-This directory is managed as a **git subtree** from [williaby/.claude](https://github.com/williaby/.claude). It contains:
+This directory is managed as a **git subtree** from [ByronWilliamsCPA/.claude](https://github.com/ByronWilliamsCPA/.claude). It contains:
 
 - Universal Claude Code development standards
 - Best practices and coding guidelines
@@ -72,7 +72,7 @@ To pull the latest standards from the upstream repository:
 
 # Or manually
 git subtree pull --prefix .claude/standard \
-    https://github.com/williaby/.claude.git main --squash
+    https://github.com/ByronWilliamsCPA/.claude.git main --squash
 ```
 
 ## Contributing Changes to Standards
@@ -82,7 +82,7 @@ If you develop a pattern or guideline that would benefit all projects:
 ```bash
 # Push changes back to the standard repository
 git subtree push --prefix .claude/standard \
-    https://github.com/williaby/.claude.git main
+    https://github.com/ByronWilliamsCPA/.claude.git main
 ```
 
 **Note**: This requires write access to the upstream repository.
@@ -108,7 +108,7 @@ git init
 
 # Add the subtree
 git subtree add --prefix .claude/standard \
-    https://github.com/williaby/.claude.git main --squash
+    https://github.com/ByronWilliamsCPA/.claude.git main --squash
 ```
 
 ---

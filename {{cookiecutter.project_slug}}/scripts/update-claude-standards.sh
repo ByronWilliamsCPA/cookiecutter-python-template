@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 SUBTREE_PREFIX=".claude/standard"
-CLAUDE_REPO="https://github.com/williaby/.claude.git"
+CLAUDE_REPO="https://github.com/ByronWilliamsCPA/.claude.git"
 BRANCH="main"
 
 # Check if we're in a git repository
