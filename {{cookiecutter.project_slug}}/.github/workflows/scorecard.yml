@@ -60,6 +60,10 @@ jobs:
         with:
           results_file: results.sarif
           results_format: sarif
+          # `publish_results` is the scorecard-action's own (still-valid)
+          # parameter that enables publishing to the OpenSSF dashboard.
+          # Distinct from the deprecated `publish-results` reusable-workflow
+          # input (hyphen) removed from the org-workflow caller above.
           publish_results: true
 
       - name: Upload SARIF results
