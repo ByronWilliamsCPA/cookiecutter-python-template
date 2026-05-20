@@ -9,9 +9,9 @@ from {{ cookiecutter.project_slug }}.core.exceptions import (
     ConfigurationError,
     DatabaseError,
     ExternalServiceError,
-{% if cookiecutter.use_decimal_precision == "yes" -%}
+{%- if cookiecutter.use_decimal_precision == "yes" %}
     FinancialCalculationError,
-{% endif -%}
+{%- endif %}
     ProjectBaseError,
     ResourceNotFoundError,
     ValidationError,
@@ -26,9 +26,9 @@ __all__ = [
     "ConfigurationError",
     "DatabaseError",
     "ExternalServiceError",
-{% if cookiecutter.use_decimal_precision == "yes" -%}
+{%- if cookiecutter.use_decimal_precision == "yes" %}
     "FinancialCalculationError",
-{% endif -%}
+{%- endif %}
     "ProjectBaseError",
     "ResourceNotFoundError",
     # Configuration
