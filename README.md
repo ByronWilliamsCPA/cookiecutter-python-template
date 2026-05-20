@@ -386,7 +386,7 @@ When you create a new project using this template, the post-generation hook will
 
 1. **Check** for existing user-level settings at `~/.claude/` or `~/.config/claude/`
 2. **Prompt** you to set up settings if not found
-3. **Clone** the settings repo (default: `https://github.com/williaby/.claude`)
+3. **Clone** the settings repo (default: `https://github.com/ByronWilliamsCPA/.claude`)
 4. **Verify** installation of CLAUDE.md, skills, agents, and commands
 
 **Manual Setup:**
@@ -395,7 +395,7 @@ If you skip the automatic setup, you can install user-level settings later:
 
 ```bash
 # Using the default settings repo
-git clone https://github.com/williaby/.claude ~/.claude
+git clone https://github.com/ByronWilliamsCPA/.claude ~/.claude
 
 # Or using your own settings repo
 git clone https://github.com/YOUR_USERNAME/YOUR_CLAUDE_SETTINGS ~/.claude

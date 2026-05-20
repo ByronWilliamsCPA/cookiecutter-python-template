@@ -433,7 +433,7 @@ def setup_claude_subtree() -> None:
         print("  ⚠ Git not initialized - skipping Claude standards setup")
         print("    Run 'git init' and then manually add the subtree:")
         print("    git subtree add --prefix .claude/standard \\")
-        print("      https://github.com/williaby/.claude.git main --squash")
+        print("      https://github.com/ByronWilliamsCPA/.claude.git main --squash")
         return
 
     # Check if user wants to add the subtree
@@ -449,7 +449,7 @@ def setup_claude_subtree() -> None:
 
     # Default to yes if empty response
     if response in ["", "y", "yes"]:
-        claude_repo = "https://github.com/williaby/.claude.git"
+        claude_repo = "https://github.com/ByronWilliamsCPA/.claude.git"
         subtree_prefix = ".claude/standard"
 
         print(f"\n  📥 Adding Claude standards from {claude_repo}...")
@@ -497,7 +497,7 @@ def setup_claude_subtree() -> None:
         print("\n  ℹ Skipping Claude standards setup.")  # noqa: RUF001
         print("    You can add it later with:")
         print("     git subtree add --prefix .claude/standard \\")
-        print("       https://github.com/williaby/.claude.git main --squash")
+        print("       https://github.com/ByronWilliamsCPA/.claude.git main --squash")
 
 
 def setup_pre_commit() -> None:
@@ -752,7 +752,7 @@ def setup_claude_user_settings() -> None:
 
     # Default to yes if empty response
     if response in ["", "y", "yes"]:
-        default_repo = "https://github.com/williaby/.claude"
+        default_repo = "https://github.com/ByronWilliamsCPA/.claude"
         default_location = str(Path.home() / ".claude")
 
         try:
@@ -774,7 +774,7 @@ def setup_claude_user_settings() -> None:
             print("\n  Setup cancelled.")
     else:
         print("\n  ℹ Skipping setup. You can set up user-level settings later by:")  # noqa: RUF001
-        print("     git clone https://github.com/williaby/.claude ~/.claude")
+        print("     git clone https://github.com/ByronWilliamsCPA/.claude ~/.claude")
 
 
 def _collect_optional_features(

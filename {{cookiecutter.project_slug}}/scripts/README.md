@@ -14,7 +14,7 @@ Updates the Claude Code standards from the upstream repository.
 ```
 
 **What it does**:
-- Pulls the latest Claude Code standards from [williaby/.claude](https://github.com/williaby/.claude)
+- Pulls the latest Claude Code standards from [ByronWilliamsCPA/.claude](https://github.com/ByronWilliamsCPA/.claude)
 - Updates the `.claude/standard/` directory via git subtree
 - Preserves project-specific configuration in `.claude/claude.md`
 

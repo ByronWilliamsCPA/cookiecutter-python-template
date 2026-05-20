@@ -65,6 +65,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   missing; `validate-template.yml` previously had no `permissions:` declaration at any level
 - Pre-commit (root repo): SHA-pinned all 9 hook `rev:` fields (previously only
   `detect-secrets` was pinned); trailing tag annotations preserved
+- Template-tree workflows: added `step-security/harden-runner@v2.19.3` audit-mode
+  steps to all 24 `steps:`-bearing jobs across 12 workflows under
+  `{{cookiecutter.project_slug}}/.github/workflows/` (`ci.yml`, `codecov.yml`,
+  `dependency-review.yml`, `docs.yml`, `fips-compatibility.yml`,
+  `mutation-testing.yml`, `python-compatibility.yml`, `release.yml`, `reuse.yml`,
+  `scorecard.yml`, `security-analysis.yml`, `validate-cruft.yml`). Pure
+  reusable-workflow callers (`container-security.yml`, `publish-pypi.yml`,
+  `sbom.yml`, `sonarcloud.yml`) intentionally excluded since they delegate all
+  steps to org-level workflows
+- Template-tree workflows: added per-job least-privilege `permissions:` blocks to
+  all 24 hardened jobs with appropriately scoped grants (`docs.yml` standalone
+  uses `contents: write` only since `mkdocs gh-deploy` does not exercise Pages
+  API / OIDC; `security-analysis.yml` standalone uses `contents: read` only
+  since Bandit/OSV-Scanner write artifacts not SARIF and post no PR comments)
+- Template-tree workflows: `python-compatibility.yml` harden-runner gated on
+  `runner.os == 'Linux'` so the macOS/Windows matrix legs' silent no-op is
+  visible in the workflow rather than implicit
+- Template-tree `.pre-commit-config.yaml`: SHA-pinned 6 hook `rev:` fields
+  (`pre-commit/pre-commit-hooks` v4.5.0, `PyCQA/bandit` 1.7.10,
+  `compilerla/conventional-pre-commit` v3.4.0, `abravalheri/validate-pyproject`
+  v0.20.2, `python-jsonschema/check-jsonschema` 0.29.4, `econchick/interrogate`
+  1.7.0); all 7 `rev:` fields now SHA-pinned (existing ruff pin preserved)
 - Root `pyproject.toml`: added missing `A` (flake8-builtins) and `PT`
   (flake8-pytest-style) rule sets to `[tool.ruff.lint].select`
 
@@ -110,6 +132,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`.sh`/`.bash` + `shell` type)
 - `CLAUDE.md`: Git worktree examples now use `.worktrees/<branch-slug>` per
   the global hard rule (was `../cookiecutter-python-template-worktrees/...`)
+- Template-tree `scorecard.yml` reusable-workflow caller: removed deprecated
+  `publish-results: true` input (upstream contract in `ByronWilliamsCPA/.github`
+  hardcodes the behavior; passing the input is a no-op). Mirrors root-repo
+  fix from PR #58. The standalone branch retains `publish_results: true` on
+  `ossf/scorecard-action` directly since that parameter remains valid and
+  enables OpenSSF dashboard publishing for projects not using org workflows
+- Claude standards repo references redirected from `williaby/.claude` to
+  `ByronWilliamsCPA/.claude` across all live code paths: template tree
+  (`{{cookiecutter.project_slug}}/README.md`, `{{cookiecutter.project_slug}}/.claude/README.md`,
+  `{{cookiecutter.project_slug}}/scripts/README.md`,
+  `{{cookiecutter.project_slug}}/scripts/update-claude-standards.sh`),
+  generation hooks (`hooks/post_gen_project.py`), and root `README.md`
+  install instructions. Generated projects previously cloned and pulled
+  standards from the wrong org. Historical handoff doc
+  (`docs/handoff-claude-standards-team.md`) preserved as-is for context
 
 ## [0.1.0] - 2024-01-01
 
