@@ -102,7 +102,7 @@ def setup_logging(
         (
             structlog.processors.TimeStamper(fmt="iso")
             if include_timestamp
-            else noop_processor
+            else cast("Processor", noop_processor)
         ),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
