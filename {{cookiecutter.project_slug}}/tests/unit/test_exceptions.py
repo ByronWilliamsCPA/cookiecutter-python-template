@@ -711,6 +711,126 @@ class TestExceptionHierarchy:
             raise APIError("API failed")
 
 
+class TestAttachOptionalDetails:
+    """Tests for _attach_optional_details internal helper."""
+
+    @pytest.mark.unit
+    def test_none_values_excluded(self) -> None:
+        """Verify None-valued fields are not added to details."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import _attach_optional_details
+
+        result = _attach_optional_details({}, field=None, code=None)
+
+        assert "field" not in result
+        assert "code" not in result
+
+    @pytest.mark.unit
+    def test_zero_value_preserved(self) -> None:
+        """Verify integer 0 is kept; old if-check would have dropped it."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import _attach_optional_details
+
+        result = _attach_optional_details({}, retry_after=0)
+
+        assert result["retry_after"] == 0
+
+    @pytest.mark.unit
+    def test_false_value_preserved(self) -> None:
+        """Verify boolean False is kept; old if-check would have dropped it."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import _attach_optional_details
+
+        result = _attach_optional_details({}, blocking=False)
+
+        assert result["blocking"] is False
+
+    @pytest.mark.unit
+    def test_empty_string_preserved(self) -> None:
+        """Verify empty string is kept; old if-check would have dropped it."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import _attach_optional_details
+
+        result = _attach_optional_details({}, field="")
+
+        assert result["field"] == ""
+
+    @pytest.mark.unit
+    def test_existing_details_merged(self) -> None:
+        """Verify new fields merge into an existing details dict."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import _attach_optional_details
+
+        existing = {"preexisting": "value"}
+        result = _attach_optional_details(existing, added="extra")
+
+        assert result["preexisting"] == "value"
+        assert result["added"] == "extra"
+
+    @pytest.mark.unit
+    def test_returns_same_dict_object(self) -> None:
+        """Verify the helper mutates and returns the same dict."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import _attach_optional_details
+
+        details: dict[str, object] = {}
+        returned = _attach_optional_details(details, key="val")
+
+        assert returned is details
+
+
+class TestAPIErrorContext:
+    """Tests for APIErrorContext dataclass and its use in APIError."""
+
+    @pytest.mark.unit
+    def test_context_only_construction(self) -> None:
+        """Verify APIError accepts context= without individual kwargs."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import APIError, APIErrorContext
+
+        ctx = APIErrorContext(service_name="GitHub", status_code=429, retry_after=60)
+        error = APIError("Rate limited", context=ctx)
+
+        assert error.details["service_name"] == "GitHub"
+        assert error.details["status_code"] == 429
+        assert error.details["retry_after"] == 60
+
+    @pytest.mark.unit
+    def test_context_overrides_explicit_kwargs(self) -> None:
+        """Verify context fields take precedence over individual kwargs."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import APIError, APIErrorContext
+
+        ctx = APIErrorContext(service_name="GitHub", retry_after=30)
+        error = APIError("Rate limited", service_name="Fallback", retry_after=99, context=ctx)
+
+        assert error.details["service_name"] == "GitHub"
+        assert error.details["retry_after"] == 30
+
+    @pytest.mark.unit
+    def test_context_none_field_falls_back_to_kwarg(self) -> None:
+        """Verify a None context field lets the explicit kwarg through."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import APIError, APIErrorContext
+
+        ctx = APIErrorContext(service_name="GitHub")  # retry_after left as None
+        error = APIError("Rate limited", retry_after=60, context=ctx)
+
+        assert error.details["retry_after"] == 60
+
+    @pytest.mark.unit
+    def test_retry_after_via_context(self) -> None:
+        """Verify retry_after reaches the details dict via context object."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import APIError, APIErrorContext
+
+        ctx = APIErrorContext(retry_after=120)
+        error = APIError("Too many requests", context=ctx)
+
+        assert error.details["retry_after"] == 120
+
+    @pytest.mark.unit
+    def test_api_error_context_dataclass_defaults(self) -> None:
+        """Verify APIErrorContext defaults all fields to None."""
+        from {{ cookiecutter.project_slug }}.core.exceptions import APIErrorContext
+
+        ctx = APIErrorContext()
+
+        assert ctx.service_name is None
+        assert ctx.status_code is None
+        assert ctx.retry_after is None
+
+
 class TestModuleExports:
     """Tests for module exports in __all__."""
 
