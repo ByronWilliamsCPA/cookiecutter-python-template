@@ -1,5 +1,5 @@
-"""Financial utilities module.
 {% if cookiecutter.use_decimal_precision == "yes" -%}
+"""Financial utilities module.
 
 CRITICAL: Always use Decimal for financial calculations to avoid floating-point errors.
 
@@ -20,10 +20,11 @@ Never use float for money:
     >>> from decimal import Decimal
     >>> price = Decimal('19.99')
     >>> total = price * Decimal('3')  # Decimal('59.97')
-{% endif -%}
 """
-
-{% if cookiecutter.use_decimal_precision == "yes" -%}
+{%- else -%}
+"""Financial utilities module."""
+{%- endif %}
+{% if cookiecutter.use_decimal_precision == "yes" %}
 from decimal import Decimal, ROUND_HALF_UP, getcontext
 
 from {{ cookiecutter.project_slug }}.core.exceptions import ValidationError

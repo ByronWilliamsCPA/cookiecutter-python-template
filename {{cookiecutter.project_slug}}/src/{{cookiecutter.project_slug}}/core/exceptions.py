@@ -140,8 +140,12 @@ class ValidationError(ProjectBaseError):
         if value is not None:
             # Truncate long values to avoid log bloat
             str_value = str(value)
-            details["value"] = str_value[:100] + "..." if len(str_value) > 100 else str_value
-        super().__init__(message, details=details, error_code=error_code or "VALIDATION_ERROR")
+            details["value"] = (
+                str_value[:100] + "..." if len(str_value) > 100 else str_value
+            )
+        super().__init__(
+            message, details=details, error_code=error_code or "VALIDATION_ERROR"
+        )
 
 
 class ResourceNotFoundError(ProjectBaseError):
@@ -206,7 +210,9 @@ class AuthenticationError(ProjectBaseError):
             details: Additional context (avoid including sensitive data).
             error_code: Machine-readable error code.
         """
-        super().__init__(message, details=details, error_code=error_code or "AUTH_FAILED")
+        super().__init__(
+            message, details=details, error_code=error_code or "AUTH_FAILED"
+        )
 
 
 class AuthorizationError(ProjectBaseError):
@@ -284,7 +290,9 @@ class ExternalServiceError(ProjectBaseError):
             details["service_name"] = service_name
         if status_code:
             details["status_code"] = status_code
-        super().__init__(message, details=details, error_code=error_code or "EXTERNAL_SERVICE_ERROR")
+        super().__init__(
+            message, details=details, error_code=error_code or "EXTERNAL_SERVICE_ERROR"
+        )
 
 
 class APIError(ExternalServiceError):
@@ -413,7 +421,9 @@ class BusinessLogicError(ProjectBaseError):
             details["rule"] = rule
         if context:
             details["context"] = context
-        super().__init__(message, details=details, error_code=error_code or "BUSINESS_RULE_VIOLATION")
+        super().__init__(
+            message, details=details, error_code=error_code or "BUSINESS_RULE_VIOLATION"
+        )
 
 
 {% if cookiecutter.use_decimal_precision == "yes" -%}

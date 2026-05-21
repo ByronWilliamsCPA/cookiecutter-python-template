@@ -148,7 +148,7 @@ jobs:
       - name: Install latest versions of tools
         run: |
           pip install --upgrade pip
-          pip install --upgrade cookiecutter ruff basedpyright pytest pytest-cov bandit pip-audit
+          pip install --upgrade cookiecutter uv ruff basedpyright pytest pytest-cov bandit pip-audit
 
       - name: Generate test project
         run: |

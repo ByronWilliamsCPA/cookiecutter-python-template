@@ -108,7 +108,6 @@ def setup_logging(
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
     ]
-
 {% if cookiecutter.include_api_framework == "yes" %}
     # Add correlation ID processor for request tracing.
     # Insert after add_log_level for consistent ordering. The index is
@@ -162,9 +161,7 @@ def get_logger(name: str) -> BoundLogger:
     """
     # Cast to BoundLogger for type checking - structlog.get_logger returns
     # a BoundLogger when configured with stdlib LoggerFactory
-    result: BoundLogger = structlog.get_logger(
-        name
-    )  # pyright: ignore[reportAssignmentType]
+    result: BoundLogger = structlog.get_logger(name)  # pyright: ignore[reportAssignmentType]
     return result
 
 
@@ -195,7 +192,7 @@ def log_performance(
         ...     duration_ms=42.5,
         ...     success=True,
         ...     image_count=10,
-        ...     output_dir="/results"
+        ...     output_dir="/results",
         ... )
     """
     logger.info(
