@@ -47,7 +47,7 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
     orphaned: list[tuple[str, str, Path]] = []
 
     # Define conditional file mappings
-    # Format: (feature_key, disabled_value, paths_to_check)  # noqa: ERA001
+    # Each entry is a tuple of (feature_key, disabled_value, paths_to_check).
     conditional_files: list[tuple[str, str, list[Path]]] = [
         ("include_cli", "no", [src_dir / "cli.py"]),
         (
@@ -73,7 +73,10 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
         (
             "include_sonarcloud",
             "no",
-            [Path("sonar-project.properties"), Path(".github/workflows/sonarcloud.yml")],
+            [
+                Path("sonar-project.properties"),
+                Path(".github/workflows/sonarcloud.yml"),
+            ],
         ),
         ("include_renovate", "no", [Path("renovate.json")]),
         ("include_coderabbit", "no", [Path(".coderabbit.yaml")]),
@@ -120,10 +123,8 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
 
     for feature_key, disabled_value, paths in conditional_files:
         if context.get(feature_key) == disabled_value:
-            orphaned.extend(  # noqa: PERF401
-                (feature_key, disabled_value, path)
-                for path in paths
-                if path.exists()
+            orphaned.extend(
+                (feature_key, disabled_value, path) for path in paths if path.exists()
             )
 
     return orphaned

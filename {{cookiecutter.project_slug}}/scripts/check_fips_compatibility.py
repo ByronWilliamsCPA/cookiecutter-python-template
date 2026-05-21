@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
@@ -94,7 +95,6 @@ class FipsCodeVisitor(ast.NodeVisitor):
     def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
         self.issues: list[FipsIssue] = []
-        self._in_hashlib_call = False
 
     def _check_hashlib_call(self, node: ast.Call) -> None:
         """Detect hashlib.md5(), hashlib.sha1(), and similar non-FIPS hash calls.
@@ -105,7 +105,9 @@ class FipsCodeVisitor(ast.NodeVisitor):
         """
         if not isinstance(node.func, ast.Attribute):
             return
-        if not (isinstance(node.func.value, ast.Name) and node.func.value.id == "hashlib"):
+        if not (
+            isinstance(node.func.value, ast.Name) and node.func.value.id == "hashlib"
+        ):
             return
         func_name = node.func.attr.lower()
         if func_name not in NON_FIPS_HASHES:
@@ -142,7 +144,7 @@ class FipsCodeVisitor(ast.NodeVisitor):
         if not isinstance(node.func, ast.Attribute):
             return
         func_name = node.func.attr.lower()
-        if not (func_name in NON_FIPS_CIPHERS or any(c in func_name for c in NON_FIPS_CIPHERS)):
+        if func_name not in NON_FIPS_CIPHERS:
             return
         self.issues.append(
             FipsIssue(
@@ -261,7 +263,9 @@ def check_pyproject_toml(file_path: Path) -> list[FipsIssue]:
                 rf"^{package}\s*[<>=\[]",
             ]
             for pattern in patterns:
-                matches = list(re.finditer(pattern, content, re.MULTILINE | re.IGNORECASE))
+                matches = list(
+                    re.finditer(pattern, content, re.MULTILINE | re.IGNORECASE)
+                )
                 for match in matches:
                     line_num = content[: match.start()].count("\n") + 1
                     issues.append(
@@ -282,7 +286,9 @@ def check_pyproject_toml(file_path: Path) -> list[FipsIssue]:
                 rf"'{package}['\s\[<>=]",
             ]
             for pattern in patterns:
-                matches = list(re.finditer(pattern, content, re.MULTILINE | re.IGNORECASE))
+                matches = list(
+                    re.finditer(pattern, content, re.MULTILINE | re.IGNORECASE)
+                )
                 for match in matches:
                     line_num = content[: match.start()].count("\n") + 1
                     issues.append(
@@ -374,14 +380,18 @@ def find_python_files(directories: list[Path]) -> Iterator[Path]:
 
 def print_issue(issue: FipsIssue, show_hints: bool = False) -> None:
     """Print a FIPS issue with formatting."""
-    severity_symbols = {"error": "✗", "warning": "⚠", "info": "i"}  # noqa: RUF001
+    severity_symbols = {"error": "✗", "warning": "⚠", "info": "i"}
     severity_colors = {"error": "\033[91m", "warning": "\033[93m", "info": "\033[94m"}
     reset = "\033[0m"
 
     symbol = severity_symbols.get(issue.severity, "?")
     color = severity_colors.get(issue.severity, "")
 
-    location = f"{issue.file_path}:{issue.line_number}" if issue.line_number else str(issue.file_path)
+    location = (
+        f"{issue.file_path}:{issue.line_number}"
+        if issue.line_number
+        else str(issue.file_path)
+    )
     print(f"{color}{symbol}{reset} [{issue.severity.upper()}] {location}")
     print(f"  {issue.message}")
 
@@ -489,7 +499,9 @@ Examples:
 
         # Summary
         print("-" * 60)
-        print(f"Summary: {len(errors)} error(s), {len(warnings)} warning(s), {len(infos)} info")
+        print(
+            f"Summary: {len(errors)} error(s), {len(warnings)} warning(s), {len(infos)} info"
+        )
         print()
 
         if errors:

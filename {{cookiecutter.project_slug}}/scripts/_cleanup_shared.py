@@ -29,5 +29,5 @@ def get_cruft_context() -> dict[str, str]:
         msg = ".cruft.json not found. Is this a cruft-managed project?"
         raise FileNotFoundError(msg)
 
-    cruft_data = json.loads(cruft_file.read_text())
+    cruft_data = json.loads(cruft_file.read_text(encoding="utf-8"))
     return cruft_data.get("context", {}).get("cookiecutter", {})

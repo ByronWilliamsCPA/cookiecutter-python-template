@@ -60,7 +60,7 @@ The `py` package has no released fix version. The package is largely unmaintaine
 | **CVE ID** | PYSEC-2026-89 |
 | **Package** | markdown |
 | **Affected Version** | 3.10.2 |
-| **Fixed Version** | 3.8.1 (versions 3.9+ re-expose the vulnerability; no fixed release beyond 3.8.2) |
+| **Fixed Version** | Fixed only in 3.8.1-3.8.2; no fixed release available for >=3.9 as of 2026-05-21 |
 | **Severity** | High |
 | **CVSS Score** | 7.5 |
 | **Discovered** | 2026-05-21 |
