@@ -16,7 +16,7 @@ configuration.
 
 import logging
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import structlog
 from rich.console import Console
@@ -29,7 +29,7 @@ from {{ cookiecutter.project_slug }}.middleware.correlation import (
 )
 {% endif %}
 if TYPE_CHECKING:
-    from structlog.types import EventDict, Processor, WrappedLogger
+    from structlog.types import Processor
 
 # Global console for rich output (stderr for proper output separation)
 console = Console(stderr=True)
@@ -86,10 +86,10 @@ def setup_logging(
 
     # Define a no-op processor for when timestamp is disabled
     def noop_processor(
-        _logger: "WrappedLogger",
+        _logger: BoundLogger,
         _method_name: str,
-        event_dict: "EventDict",
-    ) -> "EventDict":
+        event_dict: dict[str, object],
+    ) -> dict[str, object]:
         """No-op processor that passes through the event dict unchanged."""
         return event_dict
 
@@ -159,10 +159,10 @@ def get_logger(name: str) -> BoundLogger:
         >>> logger.warning("Low confidence", confidence=0.45, threshold=0.5)
         >>> logger.error("Processing failed", error="file_not_found")
     """
-    # Cast to BoundLogger for type checking - structlog.get_logger returns
-    # a BoundLogger when configured with stdlib LoggerFactory
-    result: BoundLogger = structlog.get_logger(name)  # pyright: ignore[reportAssignmentType]
-    return result
+    # Cast to BoundLogger for type checking: structlog.get_logger returns
+    # a BoundLogger when configured with stdlib LoggerFactory, but its stubs
+    # declare Any. cast bridges the gap without runtime overhead.
+    return cast(BoundLogger, structlog.get_logger(name))
 
 
 def log_performance(
