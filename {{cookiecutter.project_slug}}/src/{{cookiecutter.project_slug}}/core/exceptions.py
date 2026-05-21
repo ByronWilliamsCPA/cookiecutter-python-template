@@ -57,9 +57,7 @@ def _attach_optional_details(
         The details dict with non-None fields added (modified in place
         and returned for convenience).
     """
-    for key, value in fields.items():
-        if value is not None:
-            details[key] = value
+    details.update({k: v for k, v in fields.items() if v is not None})
     return details
 
 
