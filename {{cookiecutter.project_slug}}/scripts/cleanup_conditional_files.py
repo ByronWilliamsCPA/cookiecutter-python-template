@@ -31,24 +31,7 @@ import shutil
 import sys
 from pathlib import Path
 
-
-def get_cruft_context() -> dict[str, str]:
-    """Read cookiecutter context from .cruft.json.
-
-    Returns:
-        Dictionary of cookiecutter context values.
-
-    Raises:
-        FileNotFoundError: If .cruft.json doesn't exist.
-        json.JSONDecodeError: If .cruft.json is invalid JSON.
-    """
-    cruft_file = Path(".cruft.json")
-    if not cruft_file.exists():
-        msg = ".cruft.json not found. Is this a cruft-managed project?"
-        raise FileNotFoundError(msg)
-
-    cruft_data = json.loads(cruft_file.read_text())
-    return cruft_data.get("context", {}).get("cookiecutter", {})
+from _cleanup_shared import get_cruft_context
 
 
 def remove_file(filepath: Path, dry_run: bool = False) -> bool:
@@ -103,8 +86,188 @@ def get_project_slug(context: dict) -> str:
     return context.get("project_slug", "")
 
 
+def _cleanup_for_no_cli(src_dir: Path, dry_run: bool) -> int:
+    """Remove CLI module when include_cli is no."""
+    return 1 if remove_file(src_dir / "cli.py", dry_run) else 0
+
+
+def _cleanup_for_no_mkdocs(dry_run: bool) -> int:
+    """Remove MkDocs files and tools when use_mkdocs is no.
+
+    Note: the workflows/docs.yml file is handled by _cleanup_for_no_mkdocs_workflow
+    so that it can also be invoked when include_github_actions is no.
+    """
+    count = 0
+    if remove_file(Path("mkdocs.yml"), dry_run):
+        count += 1
+    if remove_dir(Path("docs"), dry_run):
+        count += 1
+    if remove_file(Path("tools/validate_front_matter.py"), dry_run):
+        count += 1
+    if remove_dir(Path("tools/frontmatter_contract"), dry_run):
+        count += 1
+    return count
+
+
+def _cleanup_for_no_mkdocs_workflow(dry_run: bool) -> int:
+    """Remove the MkDocs workflow file separately from the MkDocs file set."""
+    return 1 if remove_file(Path(".github/workflows/docs.yml"), dry_run) else 0
+
+
+def _cleanup_for_no_nox(dry_run: bool) -> int:
+    """Remove noxfile.py when include_nox is no."""
+    return 1 if remove_file(Path("noxfile.py"), dry_run) else 0
+
+
+def _cleanup_for_no_pre_commit(dry_run: bool) -> int:
+    """Remove the pre-commit config when use_pre_commit is no."""
+    return 1 if remove_file(Path(".pre-commit-config.yaml"), dry_run) else 0
+
+
+def _cleanup_for_no_code_of_conduct(dry_run: bool) -> int:
+    """Remove CODE_OF_CONDUCT.md when include_code_of_conduct is no."""
+    return 1 if remove_file(Path("CODE_OF_CONDUCT.md"), dry_run) else 0
+
+
+def _cleanup_for_no_security_policy(dry_run: bool) -> int:
+    """Remove SECURITY.md when include_security_policy is no."""
+    return 1 if remove_file(Path("SECURITY.md"), dry_run) else 0
+
+
+def _cleanup_for_no_contributing_guide(dry_run: bool) -> int:
+    """Remove CONTRIBUTING.md when include_contributing_guide is no."""
+    return 1 if remove_file(Path("CONTRIBUTING.md"), dry_run) else 0
+
+
+def _cleanup_for_no_codecov(dry_run: bool) -> int:
+    """Remove Codecov config and workflow when include_codecov is no."""
+    count = 0
+    if remove_file(Path("codecov.yml"), dry_run):
+        count += 1
+    if remove_file(Path(".github/workflows/codecov.yml"), dry_run):
+        count += 1
+    return count
+
+
+def _cleanup_for_no_sonarcloud(dry_run: bool) -> int:
+    """Remove SonarCloud config and workflow when include_sonarcloud is no."""
+    count = 0
+    if remove_file(Path("sonar-project.properties"), dry_run):
+        count += 1
+    if remove_file(Path(".github/workflows/sonarcloud.yml"), dry_run):
+        count += 1
+    return count
+
+
+def _cleanup_for_no_renovate(dry_run: bool) -> int:
+    """Remove renovate.json when include_renovate is no."""
+    return 1 if remove_file(Path("renovate.json"), dry_run) else 0
+
+
+def _cleanup_for_no_coderabbit(dry_run: bool) -> int:
+    """Remove .coderabbit.yaml when include_coderabbit is no."""
+    return 1 if remove_file(Path(".coderabbit.yaml"), dry_run) else 0
+
+
+def _cleanup_for_no_semantic_release(dry_run: bool) -> int:
+    """Remove semantic release workflow when include_semantic_release is no."""
+    return 1 if remove_file(Path(".github/workflows/release.yml"), dry_run) else 0
+
+
+def _cleanup_for_no_reuse_licensing(dry_run: bool) -> int:
+    """Remove REUSE licensing files when use_reuse_licensing is no."""
+    count = 0
+    if remove_file(Path("REUSE.toml"), dry_run):
+        count += 1
+    if remove_dir(Path("LICENSES"), dry_run):
+        count += 1
+    if remove_file(Path(".github/workflows/reuse.yml"), dry_run):
+        count += 1
+    return count
+
+
+def _cleanup_for_no_docker(dry_run: bool) -> int:
+    """Remove Docker files when include_docker is no."""
+    count = 0
+    if remove_file(Path("Dockerfile"), dry_run):
+        count += 1
+    if remove_file(Path("docker-compose.yml"), dry_run):
+        count += 1
+    if remove_file(Path("docker-compose.prod.yml"), dry_run):
+        count += 1
+    if remove_file(Path(".dockerignore"), dry_run):
+        count += 1
+    if remove_file(Path(".github/workflows/container-security.yml"), dry_run):
+        count += 1
+    return count
+
+
+def _cleanup_for_no_api_framework(src_dir: Path, dry_run: bool) -> int:
+    """Remove API framework files; also drop middleware dir if it ends up empty."""
+    count = 0
+    api_dir = src_dir / "api"
+    if remove_dir(api_dir, dry_run):
+        count += 1
+    if remove_file(src_dir / "middleware" / "security.py", dry_run):
+        count += 1
+    if remove_file(src_dir / "middleware" / "correlation.py", dry_run):
+        count += 1
+    middleware_dir = src_dir / "middleware"
+    if middleware_dir.exists() and not any(
+        f for f in middleware_dir.iterdir() if f.name not in ("__pycache__", "__init__.py")
+    ):
+        if remove_dir(middleware_dir, dry_run):
+            count += 1
+    return count
+
+
+def _cleanup_for_no_health_checks(src_dir: Path, dry_run: bool) -> int:
+    """Drop the health.py module when only health-check sub-feature is disabled."""
+    return 1 if remove_file(src_dir / "api" / "health.py", dry_run) else 0
+
+
+def _cleanup_for_no_sentry(src_dir: Path, dry_run: bool) -> int:
+    """Remove sentry.py when include_sentry is no."""
+    return 1 if remove_file(src_dir / "core" / "sentry.py", dry_run) else 0
+
+
+def _cleanup_for_no_background_jobs(src_dir: Path, dry_run: bool) -> int:
+    """Remove jobs directory when include_background_jobs is no."""
+    return 1 if remove_dir(src_dir / "jobs", dry_run) else 0
+
+
+def _cleanup_for_no_caching(src_dir: Path, dry_run: bool) -> int:
+    """Remove cache.py when include_caching is no."""
+    return 1 if remove_file(src_dir / "core" / "cache.py", dry_run) else 0
+
+
+def _cleanup_for_no_load_testing(dry_run: bool) -> int:
+    """Remove tests/load directory when include_load_testing is no."""
+    return 1 if remove_dir(Path("tests/load"), dry_run) else 0
+
+
+def _cleanup_for_no_fuzzing(dry_run: bool) -> int:
+    """Remove fuzzing files when include_fuzzing is no."""
+    count = 0
+    if remove_file(Path(".github/workflows/cifuzzy.yml"), dry_run):
+        count += 1
+    if remove_dir(Path(".clusterfuzzlite"), dry_run):
+        count += 1
+    if remove_dir(Path("fuzz"), dry_run):
+        count += 1
+    return count
+
+
+def _cleanup_for_no_github_actions(dry_run: bool) -> int:
+    """Remove .github directory when include_github_actions is no."""
+    return 1 if remove_dir(Path(".github"), dry_run) else 0
+
+
 def cleanup_conditional_files(context: dict, dry_run: bool = False) -> int:
     """Remove files based on cookiecutter context settings.
+
+    Dispatches to per-feature helpers. Each helper handles ONE include_*
+    or use_* flag and returns its own count.
 
     Args:
         context: Cookiecutter context from .cruft.json.
@@ -118,164 +281,58 @@ def cleanup_conditional_files(context: dict, dry_run: bool = False) -> int:
         print("❌ Could not determine project_slug from .cruft.json")
         return 0
 
-    removed_count = 0
     src_dir = Path(f"src/{project_slug}")
-
     print("\n🧹 Cleaning up conditional files...")
 
-    # CLI
+    removed = 0
     if context.get("include_cli") == "no":
-        if remove_file(src_dir / "cli.py", dry_run):
-            removed_count += 1
-
-    # MkDocs
+        removed += _cleanup_for_no_cli(src_dir, dry_run)
     if context.get("use_mkdocs") == "no":
-        if remove_file(Path("mkdocs.yml"), dry_run):
-            removed_count += 1
-        if remove_dir(Path("docs"), dry_run):
-            removed_count += 1
-        if remove_file(Path("tools/validate_front_matter.py"), dry_run):
-            removed_count += 1
-        if remove_dir(Path("tools/frontmatter_contract"), dry_run):
-            removed_count += 1
-
-    # Nox
+        removed += _cleanup_for_no_mkdocs(dry_run)
     if context.get("include_nox") == "no":
-        if remove_file(Path("noxfile.py"), dry_run):
-            removed_count += 1
-
-    # Pre-commit
+        removed += _cleanup_for_no_nox(dry_run)
     if context.get("use_pre_commit") == "no":
-        if remove_file(Path(".pre-commit-config.yaml"), dry_run):
-            removed_count += 1
-
-    # Code of Conduct
+        removed += _cleanup_for_no_pre_commit(dry_run)
     if context.get("include_code_of_conduct") == "no":
-        if remove_file(Path("CODE_OF_CONDUCT.md"), dry_run):
-            removed_count += 1
-
-    # Security Policy
+        removed += _cleanup_for_no_code_of_conduct(dry_run)
     if context.get("include_security_policy") == "no":
-        if remove_file(Path("SECURITY.md"), dry_run):
-            removed_count += 1
-
-    # Contributing Guide
+        removed += _cleanup_for_no_security_policy(dry_run)
     if context.get("include_contributing_guide") == "no":
-        if remove_file(Path("CONTRIBUTING.md"), dry_run):
-            removed_count += 1
-
-    # Codecov
+        removed += _cleanup_for_no_contributing_guide(dry_run)
     if context.get("include_codecov") == "no":
-        if remove_file(Path("codecov.yml"), dry_run):
-            removed_count += 1
-        if remove_file(Path(".github/workflows/codecov.yml"), dry_run):
-            removed_count += 1
-
-    # SonarCloud
+        removed += _cleanup_for_no_codecov(dry_run)
     if context.get("include_sonarcloud") == "no":
-        if remove_file(Path("sonar-project.properties"), dry_run):
-            removed_count += 1
-        if remove_file(Path(".github/workflows/sonarcloud.yml"), dry_run):
-            removed_count += 1
-
-    # Renovate
+        removed += _cleanup_for_no_sonarcloud(dry_run)
     if context.get("include_renovate") == "no":
-        if remove_file(Path("renovate.json"), dry_run):
-            removed_count += 1
-
-    # CodeRabbit
+        removed += _cleanup_for_no_renovate(dry_run)
     if context.get("include_coderabbit") == "no":
-        if remove_file(Path(".coderabbit.yaml"), dry_run):
-            removed_count += 1
-
-    # Semantic Release
+        removed += _cleanup_for_no_coderabbit(dry_run)
     if context.get("include_semantic_release") == "no":
-        if remove_file(Path(".github/workflows/release.yml"), dry_run):
-            removed_count += 1
-
-    # REUSE Licensing
+        removed += _cleanup_for_no_semantic_release(dry_run)
     if context.get("use_reuse_licensing") == "no":
-        if remove_file(Path("REUSE.toml"), dry_run):
-            removed_count += 1
-        if remove_dir(Path("LICENSES"), dry_run):
-            removed_count += 1
-        if remove_file(Path(".github/workflows/reuse.yml"), dry_run):
-            removed_count += 1
-
-    # Docker
+        removed += _cleanup_for_no_reuse_licensing(dry_run)
     if context.get("include_docker") == "no":
-        if remove_file(Path("Dockerfile"), dry_run):
-            removed_count += 1
-        if remove_file(Path("docker-compose.yml"), dry_run):
-            removed_count += 1
-        if remove_file(Path("docker-compose.prod.yml"), dry_run):
-            removed_count += 1
-        if remove_file(Path(".dockerignore"), dry_run):
-            removed_count += 1
-        if remove_file(Path(".github/workflows/container-security.yml"), dry_run):
-            removed_count += 1
-
-    # API Framework / Health Checks
+        removed += _cleanup_for_no_docker(dry_run)
     if context.get("include_api_framework") == "no":
-        api_dir = src_dir / "api"
-        if remove_dir(api_dir, dry_run):
-            removed_count += 1
-        if remove_file(src_dir / "middleware" / "security.py", dry_run):
-            removed_count += 1
-        if remove_file(src_dir / "middleware" / "correlation.py", dry_run):
-            removed_count += 1
-        # Remove middleware dir if empty
-        middleware_dir = src_dir / "middleware"
-        if middleware_dir.exists() and not any(
-            f for f in middleware_dir.iterdir() if f.name not in ("__pycache__", "__init__.py")
-        ):
-            if remove_dir(middleware_dir, dry_run):
-                removed_count += 1
+        removed += _cleanup_for_no_api_framework(src_dir, dry_run)
     elif context.get("include_health_checks") == "no":
-        # Only health checks disabled but API framework enabled
-        if remove_file(src_dir / "api" / "health.py", dry_run):
-            removed_count += 1
-
-    # Sentry
+        removed += _cleanup_for_no_health_checks(src_dir, dry_run)
     if context.get("include_sentry") == "no":
-        if remove_file(src_dir / "core" / "sentry.py", dry_run):
-            removed_count += 1
-
-    # Background Jobs
+        removed += _cleanup_for_no_sentry(src_dir, dry_run)
     if context.get("include_background_jobs") == "no":
-        if remove_dir(src_dir / "jobs", dry_run):
-            removed_count += 1
-
-    # Caching
+        removed += _cleanup_for_no_background_jobs(src_dir, dry_run)
     if context.get("include_caching") == "no":
-        if remove_file(src_dir / "core" / "cache.py", dry_run):
-            removed_count += 1
-
-    # Load Testing
+        removed += _cleanup_for_no_caching(src_dir, dry_run)
     if context.get("include_load_testing") == "no":
-        if remove_dir(Path("tests/load"), dry_run):
-            removed_count += 1
-
-    # Fuzzing
+        removed += _cleanup_for_no_load_testing(dry_run)
     if context.get("include_fuzzing") == "no":
-        if remove_file(Path(".github/workflows/cifuzzy.yml"), dry_run):
-            removed_count += 1
-        if remove_dir(Path(".clusterfuzzlite"), dry_run):
-            removed_count += 1
-        if remove_dir(Path("fuzz"), dry_run):
-            removed_count += 1
-
-    # GitHub Actions
+        removed += _cleanup_for_no_fuzzing(dry_run)
     if context.get("include_github_actions") == "no":
-        if remove_dir(Path(".github"), dry_run):
-            removed_count += 1
-
-    # MkDocs workflow (separate from MkDocs files)
+        removed += _cleanup_for_no_github_actions(dry_run)
     if context.get("use_mkdocs") == "no":
-        if remove_file(Path(".github/workflows/docs.yml"), dry_run):
-            removed_count += 1
+        removed += _cleanup_for_no_mkdocs_workflow(dry_run)
 
-    return removed_count
+    return removed
 
 
 def main() -> int:
