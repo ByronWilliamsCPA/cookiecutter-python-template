@@ -34,7 +34,55 @@ Usage:
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
+
+
+def _attach_optional_details(
+    details: dict[str, Any], **fields: Any,
+) -> dict[str, Any]:
+    """Add non-None field values to a details dict.
+
+    Used by exception ``__init__`` methods to consolidate the repeated
+    ``if X: details[X] = X`` pattern. None-valued fields are skipped;
+    falsy-but-not-None values (e.g., empty strings, 0, []) are kept
+    because the original ``if X:`` pattern would have dropped them but
+    callers may want to surface them in the structured details.
+
+    Args:
+        details: Existing details dict (may be empty, will be mutated).
+        **fields: Optional fields to add; None values are skipped.
+
+    Returns:
+        The details dict with non-None fields added (modified in place
+        and returned for convenience).
+    """
+    for key, value in fields.items():
+        if value is not None:
+            details[key] = value
+    return details
+
+
+@dataclass
+class APIErrorContext:
+    """Grouped parameters for APIError construction.
+
+    Use this when constructing an APIError needs to pass multiple
+    context fields. Equivalent to passing the same fields as keyword
+    arguments; either form is accepted by APIError.__init__.
+
+    Example:
+        >>> ctx = APIErrorContext(
+        ...     service_name="GitHub",
+        ...     status_code=429,
+        ...     retry_after=60,
+        ... )
+        >>> raise APIError("Rate limited", context=ctx)
+    """
+
+    service_name: str | None = None
+    status_code: int | None = None
+    retry_after: int | None = None
 
 
 class ProjectBaseError(Exception):
@@ -134,9 +182,7 @@ class ValidationError(ProjectBaseError):
             details: Additional validation context.
             error_code: Machine-readable error code.
         """
-        details = details or {}
-        if field:
-            details["field"] = field
+        details = _attach_optional_details(details or {}, field=field)
         if value is not None:
             # Truncate long values to avoid log bloat
             str_value = str(value)
@@ -179,11 +225,11 @@ class ResourceNotFoundError(ProjectBaseError):
             details: Additional context.
             error_code: Machine-readable error code.
         """
-        details = details or {}
-        if resource_type:
-            details["resource_type"] = resource_type
-        if resource_id:
-            details["resource_id"] = resource_id
+        details = _attach_optional_details(
+            details or {},
+            resource_type=resource_type,
+            resource_id=resource_id,
+        )
         super().__init__(message, details=details, error_code=error_code or "NOT_FOUND")
 
 
@@ -246,11 +292,11 @@ class AuthorizationError(ProjectBaseError):
             details: Additional context.
             error_code: Machine-readable error code.
         """
-        details = details or {}
-        if required_permission:
-            details["required_permission"] = required_permission
-        if resource:
-            details["resource"] = resource
+        details = _attach_optional_details(
+            details or {},
+            required_permission=required_permission,
+            resource=resource,
+        )
         super().__init__(message, details=details, error_code=error_code or "FORBIDDEN")
 
 
@@ -285,11 +331,11 @@ class ExternalServiceError(ProjectBaseError):
             details: Additional context.
             error_code: Machine-readable error code.
         """
-        details = details or {}
-        if service_name:
-            details["service_name"] = service_name
-        if status_code:
-            details["status_code"] = status_code
+        details = _attach_optional_details(
+            details or {},
+            service_name=service_name,
+            status_code=status_code,
+        )
         super().__init__(
             message, details=details, error_code=error_code or "EXTERNAL_SERVICE_ERROR"
         )
@@ -309,29 +355,39 @@ class APIError(ExternalServiceError):
         ... )
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913 - legacy kwargs preserved for backwards compatibility; use APIErrorContext for new code
         self,
         message: str,
         *,
         service_name: str | None = None,
         status_code: int | None = None,
         retry_after: int | None = None,
+        context: APIErrorContext | None = None,
         details: dict[str, Any] | None = None,
         error_code: str | None = None,
     ) -> None:
         """Initialize API error.
+
+        Two equivalent call styles are supported. Pass an APIErrorContext
+        for grouped construction, or pass the individual keyword arguments
+        directly. If both are provided, fields from ``context`` take
+        precedence over the individual keyword arguments.
 
         Args:
             message: Description of the API error.
             service_name: Name of the external API.
             status_code: HTTP status code from the API.
             retry_after: Seconds to wait before retrying (for rate limits).
+            context: Optional grouped fields; overrides individual kwargs
+                when provided.
             details: Additional context.
             error_code: Machine-readable error code.
         """
-        details = details or {}
-        if retry_after:
-            details["retry_after"] = retry_after
+        if context is not None:
+            service_name = context.service_name if context.service_name is not None else service_name
+            status_code = context.status_code if context.status_code is not None else status_code
+            retry_after = context.retry_after if context.retry_after is not None else retry_after
+        details = _attach_optional_details(details or {}, retry_after=retry_after)
         super().__init__(
             message,
             service_name=service_name,
@@ -372,11 +428,11 @@ class DatabaseError(ExternalServiceError):
             details: Additional context.
             error_code: Machine-readable error code.
         """
-        details = details or {}
-        if operation:
-            details["operation"] = operation
-        if table:
-            details["table"] = table
+        details = _attach_optional_details(
+            details or {},
+            operation=operation,
+            table=table,
+        )
         super().__init__(
             message,
             service_name="database",
@@ -416,11 +472,11 @@ class BusinessLogicError(ProjectBaseError):
             details: Additional context.
             error_code: Machine-readable error code.
         """
-        details = details or {}
-        if rule:
-            details["rule"] = rule
-        if context:
-            details["context"] = context
+        details = _attach_optional_details(
+            details or {},
+            rule=rule,
+            context=context,
+        )
         super().__init__(
             message, details=details, error_code=error_code or "BUSINESS_RULE_VIOLATION"
         )
@@ -455,9 +511,7 @@ class FinancialCalculationError(BusinessLogicError):
             details: Additional context.
             error_code: Machine-readable error code.
         """
-        details = details or {}
-        if operation:
-            details["operation"] = operation
+        details = _attach_optional_details(details or {}, operation=operation)
         super().__init__(
             message,
             rule="financial_calculation",
@@ -467,19 +521,20 @@ class FinancialCalculationError(BusinessLogicError):
 
 
 {% endif -%}
-# Export all exceptions
+# Export all exceptions and public helpers
 __all__ = [
-    "ProjectBaseError",
-    "ConfigurationError",
-    "ValidationError",
-    "ResourceNotFoundError",
+    "APIError",
+    "APIErrorContext",
     "AuthenticationError",
     "AuthorizationError",
-    "ExternalServiceError",
-    "APIError",
-    "DatabaseError",
     "BusinessLogicError",
+    "ConfigurationError",
+    "DatabaseError",
+    "ExternalServiceError",
 {% if cookiecutter.use_decimal_precision == "yes" -%}
     "FinancialCalculationError",
 {% endif -%}
+    "ProjectBaseError",
+    "ResourceNotFoundError",
+    "ValidationError",
 ]

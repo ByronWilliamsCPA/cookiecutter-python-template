@@ -720,16 +720,17 @@ class TestModuleExports:
         from {{ cookiecutter.project_slug }}.core import exceptions
 
         expected_exports = [
-            "ProjectBaseError",
-            "ConfigurationError",
-            "ValidationError",
-            "ResourceNotFoundError",
+            "APIError",
+            "APIErrorContext",
             "AuthenticationError",
             "AuthorizationError",
-            "ExternalServiceError",
-            "APIError",
-            "DatabaseError",
             "BusinessLogicError",
+            "ConfigurationError",
+            "DatabaseError",
+            "ExternalServiceError",
+            "ProjectBaseError",
+            "ResourceNotFoundError",
+            "ValidationError",
         ]
 
         for export in expected_exports:
