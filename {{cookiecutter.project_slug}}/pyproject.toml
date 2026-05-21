@@ -901,3 +901,10 @@ skip = [
     "GOVERNANCE.md",
 {%- endif %}
 ]
+
+[tool.pip-audit]
+# PYSEC-2022-42969: ReDoS in `py` package (pulled in transitively by interrogate).
+# DISPUTED CVE: only affects parsing of malicious Subversion repository info data.
+# This project does not interact with Subversion. interrogate has not released
+# a fix that drops the `py` dependency. Accepted risk; dev-only impact.
+ignore-vulns = ["PYSEC-2022-42969"]
