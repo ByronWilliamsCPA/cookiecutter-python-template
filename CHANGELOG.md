@@ -39,6 +39,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python 3.14 added to CI version matrices
 - `pytest-mock` and `pytest-randomly` added to dev dependencies
 - `tests/unit/` directory for unit test organization
+- `docs/known-vulnerabilities.md` and `docs/known-vulnerabilities-template.md` for
+  generated projects: tracks accepted-risk CVEs; initial entries cover
+  PYSEC-2022-42969 (py/interrogate) and PYSEC-2026-89 (markdown) with reassessment
+  dates and release-blocking flags
+- `APIErrorContext` dataclass in generated project `core/exceptions.py`: groups optional
+  `APIError` parameters for ergonomic multi-field construction; `context=` and
+  individual keyword arguments are accepted interchangeably
+- `scripts/_cleanup_shared.py` for generated projects: shared `get_cruft_context()`
+  helper centralizes `.cruft.json` loading used by `check_orphaned_files.py` and
+  `cleanup_conditional_files.py`
 
 ### Changed
 
@@ -147,6 +157,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   install instructions. Generated projects previously cloned and pulled
   standards from the wrong org. Historical handoff doc
   (`docs/handoff-claude-standards-team.md`) preserved as-is for context
+- Generated project `core/exceptions.py`: `_attach_optional_details` helper replaces
+  repeated `if field: details[field] = field` pattern; `None`-valued fields skipped,
+  falsy-but-not-None values (0, False, empty string) preserved
+- Generated project `cli.py` and `utils/logging.py`: BasedPyright strict-mode warnings
+  resolved via `CLIContext` dataclass, `_get_context` narrowing helper, and cast-based
+  typing for structlog processor stubs
+- `check_fips_compatibility.py`: cipher detection switched from substring containment to
+  exact set membership, eliminating false positives on method names such as `deserialize`,
+  `describe`, or `ideal_*`; removed unused `_in_hashlib_call` state field from
+  `FipsCodeVisitor`
+- `check_orphaned_files.py` and `cleanup_conditional_files.py`: duplicate `.cruft.json`
+  loading consolidated into shared `_cleanup_shared.get_cruft_context()` helper
 
 ## [0.1.0] - 2024-01-01
 
