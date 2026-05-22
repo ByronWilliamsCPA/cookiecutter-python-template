@@ -139,7 +139,7 @@ class FipsCodeVisitor(ast.NodeVisitor):
         """Detect non-FIPS cipher constructor calls (DES, RC4, Blowfish, etc.).
 
         Emits an error-severity FipsIssue when the called function's name
-        matches or contains a known non-FIPS cipher name.
+        is an exact match against a member of NON_FIPS_CIPHERS.
         """
         if not isinstance(node.func, ast.Attribute):
             return

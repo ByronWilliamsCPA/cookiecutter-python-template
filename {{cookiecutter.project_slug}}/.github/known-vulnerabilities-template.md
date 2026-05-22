@@ -1,6 +1,6 @@
 # Known Vulnerability Template
 
-Use this template to document each unfixed CVE in `docs/known-vulnerabilities.md`.
+Use this template to document each unfixed CVE in `.github/known-vulnerabilities.md`.
 Copy the block below and fill in all fields.
 
 ---

@@ -12,9 +12,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 
-def get_cruft_context() -> dict[str, str]:
+def get_cruft_context() -> dict[str, Any]:
     """Read cookiecutter context from .cruft.json.
 
     Returns:
@@ -23,6 +24,7 @@ def get_cruft_context() -> dict[str, str]:
     Raises:
         FileNotFoundError: If .cruft.json doesn't exist.
         json.JSONDecodeError: If .cruft.json is invalid JSON.
+        ValueError: If .cruft.json does not contain a JSON object.
     """
     cruft_file = Path(".cruft.json")
     if not cruft_file.exists():
@@ -30,4 +32,7 @@ def get_cruft_context() -> dict[str, str]:
         raise FileNotFoundError(msg)
 
     cruft_data = json.loads(cruft_file.read_text(encoding="utf-8"))
+    if not isinstance(cruft_data, dict):
+        msg = f".cruft.json must contain a JSON object, got {type(cruft_data).__name__}"
+        raise ValueError(msg)
     return cruft_data.get("context", {}).get("cookiecutter", {})

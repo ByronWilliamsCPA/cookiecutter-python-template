@@ -61,7 +61,7 @@ def _attach_optional_details(
     return details
 
 
-@dataclass
+@dataclass(frozen=True)
 class APIErrorContext:
     """Grouped parameters for APIError construction.
 

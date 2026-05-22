@@ -39,16 +39,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python 3.14 added to CI version matrices
 - `pytest-mock` and `pytest-randomly` added to dev dependencies
 - `tests/unit/` directory for unit test organization
-- `docs/known-vulnerabilities.md` and `docs/known-vulnerabilities-template.md` for
+- `.github/known-vulnerabilities.md` and `.github/known-vulnerabilities-template.md` for
   generated projects: tracks accepted-risk CVEs; initial entries cover
   PYSEC-2022-42969 (py/interrogate) and PYSEC-2026-89 (markdown) with reassessment
-  dates and release-blocking flags
+  dates and release-blocking flags; placed in `.github/` so they survive
+  `use_mkdocs=no` post-generation cleanup that removes the `docs/` directory
 - `APIErrorContext` dataclass in generated project `core/exceptions.py`: groups optional
   `APIError` parameters for ergonomic multi-field construction; `context=` and
-  individual keyword arguments are accepted interchangeably
+  individual keyword arguments are accepted interchangeably; declared `frozen=True`
+  to enforce immutability as a value-object parameter container
 - `scripts/_cleanup_shared.py` for generated projects: shared `get_cruft_context()`
-  helper centralizes `.cruft.json` loading used by `check_orphaned_files.py` and
-  `cleanup_conditional_files.py`
+  helper centralizes `.cruft.json` loading; returns `dict[str, Any]` to correctly
+  reflect mixed-type context values; validates that the parsed JSON is a dict and
+  raises `ValueError` with an actionable message when `.cruft.json` contains a
+  non-object root value
 
 ### Changed
 

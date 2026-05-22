@@ -110,8 +110,11 @@ def _cleanup_for_no_mkdocs(dry_run: bool) -> int:
 
 
 def _cleanup_for_no_mkdocs_workflow(dry_run: bool) -> int:
-    """Remove the MkDocs workflow file separately from the MkDocs file set."""
-    return 1 if remove_file(Path(".github/workflows/docs.yml"), dry_run) else 0
+    """Remove MkDocs-related workflow files when MkDocs is disabled."""
+    count = 0
+    if remove_file(Path(".github/workflows/docs.yml"), dry_run):
+        count += 1
+    return count
 
 
 def _cleanup_for_no_nox(dry_run: bool) -> int:
