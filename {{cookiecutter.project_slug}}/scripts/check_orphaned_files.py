@@ -58,6 +58,7 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
                 Path("docs"),
                 Path("tools/validate_front_matter.py"),
                 Path("tools/frontmatter_contract"),
+                Path(".github/workflows/docs.yml"),
             ],
         ),
         ("include_nox", "no", [Path("noxfile.py")]),
