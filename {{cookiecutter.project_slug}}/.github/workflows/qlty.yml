@@ -9,12 +9,12 @@ on:
 permissions: read-all
 
 concurrency:
-  group: qlty-coverage-${{ github.event.workflow_run.head_branch }}
+  group: {% raw %}qlty-coverage-${{ github.event.workflow_run.head_branch }}{% endraw %}
   cancel-in-progress: true
 
 jobs:
   qlty:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: {% raw %}${{ github.event.workflow_run.conclusion == 'success' }}{% endraw %}
     uses: ByronWilliamsCPA/.github/.github/workflows/python-qlty-coverage.yml@1b2d33c47cc11a96b9757b49f41873c54e75f57c  # main
     permissions:
       contents: read
@@ -23,6 +23,6 @@ jobs:
       coverage-artifact-name: coverage-reports
       coverage-file-path: coverage.xml
       coverage-format: cobertura
-      workflow-run-id: ${{ github.event.workflow_run.id }}
+      workflow-run-id: {% raw %}${{ github.event.workflow_run.id }}{% endraw %}
     secrets:
-      QLTY_COVERAGE_TOKEN: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+      QLTY_COVERAGE_TOKEN: {% raw %}${{ secrets.QLTY_COVERAGE_TOKEN }}{% endraw %}
