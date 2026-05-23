@@ -816,21 +816,21 @@ The cluster D section should now be empty (all entries removed). If so, remove t
 
 After the existing `> **Cleanup 2026-05-19:** ...` blockquote, add:
 
-```markdown
+````markdown
 > **Cleanup 2026-05-20:** 3 cluster D entries closed (interrogate CVE allowlisted,
 > BasedPyright warnings eliminated, script complexity refactored across 4 files).
 > Items 2 (sonar_scan.py) and 4 (qlty plugin syntax) dropped as REDIRECTED and
 > already-FIXED respectively. 5 mis-categorized cluster E entries moved to a new
 > `## Cluster E: Documentation and MkDocs` section.
-```
+````
 
 - [ ] **Step 8.4: Update umbrella status log**
 
 In `docs/superpowers/specs/2026-05-09-template-cleanup-umbrella.md`, find the Status log table near the bottom. Add a new row:
 
-```markdown
+````markdown
 | 2026-05-20 | Cluster D shipped: pip-audit allowlist for interrogate's `py` CVE, BasedPyright typing fixes in cli.py and logging.py (5 warnings → 0), complexity refactor of 4 files (check_fips, cleanup_conditional, check_orphaned, exceptions.py) plus extracted `_cleanup_shared.py`. Items 2 and 4 dropped from original cluster D scope; 5 mis-categorized entries moved to cluster E. |
-```
+````
 
 Also update the cluster index/table at the top of the umbrella: change cluster D's status to `shipped`.
 
