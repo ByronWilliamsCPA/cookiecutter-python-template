@@ -75,7 +75,7 @@ component: "Strategy"
 
 [Describe the overall system design]
 
-```
+```text
 ┌─────────────────────────────────────┐
 │   Component/Module 1                 │
 ├─────────────────────────────────────┤
@@ -112,7 +112,7 @@ component: "Strategy"
 
 [Describe how data flows through the system]
 
-```
+```text
 Input → Processing → Output
   ↓         ↓          ↓
 Step1    Step2       Step3
