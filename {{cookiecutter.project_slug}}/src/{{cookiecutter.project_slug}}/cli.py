@@ -6,6 +6,7 @@ with structured logging integration.
 
 import sys
 from dataclasses import dataclass
+from typing import cast
 
 import click
 from structlog.stdlib import BoundLogger
@@ -21,6 +22,21 @@ class CLIContext:
     """Typed context object for Click commands."""
 
     debug: bool = False
+
+
+def _get_context(ctx: click.Context) -> CLIContext:
+    """Return ctx.obj typed as CLIContext.
+
+    Click's stubs declare ctx.obj as Any. This helper narrows the type so
+    callers receive a CLIContext without per-site casts. If ctx.obj is
+    somehow not a CLIContext at runtime (e.g., subcommand invoked without
+    the parent group running), fall back to a default CLIContext.
+    """
+    # Cast from Any to object so basedpyright can narrow via isinstance.
+    obj: object = cast(object, ctx.obj)
+    if isinstance(obj, CLIContext):
+        return obj
+    return CLIContext()
 
 
 @click.group()
@@ -52,9 +68,7 @@ def cli(ctx: click.Context, debug: bool) -> None:
 def hello(ctx: click.Context, name: str) -> None:
     """Greet the user with a personalized message."""
     try:
-        cli_ctx: CLIContext = (
-            ctx.obj if isinstance(ctx.obj, CLIContext) else CLIContext()
-        )
+        cli_ctx = _get_context(ctx)
 
         logger.info(
             "Processing hello command",
@@ -81,9 +95,7 @@ def config(ctx: click.Context) -> None:
     Shows configuration values from environment variables or defaults.
     """
     try:
-        cli_ctx: CLIContext = (
-            ctx.obj if isinstance(ctx.obj, CLIContext) else CLIContext()
-        )
+        cli_ctx = _get_context(ctx)
 
         logger.info("Retrieving configuration")
 
