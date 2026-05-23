@@ -24,7 +24,9 @@ def get_cruft_context() -> dict[str, Any]:
     Raises:
         FileNotFoundError: If .cruft.json doesn't exist.
         json.JSONDecodeError: If .cruft.json is invalid JSON.
-        ValueError: If .cruft.json does not contain a JSON object.
+        ValueError: If .cruft.json does not contain a JSON object, or if
+            the ``context`` or ``context.cookiecutter`` keys are missing
+            or not a dict.
     """
     cruft_file = Path(".cruft.json")
     if not cruft_file.exists():
@@ -35,4 +37,15 @@ def get_cruft_context() -> dict[str, Any]:
     if not isinstance(cruft_data, dict):
         msg = f".cruft.json must contain a JSON object, got {type(cruft_data).__name__}"
         raise ValueError(msg)
-    return cruft_data.get("context", {}).get("cookiecutter", {})
+    # #CRITICAL: Data Integrity: .cruft.json may exist but lack context.cookiecutter,
+    # causing all callers to silently skip conditional cleanup with an empty dict.
+    # #VERIFY: Both context and cookiecutter keys must be dicts before returning.
+    context = cruft_data.get("context")
+    if not isinstance(context, dict):
+        msg = ".cruft.json missing or invalid 'context' key (expected dict)"
+        raise ValueError(msg)
+    cookiecutter = context.get("cookiecutter")
+    if not isinstance(cookiecutter, dict):
+        msg = ".cruft.json missing or invalid 'context.cookiecutter' key (expected dict)"
+        raise ValueError(msg)
+    return cookiecutter
