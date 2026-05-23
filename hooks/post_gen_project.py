@@ -21,6 +21,9 @@ from pathlib import Path
 INCLUDE_DOCKER = "{{ cookiecutter.include_docker }}"
 INCLUDE_FRONTEND = "{{ cookiecutter.include_frontend }}"
 INCLUDE_SUPPLY_CHAIN_SECURITY = "{{ cookiecutter.include_supply_chain_security }}"
+INCLUDE_API_FRAMEWORK = "{{ cookiecutter.include_api_framework }}"
+_GENERATE_CLIENT_SCRIPT = "scripts/generate-client.sh"
+_CLAUDE_DIR = ".claude"
 
 
 def remove_file(filepath: Path) -> None:
@@ -277,7 +280,7 @@ def _cleanup_api_and_backend_files() -> None:
     # Remove health check endpoints if not needed or if no API framework
     if (
         "{{ cookiecutter.include_health_checks }}" == "no"
-        or "{{ cookiecutter.include_api_framework }}" == "no"
+        or INCLUDE_API_FRAMEWORK == "no"
     ):
         remove_file(Path("src/{{ cookiecutter.project_slug }}/api/health.py"))
         # Remove api directory if empty
@@ -288,7 +291,7 @@ def _cleanup_api_and_backend_files() -> None:
             remove_dir(api_dir)
 
     # Remove API middleware if API framework not included
-    if "{{ cookiecutter.include_api_framework }}" == "no":
+    if INCLUDE_API_FRAMEWORK == "no":
         remove_file(Path("src/{{ cookiecutter.project_slug }}/middleware/security.py"))
         remove_file(
             Path("src/{{ cookiecutter.project_slug }}/middleware/correlation.py")
@@ -323,17 +326,17 @@ def _cleanup_frontend_files() -> None:
     # Remove frontend if not needed
     if INCLUDE_FRONTEND == "no":
         remove_dir(Path("frontend"))
-        remove_file(Path("scripts/generate-client.sh"))
+        remove_file(Path(_GENERATE_CLIENT_SCRIPT))
     else:
         # Frontend is enabled
         # Handle OpenAPI client generator script
         if "{{ cookiecutter.include_openapi_client }}" == "yes":
-            make_executable(Path("scripts/generate-client.sh"))
+            make_executable(Path(_GENERATE_CLIENT_SCRIPT))
         else:
-            remove_file(Path("scripts/generate-client.sh"))
+            remove_file(Path(_GENERATE_CLIENT_SCRIPT))
 
         # Warn if frontend enabled without API framework
-        if "{{ cookiecutter.include_api_framework }}" == "no":
+        if INCLUDE_API_FRAMEWORK == "no":
             print("  ⚠ Warning: Frontend enabled without API framework")
             print("    Consider enabling include_api_framework for full-stack support")
 
@@ -390,7 +393,7 @@ def mark_scripts_executable() -> None:
         "scripts/check_type_hints.py",
         "scripts/cleanup_conditional_files.py",
         "scripts/cruft-update.sh",
-        "scripts/generate-client.sh",
+        _GENERATE_CLIENT_SCRIPT,
         "scripts/generate_requirements.sh",
         "scripts/setup-supply-chain.sh",
         "scripts/setup_github_protection.py",
@@ -663,7 +666,7 @@ def _collect_installed_items(install_path: Path) -> list[str]:
         items.append("skills/")
     if (install_path / "agents").exists():
         items.append("agents/")
-    if (install_path / ".claude" / "commands").exists() or (
+    if (install_path / _CLAUDE_DIR / "commands").exists() or (
         install_path / "commands"
     ).exists():
         items.append("slash commands")
@@ -721,7 +724,7 @@ def setup_claude_user_settings() -> None:
 
     # Check common locations for existing settings
     possible_locations = [
-        Path.home() / ".claude",
+        Path.home() / _CLAUDE_DIR,
         Path.home() / ".config" / "claude",
     ]
 
@@ -753,7 +756,7 @@ def setup_claude_user_settings() -> None:
     # Default to yes if empty response
     if response in ["", "y", "yes"]:
         default_repo = "https://github.com/ByronWilliamsCPA/.claude"
-        default_location = str(Path.home() / ".claude")
+        default_location = str(Path.home() / _CLAUDE_DIR)
 
         try:
             repo_url = input(

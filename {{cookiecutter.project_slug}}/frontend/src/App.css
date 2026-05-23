@@ -6,7 +6,7 @@
 }
 
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4a56c7 0%, #5c3088 100%);
   color: white;
   padding: 2rem;
   text-align: center;
@@ -53,14 +53,14 @@
   font-size: 1rem;
   border: none;
   border-radius: 8px;
-  background: #667eea;
+  background: #4a56c7;
   color: white;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .card button:hover {
-  background: #5a6fd6;
+  background: #3d48ad;
 }
 
 .card p {
@@ -83,7 +83,7 @@
 }
 
 .app-footer a {
-  color: #667eea;
+  color: #4a56c7;
   text-decoration: none;
 }
 
