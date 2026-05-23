@@ -462,7 +462,7 @@ These rules catch bugs that standard linting misses and enforce production-quali
 This project includes standardized Claude Code configuration via git subtree:
 
 **Directory Structure**:
-```
+```text
 .claude/
 ├── claude.md          # Project-specific Claude guidelines
 └── standard/          # Standard Claude configuration (git subtree)
@@ -584,7 +584,7 @@ qlty check --plugin osv_scanner
 
 ## Project Structure
 
-```
+```text
 {{cookiecutter.project_slug}}/
 ├── src/{{cookiecutter.project_slug}}/     # Main package
 │   ├── __init__.py
