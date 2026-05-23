@@ -389,7 +389,7 @@ Expected: `CONFIRMED ABSENT — proceed`
 
 Create `{{cookiecutter.project_slug}}/docs/planning/index.md` with this exact content:
 
-```markdown
+````markdown
 ---
 title: "{{ cookiecutter.project_name }} - Planning"
 schema_type: planning
@@ -420,7 +420,7 @@ Claude Code skill. Together they form the complete project blueprint for
 
 See the [Project Setup Guide](../PROJECT_SETUP.md#project-planning-with-claude-code)
 for instructions on generating these documents.
-```
+````
 
 - [ ] **Step 3: Verify front matter is valid**
 

@@ -194,9 +194,9 @@ Content covers:
 
 Each of the three confirmed-resolved entries gets a resolution blockquote added immediately under its heading:
 
-```markdown
+````markdown
 > **Status**: Resolved — 2026-05-23 — [one-line explanation of when/how it was fixed]
-```
+````
 
 Entries are annotated, not deleted, to preserve the audit trail.
 
