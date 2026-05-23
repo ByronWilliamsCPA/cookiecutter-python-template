@@ -142,13 +142,13 @@ Also remove the entries this PR closes:
 
 Add a cleanup blockquote near the existing 2026-05-19 cleanup note:
 
-```markdown
+````markdown
 > **Cleanup 2026-05-20:** 5 cluster D entries closed (interrogate CVE allowlisted,
 > BasedPyright warnings eliminated, script complexity refactored). Items 2
 > (sonar_scan.py) and 4 (qlty plugin syntax) dropped as REDIRECTED and
 > already-FIXED respectively. Mis-categorized cluster E entries (5) moved to a
 > dedicated section.
-```
+````
 
 ## Architecture
 
