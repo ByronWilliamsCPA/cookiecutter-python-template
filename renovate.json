@@ -68,12 +68,13 @@
       "matchManagers": [
         "github-actions"
       ],
-      "matchPackagePatterns": [
+      "matchPackageNames": [
         "ByronWilliamsCPA/.github",
         "williaby/.github"
       ],
-      "versioning": "semver",
-      "followTag": "v1"
+      "followTag": "v1",
+      "automerge": false,
+      "groupName": "Org Workflow SHAs"
     }
   ],
   "enabledManagers": [
