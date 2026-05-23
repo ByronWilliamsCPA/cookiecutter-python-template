@@ -21,7 +21,7 @@ This is the index. Each cluster gets its own design file when its turn comes.
 | BA | 1 | Post-smoke-test cleanup (merged B+A) | 3 | design pending | `2026-05-09-template-cleanup-cluster-BA-post-smoke.md` |
 | C | 2 | Compliance scaffolding | 4 | shipped | `2026-05-09-template-cleanup-cluster-C-compliance.md` |
 | D | 3 | Code quality of generated code | 5 | shipped | `2026-05-20-template-cleanup-cluster-D-code-quality.md` |
-| E | 4 | Docs build and MkDocs | 6 | not started | `2026-05-09-template-cleanup-cluster-E-docs.md` |
+| E | 4 | Docs build and MkDocs | 6 | shipped | `2026-05-09-template-cleanup-cluster-E-docs.md` |
 
 Total in-scope work: 18 items across 4 clusters (after smoke-test reductions). The
 original B+A clusters were merged into a single "BA" PR after a `cruft create` smoke
@@ -71,5 +71,6 @@ redirected to homelab-infra. No work happens here.
 
 | 2026-05-19 | Cluster C shipped: include_editorconfig flag, community_health_style flag with new CODE_OF_CONDUCT.md and GOVERNANCE.md source files in two variants, sole_contributor flag for branch-protection approval count, auto_setup_branch_protection opt-in hook, PROJECT_SETUP.md documentation update. 4 feedback entries removed. |
 | 2026-05-21 | Cluster D shipped: documented interrogate transitive `py` CVE (PYSEC-2022-42969) plus newly-discovered `markdown` CVE (PYSEC-2026-89) in a new generated-project `docs/known-vulnerabilities.md` (the original spec's `[tool.pip-audit]` ignore-vulns block was a no-op because pip-audit lacks pyproject.toml config; pivoted to the OpenSSF accepted-risk pattern). BasedPyright typing fixes in cli.py (`_get_context` helper) and logging.py (BoundLogger + `cast(Processor, ...)`) cleared 5 warnings. Complexity refactor across 4 files: `check_fips_compatibility.py` (visit_Call into per-category helpers), `cleanup_conditional_files.py` (22 per-feature helpers + new shared module), `check_orphaned_files.py` (sibling import of shared helper), and `core/exceptions.py` (`_attach_optional_details` helper plus `APIErrorContext` dataclass). Extracted `scripts/_cleanup_shared.py` removed a 17-line byte-identical duplicate. 5 feedback entries removed; items 2 and 4 dropped from scope. |
+| 2026-05-23 | Cluster E shipped: fixed 9 MD040 violations (unlabeled fenced code blocks) across 5 template files; created `docs/planning/index.md` (previously absent from template output); added `qlty.yml` reusable-workflow caller to generated project workflows (satisfies CI-013); documented `QLTY_COVERAGE_TOKEN` and Qlty Code Quality subsection in `PROJECT_SETUP.md`; annotated 3 stale Cluster E feedback entries as resolved. Umbrella complete. |
 
 Append new rows here as clusters move through brainstorm to merge.
