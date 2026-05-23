@@ -25,165 +25,21 @@ tags:
 > `.editorconfig` missing, `community_health_style` variable absent (plus the missing
 > CODE_OF_CONDUCT.md and GOVERNANCE.md source files), `sole_contributor` variable
 > absent, and branch-protection script undocumented. All addressed by the cluster C PR.
+>
+> **Cleanup 2026-05-21:** 5 cluster D entries removed in PR `feat/cluster-D-code-quality`.
+> Three closed by this PR: interrogate transitive `py` CVE (documented as accepted risk
+> in generated project's `docs/known-vulnerabilities.md`); BasedPyright warnings in
+> generated cli.py and logging.py (5 warnings cleared via typed accessors); script
+> complexity in `check_fips_compatibility.py`, `cleanup_conditional_files.py`,
+> `check_orphaned_files.py`, and `core/exceptions.py` (refactored into per-feature
+> helpers plus a new `_cleanup_shared.py` module). Two dropped: local SonarCloud scan
+> script REDIRECTED to the org reusable workflow (PR #54), and the qlty plugin syntax
+> entry was already FIXED before audit. Discovered finding (not addressed by this PR):
+> upstream `markdown` PYSEC-2026-89 also documented in generated `known-vulnerabilities.md`.
 
 ---
 
 ## Feedback Items
-
----
-
-## Cluster D: Code Quality of Generated Code
-
-### Transitive Dependency `py` Has Known Vulnerability (via interrogate)
-
-- **Priority**: Low
-- **Cluster**: D
-- **Date**: 2025-11-22
-
-**Issue**: `safety check` reports CVE-2022-42969 (ReDoS) in `py<=1.11.0` package
-pulled in by `interrogate>=1.7.0`.
-
-**Context**:
-
-```text
-Vulnerability found in py version 1.11.0
-Vulnerability ID: 51457
-ADVISORY: ** DISPUTED ** Py throughout 1.11.0 allows remote attackers
-to conduct a ReDoS (Regular expression Denial of Service)...
-```
-
-`uv pip tree` shows `interrogate v1.7.0 -> py v1.11.0`. The `py` library is unmaintained
-with no fix released. pytest removed this dependency in v7.2.0, but interrogate has not.
-
-**Risk Assessment**: CVE is disputed and only affects Subversion repository parsing.
-This project does not interact with Subversion. Only affects dev environment.
-
-**Suggested Fix**:
-
-- Option 1: Remove `interrogate` from dev dependencies (docstring coverage is nice-to-have).
-- Option 2: Document as accepted risk since CVE does not affect this use case.
-- Option 3: Wait for interrogate to release an update removing the `py` dependency.
-- Also: Update `safety check` (deprecated) to `safety scan` command.
-
-**References**:
-
-- [pytest issue #10392](https://github.com/pytest-dev/pytest/issues/10392)
-- [NVD CVE-2022-42969](https://nvd.nist.gov/vuln/detail/CVE-2022-42969)
-
-### Template Missing Local SonarCloud Scanning Script
-
-- **Priority**: Medium
-- **Cluster**: D
-- **Date**: 2025-11-22
-
-**Issue**: Template includes SonarCloud CI workflow but no local scanning capability.
-Developers should be able to run SonarCloud analysis locally before committing to catch
-issues early. Currently have to wait for CI to run after push.
-
-**Suggested Fix**: Add `scripts/sonar_scan.py` to template with:
-
-- Support for running analysis locally.
-- Integration with pytest coverage generation.
-- Docker fallback for systems without sonar-scanner CLI.
-- Clear documentation on prerequisites (`SONAR_TOKEN`).
-
-Add to `PROJECT_SETUP.md` documentation:
-
-- How to install sonar-scanner CLI.
-- How to get `SONAR_TOKEN` from `https://sonarcloud.io/account/security`.
-- Usage examples: `python scripts/sonar_scan.py --with-coverage`.
-
-**Reference**: <https://docs.sonarsource.com/sonarqube-cloud/advanced-setup/ci-based-analysis/sonarscanner-cli/>
-
-### Template-Generated Code Has BasedPyright Warnings (DETAILED)
-
-- **Priority**: Critical
-- **Cluster**: D
-- **Date**: 2025-11-22
-
-**Issue**: Running `uv run basedpyright src/` on a freshly generated project shows type
-warnings in `cli.py` and `utils/logging.py`. A freshly generated template should pass type
-checking cleanly.
-
-**Note**: Warning count may differ from the original 33 reported here; recent commits touched
-`logging.py`. Run a fresh `cruft create` to get the current count before fixing.
-
-**Root Causes**:
-
-1. `structlog.get_logger()` returns `Any` because structlog lacks complete type stubs.
-2. `ctx.obj` in Click is typed as `Any` in Click's type stubs.
-3. Explicit `Any` usage in `logging.py` function signatures.
-4. Lambda functions in `logging.py` lack parameter and return type annotations.
-
-**Suggested Fixes**:
-
-- Use `structlog.stdlib.BoundLogger` for logger typing:
-
-  ```python
-  logger: BoundLogger = structlog.get_logger()
-  ```
-
-- Type the Click context with a TypedDict or dataclass.
-- Replace explicit `Any` in `logging.py` with proper types (`Mapping[str, object]`, etc.).
-- Add type annotations to lambda functions in `logging.py`.
-- As a fallback, add documented `pyright: ignore[reportAny]` comments where structlog
-  genuinely cannot be typed without full stubs.
-
-### Template-Generated Scripts Fail Qlty Code Quality Checks
-
-- **Priority**: Medium
-- **Cluster**: D
-- **Date**: 2025-12-01
-
-**Issue**: Template-generated utility scripts have high complexity, code duplication, and
-deeply nested control flow that fails `qlty check`.
-
-**Issues by File**:
-
-`scripts/check_fips_compatibility.py`:
-
-- Function `visit_Call` complexity: 51 (target: <=10)
-- Function `check_pyproject_toml` complexity: 14
-- Function `main` complexity: 20
-- Deeply nested control flow (level 4) at lines 117, 131, 165
-- Duplicate code blocks at lines 257 and 280 (16 lines, mass=88)
-
-`scripts/cleanup_conditional_files.py`:
-
-- Function `cleanup_conditional_files` complexity: 106 (extremely high)
-- Identical code duplication with `check_orphaned_files.py` (17 lines, mass=80) at line 50
-
-`scripts/check_orphaned_files.py`:
-
-- Identical code duplication with `cleanup_conditional_files.py` (17 lines, mass=80) at line 46
-
-**Recommendations**:
-
-1. Break down functions with complexity >15 into smaller, focused functions.
-2. Extract the 17-line duplicate block in scripts into a shared utility function.
-3. Refactor deeply nested control flow using early returns and guard clauses.
-
-### Qlty Configuration Has Invalid Plugin Syntax
-
-- **Priority**: High
-- **Cluster**: D
-- **Date**: 2025-11-22
-
-**Issue**: `.qlty/qlty.toml` uses attributes like `version = "latest"`, `package_file`,
-and `config_files` which are not valid qlty configuration options. This causes
-"Plugin definition not found" errors on every `qlty check` run.
-
-**Suggested Fix**: Use correct qlty plugin syntax:
-
-```toml
-[[plugin]]
-name = "ruff"
-drivers = ["lint"]
-```
-
-Remove custom plugin configuration attributes. Add `mode = "comment"` for tools that
-should report but not block CI. Run `qlty init --dry-run` to see correct default
-configuration.
 
 ---
 

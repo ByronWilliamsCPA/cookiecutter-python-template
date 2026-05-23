@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
@@ -94,68 +95,98 @@ class FipsCodeVisitor(ast.NodeVisitor):
     def __init__(self, file_path: Path) -> None:
         self.file_path = file_path
         self.issues: list[FipsIssue] = []
-        self._in_hashlib_call = False
 
-    def visit_Call(self, node: ast.Call) -> None:  # noqa: C901, PLR0912
-        """Visit function calls to detect crypto usage."""
-        # Check for hashlib.md5(), hashlib.sha1(), etc.
-        if isinstance(node.func, ast.Attribute):
-            func_name = node.func.attr.lower()
+    def _check_hashlib_call(self, node: ast.Call) -> None:
+        """Detect hashlib.md5(), hashlib.sha1(), and similar non-FIPS hash calls.
 
-            # Check for hashlib calls
-            if isinstance(node.func.value, ast.Name) and node.func.value.id == "hashlib":
-                if func_name in NON_FIPS_HASHES:
-                    # Check if usedforsecurity=False is set
-                    has_usedforsecurity_false = False
-                    for keyword in node.keywords:
-                        if keyword.arg == "usedforsecurity":
-                            if isinstance(keyword.value, ast.Constant) and keyword.value.value is False:
-                                has_usedforsecurity_false = True
+        Emits a FipsIssue when a hashlib call uses a non-FIPS-approved hash
+        and does not pass `usedforsecurity=False`. md5 and md4 are reported
+        as errors; other non-FIPS hashes are reported as warnings.
+        """
+        if not isinstance(node.func, ast.Attribute):
+            return
+        if not (
+            isinstance(node.func.value, ast.Name) and node.func.value.id == "hashlib"
+        ):
+            return
+        func_name = node.func.attr.lower()
+        if func_name not in NON_FIPS_HASHES:
+            return
+        has_usedforsecurity_false = any(
+            keyword.arg == "usedforsecurity"
+            and isinstance(keyword.value, ast.Constant)
+            and keyword.value.value is False
+            for keyword in node.keywords
+        )
+        if has_usedforsecurity_false:
+            return
+        severity = "error" if func_name in {"md5", "md4"} else "warning"
+        self.issues.append(
+            FipsIssue(
+                file_path=self.file_path,
+                line_number=node.lineno,
+                severity=severity,
+                category="hash",
+                message=f"hashlib.{func_name}() is not FIPS-approved",
+                fix_hint=(
+                    f"Add usedforsecurity=False if not used for security: "
+                    f"hashlib.{func_name}(..., usedforsecurity=False)"
+                ),
+            )
+        )
 
-                    if not has_usedforsecurity_false:
-                        severity = "error" if func_name in {"md5", "md4"} else "warning"
-                        self.issues.append(
-                            FipsIssue(
-                                file_path=self.file_path,
-                                line_number=node.lineno,
-                                severity=severity,
-                                category="hash",
-                                message=f"hashlib.{func_name}() is not FIPS-approved",
-                                fix_hint=f"Add usedforsecurity=False if not used for security: "
-                                f"hashlib.{func_name}(..., usedforsecurity=False)",
-                            )
-                        )
+    def _check_cipher_call(self, node: ast.Call) -> None:
+        """Detect non-FIPS cipher constructor calls (DES, RC4, Blowfish, etc.).
 
-            # Check for Crypto/Cryptodome cipher usage
-            if func_name in NON_FIPS_CIPHERS or any(c in func_name for c in NON_FIPS_CIPHERS):
-                self.issues.append(
-                    FipsIssue(
-                        file_path=self.file_path,
-                        line_number=node.lineno,
-                        severity="error",
-                        category="cipher",
-                        message=f"Non-FIPS cipher detected: {func_name}",
-                        fix_hint="Use AES, ChaCha20-Poly1305, or other FIPS-approved algorithms",
-                    )
+        Emits an error-severity FipsIssue when the called function's name
+        is an exact match against a member of NON_FIPS_CIPHERS.
+        """
+        if not isinstance(node.func, ast.Attribute):
+            return
+        func_name = node.func.attr.lower()
+        if func_name not in NON_FIPS_CIPHERS:
+            return
+        self.issues.append(
+            FipsIssue(
+                file_path=self.file_path,
+                line_number=node.lineno,
+                severity="error",
+                category="cipher",
+                message=f"Non-FIPS cipher detected: {func_name}",
+                fix_hint="Use AES, ChaCha20-Poly1305, or other FIPS-approved algorithms",
+            )
+        )
+
+    def _check_new_algorithm_call(self, node: ast.Call) -> None:
+        """Detect .new("algoname") calls (pycryptodome pattern) using non-FIPS algos.
+
+        Emits an error-severity FipsIssue when a .new() call passes a string
+        constant matching a known non-FIPS hash or cipher algorithm.
+        """
+        if not (isinstance(node.func, ast.Attribute) and node.func.attr == "new"):
+            return
+        for arg in node.args:
+            if not (isinstance(arg, ast.Constant) and isinstance(arg.value, str)):
+                continue
+            algo = arg.value.lower()
+            if algo not in NON_FIPS_HASHES and algo not in NON_FIPS_CIPHERS:
+                continue
+            self.issues.append(
+                FipsIssue(
+                    file_path=self.file_path,
+                    line_number=node.lineno,
+                    severity="error",
+                    category="cipher" if algo in NON_FIPS_CIPHERS else "hash",
+                    message=f"Non-FIPS algorithm: {algo}",
+                    fix_hint="Use FIPS-approved algorithms (AES, SHA-256, etc.)",
                 )
+            )
 
-        # Check for direct new() calls with algorithm names
-        if isinstance(node.func, ast.Attribute) and node.func.attr == "new":
-            for arg in node.args:
-                if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                    algo = arg.value.lower()
-                    if algo in NON_FIPS_HASHES or algo in NON_FIPS_CIPHERS:
-                        self.issues.append(
-                            FipsIssue(
-                                file_path=self.file_path,
-                                line_number=node.lineno,
-                                severity="error",
-                                category="cipher" if algo in NON_FIPS_CIPHERS else "hash",
-                                message=f"Non-FIPS algorithm: {algo}",
-                                fix_hint="Use FIPS-approved algorithms (AES, SHA-256, etc.)",
-                            )
-                        )
-
+    def visit_Call(self, node: ast.Call) -> None:
+        """Visit function calls to detect FIPS-incompatible crypto usage."""
+        self._check_hashlib_call(node)
+        self._check_cipher_call(node)
+        self._check_new_algorithm_call(node)
         self.generic_visit(node)
 
     def visit_Import(self, node: ast.Import) -> None:
@@ -232,7 +263,9 @@ def check_pyproject_toml(file_path: Path) -> list[FipsIssue]:
                 rf"^{package}\s*[<>=\[]",
             ]
             for pattern in patterns:
-                matches = list(re.finditer(pattern, content, re.MULTILINE | re.IGNORECASE))
+                matches = list(
+                    re.finditer(pattern, content, re.MULTILINE | re.IGNORECASE)
+                )
                 for match in matches:
                     line_num = content[: match.start()].count("\n") + 1
                     issues.append(
@@ -253,7 +286,9 @@ def check_pyproject_toml(file_path: Path) -> list[FipsIssue]:
                 rf"'{package}['\s\[<>=]",
             ]
             for pattern in patterns:
-                matches = list(re.finditer(pattern, content, re.MULTILINE | re.IGNORECASE))
+                matches = list(
+                    re.finditer(pattern, content, re.MULTILINE | re.IGNORECASE)
+                )
                 for match in matches:
                     line_num = content[: match.start()].count("\n") + 1
                     issues.append(
@@ -345,14 +380,18 @@ def find_python_files(directories: list[Path]) -> Iterator[Path]:
 
 def print_issue(issue: FipsIssue, show_hints: bool = False) -> None:
     """Print a FIPS issue with formatting."""
-    severity_symbols = {"error": "✗", "warning": "⚠", "info": "i"}  # noqa: RUF001
+    severity_symbols = {"error": "✗", "warning": "⚠", "info": "i"}
     severity_colors = {"error": "\033[91m", "warning": "\033[93m", "info": "\033[94m"}
     reset = "\033[0m"
 
     symbol = severity_symbols.get(issue.severity, "?")
     color = severity_colors.get(issue.severity, "")
 
-    location = f"{issue.file_path}:{issue.line_number}" if issue.line_number else str(issue.file_path)
+    location = (
+        f"{issue.file_path}:{issue.line_number}"
+        if issue.line_number
+        else str(issue.file_path)
+    )
     print(f"{color}{symbol}{reset} [{issue.severity.upper()}] {location}")
     print(f"  {issue.message}")
 
@@ -460,7 +499,9 @@ Examples:
 
         # Summary
         print("-" * 60)
-        print(f"Summary: {len(errors)} error(s), {len(warnings)} warning(s), {len(infos)} info")
+        print(
+            f"Summary: {len(errors)} error(s), {len(warnings)} warning(s), {len(infos)} info"
+        )
         print()
 
         if errors:

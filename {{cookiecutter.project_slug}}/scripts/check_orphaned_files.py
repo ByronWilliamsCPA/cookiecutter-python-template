@@ -27,24 +27,7 @@ import json
 import sys
 from pathlib import Path
 
-
-def get_cruft_context() -> dict[str, str]:
-    """Read cookiecutter context from .cruft.json.
-
-    Returns:
-        Dictionary of cookiecutter context values.
-
-    Raises:
-        FileNotFoundError: If .cruft.json doesn't exist.
-        json.JSONDecodeError: If .cruft.json is invalid JSON.
-    """
-    cruft_file = Path(".cruft.json")
-    if not cruft_file.exists():
-        msg = ".cruft.json not found. Is this a cruft-managed project?"
-        raise FileNotFoundError(msg)
-
-    cruft_data = json.loads(cruft_file.read_text())
-    return cruft_data.get("context", {}).get("cookiecutter", {})
+from _cleanup_shared import get_cruft_context
 
 
 def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
@@ -64,7 +47,7 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
     orphaned: list[tuple[str, str, Path]] = []
 
     # Define conditional file mappings
-    # Format: (feature_key, disabled_value, paths_to_check)  # noqa: ERA001
+    # Each entry is a tuple of (feature_key, disabled_value, paths_to_check).
     conditional_files: list[tuple[str, str, list[Path]]] = [
         ("include_cli", "no", [src_dir / "cli.py"]),
         (
@@ -75,6 +58,7 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
                 Path("docs"),
                 Path("tools/validate_front_matter.py"),
                 Path("tools/frontmatter_contract"),
+                Path(".github/workflows/docs.yml"),
             ],
         ),
         ("include_nox", "no", [Path("noxfile.py")]),
@@ -90,7 +74,10 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
         (
             "include_sonarcloud",
             "no",
-            [Path("sonar-project.properties"), Path(".github/workflows/sonarcloud.yml")],
+            [
+                Path("sonar-project.properties"),
+                Path(".github/workflows/sonarcloud.yml"),
+            ],
         ),
         ("include_renovate", "no", [Path("renovate.json")]),
         ("include_coderabbit", "no", [Path(".coderabbit.yaml")]),
@@ -137,10 +124,8 @@ def check_orphaned_files(context: dict) -> list[tuple[str, str, Path]]:
 
     for feature_key, disabled_value, paths in conditional_files:
         if context.get(feature_key) == disabled_value:
-            orphaned.extend(  # noqa: PERF401
-                (feature_key, disabled_value, path)
-                for path in paths
-                if path.exists()
+            orphaned.extend(
+                (feature_key, disabled_value, path) for path in paths if path.exists()
             )
 
     return orphaned
