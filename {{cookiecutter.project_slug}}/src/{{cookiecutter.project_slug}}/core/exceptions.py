@@ -353,7 +353,7 @@ class APIError(ExternalServiceError):
         ... )
     """
 
-    def __init__(  # noqa: PLR0913 - legacy kwargs preserved for backwards compatibility; use APIErrorContext for new code
+    def __init__(  # noqa: PLR0913 - individual kwargs retained alongside APIErrorContext; prefer context= for new callers
         self,
         message: str,
         *,
