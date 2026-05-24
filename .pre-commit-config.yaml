@@ -157,7 +157,7 @@ repos:
       - id: codespell
         exclude: '(docs-reference/|\.git/)'
         args:
-          - --ignore-words-list=crate,nd,rouge,compiletime,intoto,ure
+          - --ignore-words-list=crate,nd,rouge,compiletime,intoto,ure,commitish
 
   - repo: https://github.com/adrienverge/yamllint
     rev: 8713140e99914c0cb6e07364daedfb140847c3c5  # v1.33.0
