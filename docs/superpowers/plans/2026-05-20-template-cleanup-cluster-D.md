@@ -943,10 +943,10 @@ DO NOT run `gh pr create`. Stop here and report the PR draft so the controller c
 
 ## Out of scope (deferred)
 
-- Cluster E items (MD040, MD051, planning front matter, PROJECT_SETUP workflow table, qlty CLI documentation) — this PR re-categorizes them in the feedback file but does not work on them.
-- Replacing interrogate with an alternative tool — this PR accepts the disputed CVE via allowlist; interrogate replacement is a separate decision.
-- Removing the `py` transitive dependency — out of our control until interrogate releases a fix.
-- OpenSSF baseline file changes (LICENSE, SECURITY.md, etc.) — untouched.
+- Cluster E items (MD040, MD051, planning front matter, PROJECT_SETUP workflow table, qlty CLI documentation): this PR re-categorizes them in the feedback file but does not work on them.
+- Replacing interrogate with an alternative tool: this PR accepts the disputed CVE via allowlist; interrogate replacement is a separate decision.
+- Removing the `py` transitive dependency: out of our control until interrogate releases a fix.
+- OpenSSF baseline file changes (LICENSE, SECURITY.md, etc.): untouched.
 
 ## Spec coverage self-check
 
