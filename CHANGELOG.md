@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `qlty.yml` reusable-workflow caller in generated projects'
+  `.github/workflows/` (satisfies CI-013 manifest gap); pins upstream
+  `python-qlty-coverage.yml` at SHA `1b2d33c4`; runs on CI workflow_run
+  completion and only when CI conclusion is `success`; `QLTY_COVERAGE_TOKEN`
+  secret documented in generated project's `docs/PROJECT_SETUP.md` with a
+  new `### Qlty Code Quality` subsection and a row in the Required GitHub
+  Secrets table
+- `docs/planning/index.md` in generated projects: navigation index for the
+  four `/plan`-generated planning documents (project-vision, tech-spec,
+  roadmap, project-plan-template); previously absent and blocked MkDocs nav
 - `include_editorconfig` cookiecutter flag (default `yes`): ships a 4-space Python
   baseline `.editorconfig` with 2-space YAML/JSON/TOML overrides, LF line endings,
   UTF-8 encoding, and tab-indented Makefiles

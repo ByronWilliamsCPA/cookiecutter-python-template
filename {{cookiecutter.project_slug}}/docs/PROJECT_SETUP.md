@@ -92,7 +92,7 @@ This template includes an integrated AI-assisted project planning workflow that 
 
 The planning workflow generates 4 core documents, then synthesizes them into a comprehensive project plan:
 
-```
+```text
 Project Description
         │
         ▼
@@ -144,7 +144,7 @@ Technical constraints: must work offline, SQLite for storage.
 
 **Or provide a more detailed description:**
 
-```
+```text
 Generate planning documents for this project:
 
 I'm building a REST API for inventory management. Target users are
@@ -255,21 +255,21 @@ When you complete a phase:
 
 **Load context for a task:**
 
-```
+```text
 Load context from project-vision.md sections 2-3 and adr/adr-001-*.md,
 then implement [feature] per tech-spec.md section [X].
 ```
 
 **Validate code against specs:**
 
-```
+```text
 Review this code against tech-spec.md section 6 (security).
 Flag any violations.
 ```
 
 **Check phase progress:**
 
-```
+```text
 Review PROJECT-PLAN.md Phase 1 deliverables and update status.
 ```
 
@@ -435,6 +435,7 @@ Set these in Repository Settings > Secrets and variables > Actions:
 | `SONAR_TOKEN` | SonarCloud analysis | sonarcloud.io > Account > Security |
 {%- endif %}
 | `SCORECARD_TOKEN` | Scorecard (optional) | GitHub PAT with repo scope |
+| `QLTY_COVERAGE_TOKEN` | Qlty coverage upload | qlty.sh > project Settings > Coverage token |
 
 {%- if cookiecutter.include_semantic_release == "yes" %}
 
@@ -451,6 +452,22 @@ Instead of using API tokens, configure trusted publishing for enhanced security:
    - **Environment**: `pypi`
 4. No `PYPI_API_TOKEN` secret is needed with trusted publishing
 {%- endif %}
+
+### Qlty Code Quality
+
+Qlty aggregates code quality metrics (complexity scores, code smell detection, and
+coverage trends) and surfaces them as PR comments via the `qlty.yml` workflow. It does
+not replace Ruff, BasedPyright, or pytest; those tools run directly in CI and Qlty
+consumes their output to build trend data.
+
+**Setup**:
+
+1. Create a project at [qlty.sh](https://qlty.sh) and link your GitHub repository.
+2. Copy the `QLTY_COVERAGE_TOKEN` from the Qlty project Settings page.
+3. Add it as a repository secret named `QLTY_COVERAGE_TOKEN` (see [Required GitHub Secrets](#required-github-secrets)).
+
+The `.qlty/qlty.toml` configuration file is already generated. No manual tool
+configuration is required beyond the token.
 
 {%- endif %}
 
@@ -666,7 +683,7 @@ This project enforces:
 
 ### Project Structure
 
-```
+```text
 {{ cookiecutter.project_slug }}/
 ├── src/{{ cookiecutter.project_slug }}/    # Main package
 │   ├── core/                               # Core functionality

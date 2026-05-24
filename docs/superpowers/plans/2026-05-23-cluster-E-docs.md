@@ -1,8 +1,8 @@
-# Cluster E: Docs Build and MkDocs — Implementation Plan
+# Cluster E: Docs Build and MkDocs Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Fix 9 MD040 violations, create the missing `docs/planning/index.md`, add the `qlty.yml` CI workflow to generated projects, document Qlty in `PROJECT_SETUP.md`, and annotate three stale feedback entries as resolved — closing the template-cleanup umbrella.
+**Goal:** Fix 9 MD040 violations, create the missing `docs/planning/index.md`, add the `qlty.yml` CI workflow to generated projects, document Qlty in `PROJECT_SETUP.md`, and annotate three stale feedback entries as resolved; this closes the template-cleanup umbrella.
 
 **Architecture:** All changes are template file edits (files under `{{cookiecutter.project_slug}}/`) plus repo-level docs updates. No Python code changes. The `qlty.yml` addition requires no cleanup hook changes because `include_github_actions == "no"` already removes the entire `.github/workflows/` directory. Changes ship as a single PR from branch `feat/cluster-E-docs`.
 
@@ -35,7 +35,7 @@ Expected: `All packages are already installed` (or brief install output)
 
 ---
 
-## Task 1: MD040 — Fix `docs/development/` Files
+## Task 1 (MD040): Fix `docs/development/` Files
 
 **Files:**
 - Modify: `{{cookiecutter.project_slug}}/docs/development/architecture.md:16`
@@ -63,12 +63,12 @@ for path in [
 ```
 
 Expected output:
-```
+```text
 {{cookiecutter.project_slug}}/docs/development/architecture.md:16 VIOLATION
 {{cookiecutter.project_slug}}/docs/development/testing.md:40 VIOLATION
 ```
 
-- [ ] **Step 2: Fix `architecture.md` — add `text` tag at line 16**
+- [ ] **Step 2: Fix `architecture.md`: add `text` tag at line 16**
 
 Edit `{{cookiecutter.project_slug}}/docs/development/architecture.md`.
 
@@ -81,7 +81,7 @@ Replace with:
 ```text
 ```
 
-- [ ] **Step 3: Fix `testing.md` — add `text` tag at line 40**
+- [ ] **Step 3: Fix `testing.md`: add `text` tag at line 40**
 
 Edit `{{cookiecutter.project_slug}}/docs/development/testing.md`.
 
@@ -135,7 +135,7 @@ git commit -m "fix(template): add text language tag to unlabeled fences in devel
 
 ---
 
-## Task 2: MD040 — Fix `docs/planning/` Files
+## Task 2 (MD040): Fix `docs/planning/` Files
 
 **Files:**
 - Modify: `{{cookiecutter.project_slug}}/docs/planning/project-plan-template.md:78,115`
@@ -171,7 +171,7 @@ Expected output:
 {{cookiecutter.project_slug}}/docs/planning/README.md:75 VIOLATION
 ```
 
-- [ ] **Step 2: Fix `project-plan-template.md` line 78 — ASCII component-box diagram**
+- [ ] **Step 2: Fix `project-plan-template.md` line 78, ASCII component-box diagram**
 
 Edit `{{cookiecutter.project_slug}}/docs/planning/project-plan-template.md`.
 
@@ -186,9 +186,9 @@ Replace the opening fence with:
 [Describe the overall system design]
 ```
 
-- [ ] **Step 3: Fix `project-plan-template.md` line 115 — arrow data-flow diagram**
+- [ ] **Step 3: Fix `project-plan-template.md` line 115, arrow data-flow diagram**
 
-In the same file, find (line 115, after the edit in Step 2 line numbers may shift by 0 — the fence is the one that opens the `Input → Processing → Output` block):
+In the same file, find (line 115, after the edit in Step 2 line numbers may shift by 0; the fence is the one that opens the `Input → Processing → Output` block):
 
 ```
 ```
@@ -200,7 +200,7 @@ Replace the opening fence with:
 Input → Processing → Output
 ```
 
-- [ ] **Step 4: Fix `planning/README.md` line 46 — Claude prompt template**
+- [ ] **Step 4: Fix `planning/README.md` line 46, Claude prompt template**
 
 Edit `{{cookiecutter.project_slug}}/docs/planning/README.md`.
 
@@ -215,7 +215,7 @@ Replace the opening fence with:
 Load context from:
 ```
 
-- [ ] **Step 5: Fix `planning/README.md` line 57 — second Claude prompt template**
+- [ ] **Step 5: Fix `planning/README.md` line 57, second Claude prompt template**
 
 In the same file, find (line 57, the fence that opens the `Review this code against:` block):
 ```
@@ -228,7 +228,7 @@ Replace the opening fence with:
 Review this code against:
 ```
 
-- [ ] **Step 6: Fix `planning/README.md` line 75 — document-relationships ASCII diagram**
+- [ ] **Step 6: Fix `planning/README.md` line 75, document-relationships ASCII diagram**
 
 In the same file, find (line 75, the fence that opens the `┌─────────────────────────────┐` block):
 ```
@@ -282,7 +282,7 @@ git commit -m "fix(template): add text language tag to unlabeled fences in plann
 
 ---
 
-## Task 3: MD040 — Fix `README.md`
+## Task 3 (MD040): Fix `README.md`
 
 **Files:**
 - Modify: `{{cookiecutter.project_slug}}/README.md:465,587`
@@ -311,7 +311,7 @@ Expected:
 {{cookiecutter.project_slug}}/README.md:587 VIOLATION
 ```
 
-- [ ] **Step 2: Fix line 465 — `.claude/` directory tree**
+- [ ] **Step 2: Fix line 465, `.claude/` directory tree**
 
 Edit `{{cookiecutter.project_slug}}/README.md`.
 
@@ -326,7 +326,7 @@ Replace the opening fence with:
 .claude/
 ```
 
-- [ ] **Step 3: Fix line 587 — project structure tree**
+- [ ] **Step 3: Fix line 587, project structure tree**
 
 In the same file, find (line 587, the fence opening the `{{cookiecutter.project_slug}}/` directory listing):
 ```
@@ -379,11 +379,11 @@ git commit -m "fix(template): add text language tag to unlabeled fences in READM
 
 ```bash
 ls '{{cookiecutter.project_slug}}/docs/planning/index.md' 2>/dev/null \
-  && echo "EXISTS — stop, investigate" \
-  || echo "CONFIRMED ABSENT — proceed"
+  && echo "EXISTS: stop, investigate" \
+  || echo "CONFIRMED ABSENT: proceed"
 ```
 
-Expected: `CONFIRMED ABSENT — proceed`
+Expected: `CONFIRMED ABSENT: proceed`
 
 - [ ] **Step 2: Create the file**
 
@@ -464,11 +464,11 @@ No cleanup-hook changes are needed: when `include_github_actions == "no"`, the p
 
 ```bash
 ls '{{cookiecutter.project_slug}}/.github/workflows/qlty.yml' 2>/dev/null \
-  && echo "EXISTS — stop, investigate" \
-  || echo "CONFIRMED ABSENT — proceed"
+  && echo "EXISTS: stop, investigate" \
+  || echo "CONFIRMED ABSENT: proceed"
 ```
 
-Expected: `CONFIRMED ABSENT — proceed`
+Expected: `CONFIRMED ABSENT: proceed`
 
 - [ ] **Step 2: Create `qlty.yml`**
 
@@ -556,7 +556,7 @@ Replace with:
 
 In the same file, find the closing `{%- endif %}` that terminates the entire `include_github_actions` block. It appears as the last `{%- endif %}` in the CI/CD section, just before `---` and `## Badge Configuration`. Find:
 
-```
+```text
 {%- endif %}
 
 ---
@@ -566,11 +566,11 @@ In the same file, find the closing `{%- endif %}` that terminates the entire `in
 
 Insert the new subsection immediately before that `{%- endif %}`:
 
-```
+```text
 ### Qlty Code Quality
 
-Qlty aggregates code quality metrics — complexity scores, code smell detection, and
-coverage trends — and surfaces them as PR comments via the `qlty.yml` workflow. It does
+Qlty aggregates code quality metrics (complexity scores, code smell detection, and
+coverage trends) and surfaces them as PR comments via the `qlty.yml` workflow. It does
 not replace Ruff, BasedPyright, or pytest; those tools run directly in CI and Qlty
 consumes their output to build trend data.
 
@@ -580,7 +580,7 @@ consumes their output to build trend data.
 2. Copy the `QLTY_COVERAGE_TOKEN` from the Qlty project Settings page.
 3. Add it as a repository secret named `QLTY_COVERAGE_TOKEN` (see [Required GitHub Secrets](#required-github-secrets)).
 
-The `.qlty/qlty.toml` configuration file is already generated — no manual tool
+The `.qlty/qlty.toml` configuration file is already generated; no manual tool
 configuration is required beyond the token.
 
 {%- endif %}
@@ -609,7 +609,7 @@ Expected (two lines, SCORECARD before QLTY):
 grep -n "Qlty Code Quality" '{{cookiecutter.project_slug}}/docs/PROJECT_SETUP.md'
 ```
 
-Expected: one hit — the heading line.
+Expected: one hit, the heading line.
 
 - [ ] **Step 5: Pre-commit and commit**
 
@@ -640,7 +640,7 @@ Replace with:
 ```
 ### MD051 Link Fragment Violations in docs/PROJECT_SETUP.md
 
-> **Status**: Resolved — 2026-05-23 — Python anchor-check confirmed all 8 ToC links in
+> **Status**: Resolved (2026-05-23): Python anchor-check confirmed all 8 ToC links in
 > `PROJECT_SETUP.md` match actual heading IDs exactly. No action required.
 ```
 
@@ -654,7 +654,7 @@ Replace with:
 ```
 ### Documentation Files Missing YAML Front Matter (Planning Subset)
 
-> **Status**: Resolved — 2026-05-23 — `roadmap.md`, `tech-spec.md`, and
+> **Status**: Resolved (2026-05-23): `roadmap.md`, `tech-spec.md`, and
 > `project-plan-template.md` confirmed to have valid YAML front matter (2026-05-09 audit).
 > `docs/planning/index.md` created in Cluster E (previously absent from template output).
 ```
@@ -669,7 +669,7 @@ Replace with:
 ```
 ### CI/CD Workflow Documentation Missing Several Workflows
 
-> **Status**: Resolved — 2026-05-23 — `pr-validation.yml`, `release.yml`, and
+> **Status**: Resolved (2026-05-23): `pr-validation.yml`, `release.yml`, and
 > `publish-pypi.yml` are all present in the Core Workflows table in `PROJECT_SETUP.md`,
 > conditionally rendered by `include_github_actions` and `include_semantic_release`.
 ```
@@ -727,7 +727,7 @@ Add a new row immediately after it:
 grep "shipped" docs/superpowers/specs/2026-05-09-template-cleanup-umbrella.md
 ```
 
-Expected: at least two lines containing `shipped` — the Cluster D and Cluster E entries.
+Expected: at least two lines containing `shipped`, the Cluster D and Cluster E entries.
 
 - [ ] **Step 4: Pre-commit and commit**
 
@@ -739,7 +739,7 @@ git commit -m "docs(planning): mark cluster E shipped, close template-cleanup um
 
 ---
 
-## Task 9: Smoke Test — Generated Project Verification
+## Task 9: Smoke Test: Generated Project Verification
 
 No files modified. This task verifies the template generates correctly with the changes applied.
 
@@ -778,13 +778,13 @@ for path in glob.glob('/tmp/my_python_project/docs/**/*.md', recursive=True) + \
         elif re.match(r'\`\`\`\w', s):
             if not in_block: in_block = True
 if violations:
-    print('FAIL — violations:', violations)
+    print('FAIL: violations:', violations)
 else:
-    print('PASS — no unlabeled fences')
+    print('PASS: no unlabeled fences')
 "
 ```
 
-Expected: `PASS — no unlabeled fences`
+Expected: `PASS: no unlabeled fences`
 
 - [ ] **Step 4: Verify `docs/planning/index.md` exists in generated project**
 
@@ -807,11 +807,11 @@ cruft create /home/byron/dev/cookiecutter-python-template/.worktrees/cluster-E-d
   --config-file /tmp/no-gha-config.yaml --no-input \
   --output-dir /tmp/no-gha-test/
 ls /tmp/no-gha-test/my_python_project/.github/workflows/qlty.yml 2>/dev/null \
-  && echo "FAIL — file should not exist" \
-  || echo "PASS — qlty.yml correctly absent"
+  && echo "FAIL: file should not exist" \
+  || echo "PASS: qlty.yml correctly absent"
 ```
 
-Expected: `PASS — qlty.yml correctly absent`
+Expected: `PASS: qlty.yml correctly absent`
 
 - [ ] **Step 6: Clean up generated test projects**
 
@@ -838,12 +838,12 @@ gh pr create \
   --body "$(cat <<'EOF'
 ## Summary
 
-- Fix 9 MD040 violations (unlabeled fenced code blocks) across 5 template files — all tagged `text`
+- Fix 9 MD040 violations (unlabeled fenced code blocks) across 5 template files, all tagged `text`
 - Create `{{cookiecutter.project_slug}}/docs/planning/index.md` (was absent from template output; blocked MkDocs nav)
 - Add `{{cookiecutter.project_slug}}/.github/workflows/qlty.yml` reusable-workflow caller (satisfies CI-013)
 - Document `QLTY_COVERAGE_TOKEN` secret and Qlty Code Quality subsection in `PROJECT_SETUP.md`
 - Annotate 3 stale Cluster E feedback entries as resolved in `docs/template_feedback.md`
-- Mark Cluster E shipped in umbrella spec — closes the template-cleanup umbrella
+- Mark Cluster E shipped in umbrella spec, closing the template-cleanup umbrella
 
 ## Template Testing
 
@@ -851,7 +851,7 @@ gh pr create \
 - [x] `qlty.yml` present in generated project
 - [x] Zero unlabeled fenced code blocks in generated docs
 - [x] `docs/planning/index.md` present in generated project
-- [x] Generated with `include_github_actions=no` — `qlty.yml` correctly absent
+- [x] Generated with `include_github_actions=no`: `qlty.yml` correctly absent
 
 ## Breaking Changes
 
