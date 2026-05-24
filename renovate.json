@@ -78,8 +78,7 @@
     }
   ],
   "enabledManagers": [
-    "pep621",
-    "pip_requirements",
+    "uv",
     "github-actions"
   ],
   "separateMajorMinor": true,

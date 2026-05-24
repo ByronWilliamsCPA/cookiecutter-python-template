@@ -134,11 +134,11 @@ Move those 5 entries to a new `## Cluster E: Documentation and MkDocs` section i
 
 Also remove the entries this PR closes:
 
-- "Transitive Dependency `py` Has Known Vulnerability (via interrogate)" — closed by component 1
-- "Template Missing Local SonarCloud Scanning Script" — REDIRECTED, remove
-- "Template-Generated Code Has BasedPyright Warnings (DETAILED)" — closed by components 2 and 3
-- "Template-Generated Scripts Fail Qlty Code Quality Checks" — closed by component 4
-- "Qlty Configuration Has Invalid Plugin Syntax" — already-FIXED, remove
+- "Transitive Dependency `py` Has Known Vulnerability (via interrogate)": closed by component 1
+- "Template Missing Local SonarCloud Scanning Script": REDIRECTED, remove
+- "Template-Generated Code Has BasedPyright Warnings (DETAILED)": closed by components 2 and 3
+- "Template-Generated Scripts Fail Qlty Code Quality Checks": closed by component 4
+- "Qlty Configuration Has Invalid Plugin Syntax": already-FIXED, remove
 
 Add a cleanup blockquote near the existing 2026-05-19 cleanup note:
 
