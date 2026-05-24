@@ -114,27 +114,54 @@ Layer 3: Automated Code Quality (SonarQube)
 
 ## Step 6: Configure CI Integration
 
-The quality gate is automatically enforced by the CI workflow:
+The quality gate is enforced by a dedicated workflow that calls the
+organization's reusable SonarCloud workflow. Do NOT add a second inline
+`sonarqube-scan-action` or `sonarqube-quality-gate-action` to `ci.yml`,
+two scans for the same projectKey on the same SHA race each other and the
+loser produces a 404 from the quality gate action (see PR #69).
 
 ### For Template Repository
 
-File: `.github/workflows/ci.yml`
+File: `.github/workflows/sonarcloud.yml` (thin caller for the org reusable
+workflow). The reusable workflow runs the scan AND the quality gate
+internally, so the caller is just a few inputs:
 
 ```yaml
-sonarqube-quality-gate:
-  name: SonarQube Quality Gate
-  runs-on: ubuntu-latest
-  steps:
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+name: SonarCloud
 
-    - name: Wait for Quality Gate
-      uses: sonarsource/sonarqube-quality-gate-action@master
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Analysis
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml@<sha>
+    with:
+      sonar-organization: 'byronwilliamscpa'
+      sonar-project-key: 'ByronWilliamsCPA_<repo-name>'
+      python-version: '3.12'
+      source-directory: 'src'
+      coverage-paths: 'coverage.xml'
+      fail-on-quality-gate: ${{ github.event_name != 'pull_request' }}
+      skip-if-no-token: true
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 ```
+
+`ci.yml` should NOT contain any SonarCloud scanning or quality gate steps.
+Standards manifest CI-003 designates `sonarcloud.yml` as the only place
+SonarCloud actions should appear.
 
 ### For Generated Projects
 
@@ -214,7 +241,10 @@ Set up notifications for quality gate failures:
 Enable PR decoration:
 
 1. **Organization Settings** → **GitHub Integration**
-2. Enable **Automatic Analysis** (optional)
+2. **DISABLE** Automatic Analysis (Administration → Analysis Method →
+   toggle off "SonarCloud Automatic Analysis"). Analyses must come from
+   CI only, mixing CI-based and Automatic Analysis posts duplicate /
+   phantom check runs that can race the CI quality gate.
 3. Enable **PR Decoration**
 4. Configure status check: "SonarCloud Quality Gate"
 
