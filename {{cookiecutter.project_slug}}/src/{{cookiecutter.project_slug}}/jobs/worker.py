@@ -163,6 +163,7 @@ async def cleanup_old_data(_ctx: dict[str, Any]) -> int:
     # Example threshold: datetime.now(UTC) - timedelta(days=90)
 
     deleted_count = 0  # Placeholder
+    await asyncio.sleep(0)  # Cooperative yield; replace with actual async db calls
     logger.info("cleanup_task_completed", deleted=deleted_count)
 
     return deleted_count
@@ -187,6 +188,7 @@ async def startup(_ctx: dict[str, Any]) -> None:
     # Placeholder for initialization logic
     # Example: _ctx['db'] = await create_db_connection()
     # Example: _ctx['config'] = load_config()
+    await asyncio.sleep(0)  # Cooperative yield; replace with actual async init calls
 
 
 async def shutdown(_ctx: dict[str, Any]) -> None:
@@ -202,6 +204,7 @@ async def shutdown(_ctx: dict[str, Any]) -> None:
 
     # Placeholder for cleanup logic
     # Example: if 'db' in _ctx: await _ctx['db'].close()
+    await asyncio.sleep(0)  # Cooperative yield; replace with actual async cleanup calls
 
 
 # =============================================================================

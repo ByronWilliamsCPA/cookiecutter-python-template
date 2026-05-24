@@ -15,13 +15,13 @@ echo "   Output:  $OUTPUT_DIR"
 
 # Check if backend is running
 if ! curl -s "$API_URL/openapi.json" > /dev/null 2>&1; then
-    echo ""
-    echo "❌ Error: Cannot reach API at $API_URL"
-    echo ""
-    echo "Make sure the backend is running:"
-    echo "  cd $(dirname "$0")/.."
-    echo "  uv run uvicorn {{ cookiecutter.project_slug }}.main:app --reload"
-    echo ""
+    echo "" >&2
+    echo "❌ Error: Cannot reach API at $API_URL" >&2
+    echo "" >&2
+    echo "Make sure the backend is running:" >&2
+    echo "  cd $(dirname "$0")/.." >&2
+    echo "  uv run uvicorn {{ cookiecutter.project_slug }}.main:app --reload" >&2
+    echo "" >&2
     exit 1
 fi
 

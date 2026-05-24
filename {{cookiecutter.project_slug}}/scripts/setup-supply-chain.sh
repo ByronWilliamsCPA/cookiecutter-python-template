@@ -81,7 +81,7 @@ fi
 echo ""
 echo "Step 3: Installing Artifact Registry keyring..."
 echo "------------------------------------------------"
-pip install --quiet keyrings.google-artifactregistry-auth
+pip install --quiet --only-binary :all: keyrings.google-artifactregistry-auth
 echo -e "  ${GREEN}✓${NC} Keyring installed"
 
 echo ""
