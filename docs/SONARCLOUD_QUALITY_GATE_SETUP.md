@@ -116,11 +116,18 @@ Layer 3: Automated Code Quality (SonarQube)
 
 The quality gate is enforced by a dedicated workflow that calls the
 organization's reusable SonarCloud workflow. Do NOT add a second inline
-`sonarqube-scan-action` or `sonarqube-quality-gate-action` to `ci.yml`,
-two scans for the same projectKey on the same SHA race each other and the
-loser produces a 404 from the quality gate action (see PR #69).
+SonarCloud step (any of `sonarqube-scan-action`,
+`sonarqube-quality-gate-action`, or the legacy
+`SonarSource/sonarcloud-github-action`) to `ci.yml`. Two scans for the
+same projectKey on the same SHA race each other and the loser produces
+a 404 from the quality gate action (see PR #69).
 
-### For Template Repository
+### Generic Caller (placeholder values)
+
+The snippet below is a generic reference example using placeholder values
+(`<sha>`, `<repo-name>`, `source-directory: 'src'`). For this repo's
+populated workflow with real values, see
+[`.github/workflows/sonarcloud.yml`](../.github/workflows/sonarcloud.yml).
 
 File: `.github/workflows/sonarcloud.yml` (thin caller for the org reusable
 workflow). The reusable workflow runs the scan AND the quality gate
@@ -155,9 +162,16 @@ jobs:
       coverage-paths: 'coverage.xml'
       fail-on-quality-gate: ${{ github.event_name != 'pull_request' }}
       skip-if-no-token: true
+      no-build: false  # required for hatchling-backed repos installable via `uv sync`
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 ```
+
+> **`no-build: false` is required** for repositories that are themselves
+> installable packages (hatchling backend, or any other PEP 517 backend
+> where the upstream default of `no-build: true` would block
+> `uv sync` from installing the editable project). Omit this line only
+> if the caller repo is a non-installable collection of scripts or docs.
 
 `ci.yml` should NOT contain any SonarCloud scanning or quality gate steps.
 Standards manifest CI-003 designates `sonarcloud.yml` as the only place
