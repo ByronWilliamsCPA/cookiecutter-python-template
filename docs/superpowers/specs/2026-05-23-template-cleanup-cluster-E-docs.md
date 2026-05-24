@@ -33,7 +33,7 @@ These entries will be annotated as resolved in `template_feedback.md` rather tha
 
 ---
 
-## Item 1: MD040 Unlabeled Fenced Code Blocks
+## Item 1 (MD040): Unlabeled Fenced Code Blocks
 
 ### Scope
 
@@ -149,7 +149,7 @@ The `workflow_run: ["CI"]` trigger matches the generated project's CI workflow (
 
 ### Conditional Inclusion
 
-`qlty.yml` is added to the per-feature cleanup list in `cleanup_conditional_files.py` under the `include_github_actions` guard, matching the pattern used by all other workflow files. When `include_github_actions == "no"`, the post-gen hook removes it.
+`qlty.yml` is conditionally rendered via the parent guard: when `include_github_actions == "no"`, the post-gen hook removes the entire `.github/` directory, so no per-file cleanup entry in `cleanup_conditional_files.py` is required. This matches how every other generated-project workflow file is conditionally included.
 
 ### SHA Pin
 

@@ -9,7 +9,7 @@ component: Strategy
 source: "/plan command generation"
 ---
 
-> **Status**: Awaiting Generation
+> **Status**: Navigation index (does not require regeneration)
 
 ---
 

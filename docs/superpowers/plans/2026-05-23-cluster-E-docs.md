@@ -35,7 +35,7 @@ Expected: `All packages are already installed` (or brief install output)
 
 ---
 
-## Task 1: MD040 Fix `docs/development/` Files
+## Task 1 (MD040): Fix `docs/development/` Files
 
 **Files:**
 - Modify: `{{cookiecutter.project_slug}}/docs/development/architecture.md:16`
@@ -63,7 +63,7 @@ for path in [
 ```
 
 Expected output:
-```
+```text
 {{cookiecutter.project_slug}}/docs/development/architecture.md:16 VIOLATION
 {{cookiecutter.project_slug}}/docs/development/testing.md:40 VIOLATION
 ```
@@ -135,7 +135,7 @@ git commit -m "fix(template): add text language tag to unlabeled fences in devel
 
 ---
 
-## Task 2: MD040 Fix `docs/planning/` Files
+## Task 2 (MD040): Fix `docs/planning/` Files
 
 **Files:**
 - Modify: `{{cookiecutter.project_slug}}/docs/planning/project-plan-template.md:78,115`
@@ -282,7 +282,7 @@ git commit -m "fix(template): add text language tag to unlabeled fences in plann
 
 ---
 
-## Task 3: MD040 Fix `README.md`
+## Task 3 (MD040): Fix `README.md`
 
 **Files:**
 - Modify: `{{cookiecutter.project_slug}}/README.md:465,587`
@@ -556,7 +556,7 @@ Replace with:
 
 In the same file, find the closing `{%- endif %}` that terminates the entire `include_github_actions` block. It appears as the last `{%- endif %}` in the CI/CD section, just before `---` and `## Badge Configuration`. Find:
 
-```
+```text
 {%- endif %}
 
 ---
@@ -566,7 +566,7 @@ In the same file, find the closing `{%- endif %}` that terminates the entire `in
 
 Insert the new subsection immediately before that `{%- endif %}`:
 
-```
+```text
 ### Qlty Code Quality
 
 Qlty aggregates code quality metrics (complexity scores, code smell detection, and

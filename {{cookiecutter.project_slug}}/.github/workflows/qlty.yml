@@ -6,8 +6,6 @@ on:
     types:
       - completed
 
-permissions: read-all
-
 concurrency:
   group: {% raw %}qlty-coverage-${{ github.event.workflow_run.head_branch }}{% endraw %}
   cancel-in-progress: true
