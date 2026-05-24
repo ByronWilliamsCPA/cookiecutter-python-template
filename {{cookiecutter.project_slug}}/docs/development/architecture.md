@@ -13,7 +13,7 @@ This document describes the architecture and design decisions for {{ cookiecutte
 
 ## Project Structure
 
-```
+```text
 {{ cookiecutter.project_slug }}/
 ├── src/
 │   └── {{ cookiecutter.project_slug }}/

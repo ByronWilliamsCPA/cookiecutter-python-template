@@ -74,6 +74,9 @@ without language specifiers, causing markdownlint MD040 violations.
 
 ### MD051 Link Fragment Violations in docs/PROJECT_SETUP.md
 
+> **Status**: Resolved (2026-05-23): Python anchor-check confirmed all 8 ToC links in
+> `PROJECT_SETUP.md` match actual heading IDs exactly. No action required.
+
 - **Priority**: Low
 - **Cluster**: E
 - **Date**: 2025-12-04
@@ -87,6 +90,10 @@ fragments.
 rendering.
 
 ### Documentation Files Missing YAML Front Matter (Planning Subset)
+
+> **Status**: Resolved (2026-05-23): `roadmap.md`, `tech-spec.md`, and
+> `project-plan-template.md` confirmed to have valid YAML front matter (2026-05-09 audit).
+> `docs/planning/index.md` created in Cluster E (previously absent from template output).
 
 - **Priority**: Medium
 - **Cluster**: E
@@ -126,6 +133,10 @@ source: "/plan command generation"
 template output).
 
 ### CI/CD Workflow Documentation Missing Several Workflows
+
+> **Status**: Resolved (2026-05-23): `pr-validation.yml`, `release.yml`, and
+> `publish-pypi.yml` are all present in the Core Workflows table in `PROJECT_SETUP.md`,
+> conditionally rendered by `include_github_actions` and `include_semantic_release`.
 
 - **Priority**: Medium
 - **Cluster**: E
