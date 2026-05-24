@@ -30,7 +30,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml@1b2d33c47cc11a96b9757b49f41873c54e75f57c  # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml@961eb17d8e9b7fe0d8bfc5dbe9d23c824484fb11  # main
     with:
       sonar-organization: 'byronwilliamscpa'
       sonar-project-key: 'ByronWilliamsCPA_cookiecutter-python-template'
