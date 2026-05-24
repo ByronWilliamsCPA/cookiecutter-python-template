@@ -78,7 +78,7 @@
     }
   ],
   "enabledManagers": [
-    "uv",
+    "pep621",
     "github-actions"
   ],
   "separateMajorMinor": true,
