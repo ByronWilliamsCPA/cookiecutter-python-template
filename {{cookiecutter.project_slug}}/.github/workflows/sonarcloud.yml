@@ -32,7 +32,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml@961eb17d8e9b7fe0d8bfc5dbe9d23c824484fb11  # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml@62bfd795d1273b4819a3f66aa9cef0b917acb830  # main
     with:
       sonar-organization: '{{ cookiecutter.sonarcloud_organization }}'
       sonar-project-key: '{{ cookiecutter.github_org_or_user }}_{{ cookiecutter.project_slug }}'
