@@ -289,12 +289,11 @@ jobs:
   # ============================================================================
   # Job 3: Template Validation
   # ----------------------------------------------------------------------------
-  # Note: SonarCloud scanning + quality gate are handled by the dedicated
-  # sonarcloud.yml workflow (thin caller for the org reusable workflow at
-  # ByronWilliamsCPA/.github/.github/workflows/python-sonarcloud.yml). A second
-  # inline scan here caused two concurrent analyses for the same projectKey on
-  # the same SHA, racing each other and producing the 'task not found' 404 from
-  # sonarqube-quality-gate-action. See PR #69.
+  # Note: SonarCloud analysis is intentionally NOT run on this template repo.
+  # As meta-code (Jinja2 placeholders rendered at instantiation time), the
+  # template body is not analyzable as plain Python. Generated child projects
+  # opt into their own SonarCloud analysis via the rendered config that ships
+  # inside the rendered template directory.
   # ============================================================================
   validate-template:
     name: Validate Cookiecutter Template
@@ -391,7 +390,6 @@ jobs:
           echo "All governance layers checked:" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Code Quality Checks" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ LLM Governance Validation" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ SonarCloud Analysis (via reusable workflow)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Template Validation" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Status: ${{ job.status }}**" >> $GITHUB_STEP_SUMMARY

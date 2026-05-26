@@ -64,6 +64,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   raises `ValueError` with an actionable message when `.cruft.json` contains a
   non-object root value
 
+### Removed
+
+- Root-level `sonar-project.properties` and `.github/workflows/sonarcloud.yml`
+  caller workflow. SonarCloud analysis is intentionally skipped on this template
+  repository: as Jinja2 meta-code, the template body is not statically
+  analyzable as Python, and the analysis was failing with a `curl 403` from the
+  SonarCloud quality-gate API. Generated child projects continue to opt into
+  their own SonarCloud analysis via the rendered config that ships inside the
+  template's rendered output directory.
+
 ### Changed
 
 - Cruft skip patterns moved from a runtime-written `.cruft.json` (silently overwritten
