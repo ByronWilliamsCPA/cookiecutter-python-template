@@ -90,7 +90,7 @@ git config --global commit.gpgsign true
    cd /tmp && rm -rf my_project
    ```
 6. Open a pull request with a clear description of the change and why it is needed.
-7. Address any feedback from automated reviewers (CodeRabbit, SonarCloud) before
+7. Address any feedback from automated reviewers (CodeRabbit, qlty) before
    requesting human review.
 
 ## Coding Standards
