@@ -575,33 +575,11 @@ Templates can execute arbitrary code:
 
 ## SonarCloud Integration
 
-Both the template repository and generated projects support SonarCloud for continuous code quality analysis.
-
-### Template Repository
-
-**Configuration**:
-
-- **Organization**: `williaby`
-- **Project Key**: `ByronWilliamsCPA_cookiecutter-python-template`
-- **Analysis Method**: CI-Based (GitHub Actions)
-- **Workflow**: `.github/workflows/sonarcloud.yml`
-- **Configuration**: `sonar-project.properties`
-- **Dashboard**: <https://sonarcloud.io/project/overview?id=ByronWilliamsCPA_cookiecutter-python-template>
-
-**What's Analyzed**:
-
-- Hook files (`hooks/*.py`)
-- Template files (`{{cookiecutter.project_slug}}/`)
-- Code quality metrics (bugs, code smells, maintainability)
-- Security vulnerabilities and hotspots
-- Hook file test coverage (when tests exist)
-
-**Quality Standards**:
-
-- Quality gate must pass before merging PRs
-- Security rating must be A or B
-- Maintainability rating must be A or B
-- No critical or high-severity vulnerabilities
+Generated projects support SonarCloud for continuous code quality analysis. The template
+repository itself does not run SonarCloud: the Jinja2 template body is not statically
+analyzable as plain Python, and analysis was failing with a `curl 403` from the quality-gate
+API. Neither `sonar-project.properties` nor `.github/workflows/sonarcloud.yml` exist at the
+template repo root.
 
 ### Generated Projects
 
