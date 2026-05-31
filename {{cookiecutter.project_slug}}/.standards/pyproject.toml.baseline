@@ -14,7 +14,7 @@
 #   - [tool.pytest.ini_options] - Test runner configuration
 #   - [tool.coverage.*] - Coverage configuration
 #   - [tool.interrogate] - Docstring coverage
-#   - [tool.darglint] - Docstring validation
+#   - [tool.pydoclint] - Docstring validation
 #   - [tool.mutmut] - Mutation testing
 #   - [tool.bandit] - Security scanning
 #   - [tool.vulture] - Dead code detection
@@ -415,28 +415,20 @@ ignore-init-module = true
 color = true
 
 # ==============================================================================
-# DARGLINT CONFIGURATION - Docstring Argument Validation
+# PYDOCLINT CONFIGURATION - Docstring Argument Validation
 # ==============================================================================
-# Validates that docstring arguments match function signatures
-# Reference: https://github.com/terrencepreilly/darglint
+# Validates that docstring arguments match function signatures.
+# Replaces archived darglint. Reference: https://jsh9.github.io/pydoclint/config_options.html
+# Posture: raises checking on; requires Returns for value-returning functions and Yields for
+# generators; only the implicit-None return case is lenient (require-return-section-when-returning-nothing=false).
 
-[tool.darglint]
-# Google-style docstrings (matches ruff pydocstyle convention)
-docstring_style = "google"
-# Strictness levels: short, long, full
-# - short: Only documented items must exist in signature
-# - long: All parameters must be documented (recommended)
-# - full: Types in docstring must match annotations
-strictness = "long"
-# Ignore missing parameter documentation in these cases
-ignore = [
-    "DAR101",  # Missing parameter(s) in Docstring (initially lenient)
-    "DAR201",  # Missing "Returns" in Docstring (handled by pydocstyle)
-    "DAR301",  # Missing "Yields" in Docstring
-    "DAR401",  # Missing exception(s) in Raises section
-]
-# Ignore in these directories
-ignore_regex = "^(tests|scripts|benchmarks|tools)/.*$"
+[tool.pydoclint]
+style = "google"
+exclude = '\.git|tests/|scripts/|benchmarks/|tools/|noxfile\.py|\.claude/'
+arg-type-hints-in-docstring = true
+arg-type-hints-in-signature = true
+skip-checking-raises = false
+require-return-section-when-returning-nothing = false
 
 # ==============================================================================
 # MUTATION TESTING CONFIGURATION (mutmut)

@@ -13,10 +13,10 @@ def validate_project_slug(project_slug: str) -> bool:
     """Validate that project_slug follows Python package naming conventions.
 
     Args:
-        project_slug: The project slug to validate
+        project_slug (str): The project slug to validate
 
     Returns:
-        True if valid, False otherwise
+        bool: True if valid, False otherwise
     """
     # Must be valid Python package name: lowercase, underscores, no hyphens
     pattern = r"^[a-z][a-z0-9_]*$"
@@ -27,10 +27,10 @@ def validate_email(email: str) -> bool:
     """Validate email address format.
 
     Args:
-        email: The email address to validate
+        email (str): The email address to validate
 
     Returns:
-        True if valid, False otherwise
+        bool: True if valid, False otherwise
     """
     # Basic email validation
     pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
@@ -41,10 +41,10 @@ def validate_github_username(username: str) -> bool:
     """Validate GitHub username format.
 
     Args:
-        username: The GitHub username to validate
+        username (str): The GitHub username to validate
 
     Returns:
-        True if valid, False otherwise
+        bool: True if valid, False otherwise
     """
     # GitHub username rules: alphanumeric and hyphens, no consecutive hyphens
     pattern = r"^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$"

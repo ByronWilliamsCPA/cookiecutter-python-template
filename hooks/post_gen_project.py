@@ -30,7 +30,7 @@ def remove_file(filepath: Path) -> None:
     """Remove a file if it exists.
 
     Args:
-        filepath: Path to the file to remove
+        filepath (Path): Path to the file to remove
     """
     if filepath.exists():
         filepath.unlink()
@@ -41,7 +41,7 @@ def remove_dir(dirpath: Path) -> None:
     """Remove a directory if it exists.
 
     Args:
-        dirpath: Path to the directory to remove
+        dirpath (Path): Path to the directory to remove
     """
     if dirpath.exists():
         shutil.rmtree(dirpath)
@@ -52,7 +52,7 @@ def make_executable(filepath: Path) -> None:
     """Make a file executable.
 
     Args:
-        filepath: Path to the file to make executable
+        filepath (Path): Path to the file to make executable
     """
     if filepath.exists():
         filepath.chmod(filepath.stat().st_mode | 0o111)
@@ -62,11 +62,11 @@ def run_command(cmd: list[str], check: bool = True) -> bool:
     """Run a shell command.
 
     Args:
-        cmd: Command and arguments as list
-        check: Whether to check return code
+        cmd (list[str]): Command and arguments as list
+        check (bool): Whether to check return code
 
     Returns:
-        True if successful, False otherwise
+        bool: True if successful, False otherwise
     """
     try:
         subprocess.run(cmd, check=check, capture_output=True, text=True)  # nosec B603
@@ -96,11 +96,11 @@ def maybe_run_branch_protection(flag: str, remote_url: str) -> bool:
     precondition was missed so the user can re-run the script manually.
 
     Args:
-        flag: The cookiecutter auto_setup_branch_protection value.
-        remote_url: The git remote.origin.url value (empty string if none).
+        flag (str): The cookiecutter auto_setup_branch_protection value.
+        remote_url (str): The git remote.origin.url value (empty string if none).
 
     Returns:
-        True if the script was invoked and exited 0, False otherwise.
+        bool: True if the script was invoked and exited 0, False otherwise.
     """
     # #ASSUME: Data Integrity: flag is the literal cookiecutter value, normalized to
     #          lowercase yes/no by cookiecutter.json's choice list.
@@ -677,8 +677,8 @@ def _install_claude_settings(repo_url: str, install_path: Path) -> None:
     """Clone and verify user-level Claude Code settings.
 
     Args:
-        repo_url: Git repository URL to clone from. Must pass _is_safe_clone_url.
-        install_path: Local path to install settings into. Must be inside the
+        repo_url (str): Git repository URL to clone from. Must pass _is_safe_clone_url.
+        install_path (Path): Local path to install settings into. Must be inside the
             user's home directory to prevent path traversal.
     """
     # #CRITICAL: Security: user-supplied repo_url passed to git clone via subprocess.
@@ -796,20 +796,20 @@ def _collect_optional_features(
     """Collect enabled optional features into a display list.
 
     Args:
-        include_background_jobs: Background jobs setting ("no", "arq", or "celery").
-        include_frontend: Frontend setting ("no", "react", etc.).
-        include_docker: Whether Docker is enabled.
-        include_sentry: Whether Sentry is enabled.
-        include_health_checks: Whether health checks are enabled.
-        include_caching: Whether caching is enabled.
-        include_load_testing: Whether load testing is enabled.
-        include_semantic_release: Whether semantic release is enabled.
-        include_coderabbit: Whether CodeRabbit is enabled.
-        include_linear: Whether Linear is enabled.
-        include_supply_chain: Whether supply chain security is enabled.
+        include_background_jobs (str): Background jobs setting ("no", "arq", or "celery").
+        include_frontend (str): Frontend setting ("no", "react", etc.).
+        include_docker (bool): Whether Docker is enabled.
+        include_sentry (bool): Whether Sentry is enabled.
+        include_health_checks (bool): Whether health checks are enabled.
+        include_caching (bool): Whether caching is enabled.
+        include_load_testing (bool): Whether load testing is enabled.
+        include_semantic_release (bool): Whether semantic release is enabled.
+        include_coderabbit (bool): Whether CodeRabbit is enabled.
+        include_linear (bool): Whether Linear is enabled.
+        include_supply_chain (bool): Whether supply chain security is enabled.
 
     Returns:
-        List of feature description strings for enabled features.
+        list[str]: List of feature description strings for enabled features.
     """
     simple_features: list[tuple[bool, str]] = [
         (include_docker, "Docker containerization"),
@@ -836,9 +836,9 @@ def _print_next_steps(
     """Print numbered next steps for project setup.
 
     Args:
-        project_slug: The generated project's directory name.
-        use_pre_commit: Whether pre-commit is enabled.
-        use_mkdocs: Whether MkDocs is enabled.
+        project_slug (str): The generated project's directory name.
+        use_pre_commit (bool): Whether pre-commit is enabled.
+        use_mkdocs (bool): Whether MkDocs is enabled.
     """
     print("\n📦 Next steps:")
     print("\n  1. Navigate to your project:")
@@ -883,10 +883,10 @@ def _print_infrastructure_integrations(
     """Print setup instructions for infrastructure integrations.
 
     Args:
-        include_docker: Whether Docker is enabled.
-        include_background_jobs: Background jobs setting ("no", "arq", or "celery").
-        include_load_testing: Whether load testing is enabled.
-        include_sentry: Whether Sentry is enabled.
+        include_docker (bool): Whether Docker is enabled.
+        include_background_jobs (str): Background jobs setting ("no", "arq", or "celery").
+        include_load_testing (bool): Whether load testing is enabled.
+        include_sentry (bool): Whether Sentry is enabled.
     """
     project_slug = "{{ cookiecutter.project_slug }}"
 
@@ -925,13 +925,13 @@ def _print_developer_tool_integrations(
     """Print setup instructions for developer tool integrations.
 
     Args:
-        include_semantic_release: Whether semantic release is enabled.
-        include_coderabbit: Whether CodeRabbit is enabled.
-        include_linear: Whether Linear is enabled.
-        include_supply_chain: Whether supply chain security is enabled.
-        include_frontend: Frontend setting ("no", "react", etc.).
-        frontend_package_manager: Package manager for frontend ("npm", "pnpm", etc.).
-        include_docker: Whether Docker is enabled.
+        include_semantic_release (bool): Whether semantic release is enabled.
+        include_coderabbit (bool): Whether CodeRabbit is enabled.
+        include_linear (bool): Whether Linear is enabled.
+        include_supply_chain (bool): Whether supply chain security is enabled.
+        include_frontend (str): Frontend setting ("no", "react", etc.).
+        frontend_package_manager (str): Package manager for frontend ("npm", "pnpm", etc.).
+        include_docker (bool): Whether Docker is enabled.
     """
     if include_semantic_release:
         print("\n  🚀 Semantic Release:")

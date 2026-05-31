@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenSSF baseline files: LICENSE, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md
 - `detect-secrets` pre-commit hook with baseline for secret scanning
 - `pip-audit` in main CI and pre-commit hooks; replaces `safety`
-- `darglint` pre-commit hook for docstring argument validation
+- `pydoclint` pre-commit hook for docstring argument validation
 - `docs/known-vulnerabilities.md` for tracking unfixed CVEs
 - Python 3.14 added to CI version matrices
 - `pytest-mock` and `pytest-randomly` added to dev dependencies
