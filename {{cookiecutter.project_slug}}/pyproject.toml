@@ -94,7 +94,7 @@ dev = [
     "bandit>=1.7.0",
     "vulture>=2.11",  # Dead code detection
     "pip-audit>=2.7.0",  # Python vulnerability scanning
-    "pydoclint>=0.8.4",  # Docstring argument validation (replaces archived darglint)
+    "pydoclint>=0.8.4",  # Docstring argument validation
 
     # Pre-commit
     {% if cookiecutter.use_pre_commit == "yes" -%}
@@ -618,10 +618,8 @@ ignore-init-module = true
 color = true
 
 # Pydoclint Configuration (Docstring Argument Validation)
-# Validates that docstring arguments match function signatures.
-# Replaces archived darglint. Reference: https://jsh9.github.io/pydoclint/config_options.html
-# Posture: keep raises checking on; require docstring arg type hints; lenient on missing
-# Returns/Yields sections (matches darglint DAR201/DAR301-ignored behaviour).
+# Validates that docstring arguments match function signatures
+# Reference: https://github.com/jsh9/pydoclint
 [tool.pydoclint]
 style = "google"
 exclude = '\.git|tests/|scripts/|benchmarks/|tools/|noxfile\.py|\.claude/'
@@ -629,8 +627,8 @@ arg-type-hints-in-docstring = true
 arg-type-hints-in-signature = true
 skip-checking-raises = false
 require-return-section-when-returning-nothing = false
-require-return-section-when-returning-values = false  # lenient: do not require a Returns section on value-returning functions (matches darglint DAR201-ignored)
-require-yield-section-when-yielding-values = false  # lenient: do not require a Yields section; DOC403 (extra Yields) still fires regardless
+require-return-section-when-returning-values = false
+require-yield-section-when-yielding-values = false
 
 # Mutation Testing Configuration (mutmut)
 [tool.mutmut]

@@ -124,16 +124,15 @@ repos:
         args: ['-v', '--fail-under=85', 'hooks/']
         pass_filenames: false
 
-  - repo: local
+  - repo: https://github.com/jsh9/pydoclint
+    rev: 88d83c94156c5e51a09938e77019f2c58e92ab58  # 0.8.4  # pragma: allowlist secret
     hooks:
-      - id: darglint
-        name: darglint docstring validation
-        entry: darglint
-        language: system
+      - id: pydoclint
+        args: ["--config=pyproject.toml"]
         types: [python]
         files: ^hooks/.*\.py$
-        exclude: ^tests/|^scripts/|^benchmarks/|^tools/
-        args: ['--strictness', 'long', '--docstring-style', 'google']
+        stages: [pre-commit]
+        exclude: ^(tests|scripts|benchmarks|tools)/
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: 4de1378e4cd853bfc2b111b05fff35e2dbf809a3  # v0.9.0.6

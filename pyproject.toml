@@ -221,5 +221,18 @@ exclude_lines = [
 dev = [
     "codespell>=2.4.1",
     "interrogate>=1.7.0",
-    "darglint>=1.8.1",
+    "pydoclint>=0.8.4",
 ]
+
+# Pydoclint Configuration (Docstring Argument Validation)
+# Validates that docstring arguments match function signatures
+# Reference: https://github.com/jsh9/pydoclint
+[tool.pydoclint]
+style = "google"
+exclude = '\.git|tests/|scripts/|benchmarks/|tools/|noxfile\.py|\.claude/'
+arg-type-hints-in-docstring = true
+arg-type-hints-in-signature = true
+skip-checking-raises = false
+require-return-section-when-returning-nothing = false
+require-return-section-when-returning-values = false
+require-yield-section-when-yielding-values = false
