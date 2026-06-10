@@ -1,0 +1,19 @@
+version: 2
+# Detection-only: Renovate is the sole PR-opener. open-pull-requests-limit: 0
+# suppresses Dependabot version PRs. Dependabot alerts (a repo setting) remain
+# the multi-ecosystem detection ledger. Refs: standards CI-021 (amended), CI-074.
+# Scope note: this is a cookiecutter TEMPLATE repo. Manifests inside
+# {{cookiecutter.project_slug}}/ contain Jinja and are NOT parseable by
+# Dependabot, so they are intentionally excluded. Only the template repo's own
+# top-level manifests are described here.
+updates:
+  - package-ecosystem: "pip"            # Python: root pyproject.toml
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+  - package-ecosystem: "github-actions" # .github/workflows/ present
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
