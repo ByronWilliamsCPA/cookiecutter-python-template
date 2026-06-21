@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request
+    from starlette.middleware.base import RequestResponseEndpoint
     from starlette.types import ASGIApp
 
 
@@ -58,7 +59,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     - Permissions-Policy: Restrict browser features
     """
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         """Add security headers to response."""
         response = await call_next(request)
 
@@ -97,7 +100,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         )
 
         # Remove server identification (OWASP A09)
-        response.headers.pop("Server", None)
+        if "Server" in response.headers:
+            del response.headers["Server"]
 
         return response
 
@@ -155,7 +159,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._last_cleanup = current_time
 
         # Remove expired entries from all IPs
-        stale_ips = []
+        stale_ips: list[str] = []
         for ip, timestamps in self.requests.items():
             # Filter to only recent timestamps
             recent = [t for t in timestamps if current_time - t < 60]
@@ -181,12 +185,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 {ip: timestamps for ip, timestamps in sorted_ips[: self.max_tracked_ips]},
             )
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         """Apply rate limiting per IP address."""
         if request.client is None:
             logger.warning(
-                "request.client is None - cannot determine client IP for rate limiting. "
-                "Using 'unknown' as fallback. This may occur during testing or with certain proxy configurations."
+                "request.client is None; using 'unknown' as client IP for rate limiting"
             )
         client_ip = request.client.host if request.client else "unknown"
         current_time = time.time()
@@ -394,7 +399,9 @@ class SSRFPreventionMiddleware(BaseHTTPMiddleware):
 
         return False
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         """Check for SSRF patterns in request.
 
         Validates query parameters, form data, and JSON body for potential
@@ -402,7 +409,7 @@ class SSRFPreventionMiddleware(BaseHTTPMiddleware):
         """
         # Check query parameters for URLs
         for param, value in request.query_params.items():
-            if isinstance(value, str) and ("://" in value or value.startswith("//")):
+            if "://" in value or value.startswith("//"):
                 if self._is_blocked_url(value):
                     return JSONResponse(
                         status_code=400,

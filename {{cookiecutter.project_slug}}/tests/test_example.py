@@ -146,6 +146,7 @@ class TestLogging:
         assert call_args[1]["extra_metric"] == 42
 
 
+{% if cookiecutter.include_cli == "yes" %}
 class TestCLI:
     """Test command-line interface.
 
@@ -364,6 +365,7 @@ class TestCLI:
             # Should exit with error code
             assert result.exit_code == 1
             assert "Error:" in result.output
+{% endif %}
 
 
 class TestLoggingJSON:
