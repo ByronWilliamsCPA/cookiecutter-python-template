@@ -150,8 +150,22 @@ api = [
     "uvicorn[standard]>=0.23.0",
     "python-multipart>=0.0.18",
     "starlette>=0.49.1",
+]
+{% endif %}
+{% if cookiecutter.include_database != "none" %}
+# Database (async SQLAlchemy + dialect-specific driver)
+database = [
     "sqlalchemy[asyncio]>=2.0.0",  # ORM for database operations
+{%- if cookiecutter.database_dialect == "postgresql" %}
+    "asyncpg>=0.29.0",  # Async PostgreSQL driver
+{%- elif cookiecutter.database_dialect == "mysql" %}
+    "aiomysql>=0.2.0",  # Async MySQL driver
+{%- else %}
+    "aiosqlite>=0.19.0",  # Async SQLite driver
+{%- endif %}
+{%- if cookiecutter.include_database in ["sqlalchemy_migrations", "sqlalchemy_ledger"] %}
     "alembic>=1.12.0",  # Database migrations
+{%- endif %}
 ]
 {% endif %}
 {% if cookiecutter.include_sentry == "yes" %}
@@ -210,6 +224,9 @@ packages = ["src/{{ cookiecutter.project_slug }}"]
 [tool.ruff]
 line-length = 88
 target-version = "py{{ cookiecutter.python_version_short }}"
+# Respect `exclude` even when pre-commit passes files explicitly, so generated
+# Alembic migration scripts under migrations/ are not linted.
+force-exclude = true
 exclude = [
     ".git",
     ".mypy_cache",
@@ -218,6 +235,7 @@ exclude = [
     "__pycache__",
     "dist",
     "build",
+    "migrations",
 ]
 
 [tool.ruff.format]
@@ -612,7 +630,7 @@ show_missing = true
 [tool.interrogate]
 verbose = 1
 fail-under = {{ cookiecutter.docstring_coverage_target }}
-exclude = ["tests", "docs", "build", "dist"]
+exclude = ["tests", "docs", "build", "dist", "migrations"]
 ignore-init-method = true
 ignore-init-module = true
 color = true
@@ -622,7 +640,7 @@ color = true
 # Reference: https://github.com/jsh9/pydoclint
 [tool.pydoclint]
 style = "google"
-exclude = '\.git|tests/|scripts/|benchmarks/|tools/|noxfile\.py|\.claude/'
+exclude = '\.git|tests/|scripts/|benchmarks/|tools/|migrations/|noxfile\.py|\.claude/'
 arg-type-hints-in-docstring = true
 arg-type-hints-in-signature = true
 skip-checking-raises = false
