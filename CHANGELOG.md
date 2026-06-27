@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- CI: Claude Tier 0 baseline PR review caller
+  (`.github/workflows/claude-baseline-review.yml`), a thin caller of the org
+  reusable in `ByronWilliamsCPA/.github`. Part of the org-wide tiered-pr-review
+  rollout.
 - `qlty.yml` reusable-workflow caller in generated projects'
   `.github/workflows/` (satisfies CI-013 manifest gap); pins upstream
   `python-qlty-coverage.yml` at SHA `1b2d33c4`; runs on CI workflow_run
