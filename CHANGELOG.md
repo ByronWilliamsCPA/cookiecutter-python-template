@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `claude-baseline-review.yml` reusable-workflow caller in generated
+  projects' `.github/workflows/`, so new repos inherit the Tier 0 Claude
+  baseline PR reviewer at scaffold time. Thin caller of the org reusable in
+  `ByronWilliamsCPA/.github`, pinned at SHA `8de6560`; `repo-description` is
+  templated from `project_short_description`; the `ANTHROPIC_API_KEY` secret
+  reference is wrapped in a Jinja `{% raw %}{% endraw %}` guard so the
+  GitHub Actions `${{ ... }}` expression survives template rendering. No
+  caller-level `concurrency` block (the reusable owns concurrency). Part of
+  the org-wide tiered-pr-review rollout.
 - `qlty.yml` reusable-workflow caller in generated projects'
   `.github/workflows/` (satisfies CI-013 manifest gap); pins upstream
   `python-qlty-coverage.yml` at SHA `1b2d33c4`; runs on CI workflow_run
