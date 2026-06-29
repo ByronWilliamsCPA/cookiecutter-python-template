@@ -1,0 +1,3 @@
+{
+  "snyk.advanced.additionalParameters": "--exclude=.venv,.worktrees,node_modules,site,htmlcov,out"
+}

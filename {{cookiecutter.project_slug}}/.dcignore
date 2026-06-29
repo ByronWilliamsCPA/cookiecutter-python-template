@@ -1,0 +1,10 @@
+# Snyk Code scope configuration (gitignore-style).
+# .dcignore scopes Snyk Code's filesystem scan to project-owned code.
+# Paths listed here are excluded from Snyk Code analysis.
+.venv/
+.worktrees/
+node_modules/
+site/
+htmlcov/
+out/
+**/site-packages/**
