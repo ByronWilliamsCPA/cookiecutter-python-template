@@ -1,0 +1,19 @@
+# Snyk scope configuration.
+# Snyk scans the on-disk working tree, not git or the project manifests, so
+# it walks into virtual environments, worktrees, and vendored packages and
+# reports their dependencies as if they belong to this project.
+# .gitignore does NOT constrain Snyk's filesystem scan.
+# The paths below scope Snyk to project-owned code only.
+version: v1.25.0
+exclude:
+  global:
+    - .venv/**
+    - "**/.venv/**"
+    - .worktrees/**
+    - "**/.worktrees/**"
+    - node_modules/**
+    - "**/node_modules/**"
+    - site/**
+    - htmlcov/**
+    - out/**
+    - "**/site-packages/**"

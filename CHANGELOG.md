@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Snyk scope baseline in generated projects: `.snyk` (exclude paths for
+  `.venv/`, `.worktrees/`, `node_modules/`, `site/`, `htmlcov/`, `out/`,
+  and `**/site-packages/**`) prevents Snyk's filesystem scan from walking
+  into virtual environments and vendored packages; `.dcignore` applies the
+  same exclusions to Snyk Code; `.vscode/settings.json` adds
+  `snyk.advanced.additionalParameters` for the VS Code extension. Note:
+  `.gitignore` does not constrain Snyk's scan; these files are required to
+  scope it to project-owned code
 - `qlty.yml` reusable-workflow caller in generated projects'
   `.github/workflows/` (satisfies CI-013 manifest gap); pins upstream
   `python-qlty-coverage.yml` at SHA `1b2d33c4`; runs on CI workflow_run

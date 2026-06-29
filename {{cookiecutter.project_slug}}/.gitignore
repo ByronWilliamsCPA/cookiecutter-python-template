@@ -148,6 +148,8 @@ dmypy.json
 
 # IDE specific files
 .vscode/
+# Track Snyk VS Code extension settings (project-scoped, not personal IDE settings)
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo
@@ -219,6 +221,8 @@ ENV/
 
 # IDE and Editor files
 .vscode
+# Track Snyk VS Code extension settings (project-scoped, not personal IDE settings)
+!.vscode/settings.json
 .idea
 .sublime-project
 .sublime-workspace
