@@ -317,6 +317,21 @@ def _cleanup_api_and_backend_files() -> None:
         remove_file(Path("src/{{ cookiecutter.project_slug }}/core/sentry.py"))
 
 
+def _cleanup_database_files() -> None:
+    """Remove database and migration files based on cookiecutter choices."""
+    # No database selected: drop the engine/session module entirely.
+    if "{{ cookiecutter.include_database }}" == "none":
+        remove_file(Path("src/{{ cookiecutter.project_slug }}/core/database.py"))
+
+    # Alembic only ships with migration-capable database choices.
+    if "{{ cookiecutter.include_database }}" not in (
+        "sqlalchemy_migrations",
+        "sqlalchemy_ledger",
+    ):
+        remove_file(Path("alembic.ini"))
+        remove_dir(Path("migrations"))
+
+
 def _cleanup_frontend_files() -> None:
     """Remove frontend files based on cookiecutter choices."""
     # Remove load testing files if not needed
@@ -374,6 +389,7 @@ def cleanup_conditional_files() -> None:
     _cleanup_documentation_files()
     _cleanup_tooling_files()
     _cleanup_api_and_backend_files()
+    _cleanup_database_files()
     _cleanup_frontend_files()
     _cleanup_workflow_files()  # Must be last: may remove .github/ entirely
     # Note: Security scanning workflows (security-analysis.yml) are always included

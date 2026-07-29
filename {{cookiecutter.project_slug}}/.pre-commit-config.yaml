@@ -216,7 +216,7 @@ repos:
         args: ["--config=pyproject.toml"]
         types: [python]
         stages: [pre-commit]
-        exclude: ^(tests|scripts|benchmarks|tools)/
+        exclude: ^(tests|scripts|benchmarks|tools|migrations)/
 
 # Exclude patterns
 exclude: |
