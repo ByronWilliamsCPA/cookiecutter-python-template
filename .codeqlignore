@@ -1,4 +1,0 @@
-# Exclude Jinja2 cookiecutter template directories from CodeQL analysis.
-# These directories contain {{cookiecutter.variable}} template expressions
-# inside Python files, causing CodeQL to report syntax errors during extraction.
-{{cookiecutter.project_slug}}/

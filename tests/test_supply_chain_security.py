@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -78,24 +77,26 @@ class TestSupplyChainSecurityEnabled:
             "Script should reference Infisical"
         )
 
-    def test_dependency_review_workflow_created(
+    def test_dependency_review_workflow_not_generated(
         self, template_dir: Path, temp_dir: Path, supply_chain_config: dict[str, Any]
     ) -> None:
-        """Verify dependency-review.yml workflow is created."""
+        """Verify dependency-review.yml is never generated, even with supply chain security enabled.
+
+        `actions/dependency-review-action` depends on GitHub's dependency-graph
+        diff and GitHub Advanced Security (Code Security), a paid GitHub
+        feature. GitHub now bills that feature, so the action no longer
+        functions without it. The workflow template was removed fleet-wide;
+        see CHANGELOG.md [Unreleased] > Removed.
+        """
         from tests.conftest import generate_project
 
         project_dir = generate_project(template_dir, temp_dir, supply_chain_config)
 
         workflow_file = project_dir / ".github" / "workflows" / "dependency-review.yml"
-        assert workflow_file.exists(), "dependency-review.yml should exist"
-
-        content = workflow_file.read_text()
-
-        # Verify workflow structure
-        assert "Dependency Review" in content, "Workflow should have Dependency Review name"
-        assert "pull_request" in content, "Workflow should trigger on pull requests"
-        assert "dependency-review-action" in content, "Workflow should use dependency-review-action"
-        assert "fail-on-severity" in content, "Workflow should have severity configuration"
+        assert not workflow_file.exists(), (
+            "dependency-review.yml should not exist; actions/dependency-review-action "
+            "requires GitHub Advanced Security and was removed fleet-wide"
+        )
 
     def test_pyproject_has_uv_index_config(
         self, template_dir: Path, temp_dir: Path, supply_chain_config: dict[str, Any]
@@ -276,7 +277,12 @@ class TestSupplyChainSecurityDisabled:
     def test_dependency_review_workflow_not_created(
         self, template_dir: Path, temp_dir: Path, no_supply_chain_config: dict[str, Any]
     ) -> None:
-        """Verify dependency-review.yml is NOT created when disabled."""
+        """Verify dependency-review.yml is NOT created when disabled.
+
+        The workflow template was removed fleet-wide regardless of this flag
+        (see test_dependency_review_workflow_not_generated), so this remains
+        true; kept as regression coverage for the disabled path specifically.
+        """
         from tests.conftest import generate_project
 
         project_dir = generate_project(template_dir, temp_dir, no_supply_chain_config)
@@ -411,55 +417,23 @@ class TestSupplyChainSecurityFileContent:
         return generate_project(template_dir, temp_dir, config)
 
     def test_dependency_review_license_config(self, supply_chain_project: Path) -> None:
-        """Verify dependency review workflow has proper license configuration."""
+        """Verify the copyleft license deny-list is gone along with dependency-review.yml.
+
+        This deny-list (AGPL/GPL/LGPL family SPDX ids) previously lived
+        exclusively in dependency-review.yml's `deny-licenses` input.
+        actions/dependency-review-action requires GitHub Advanced Security
+        (Code Security), a paid GitHub feature, so the workflow was removed
+        fleet-wide (see CHANGELOG.md [Unreleased] > Removed). Generated
+        projects currently have no equivalent copyleft-license gate;
+        `sbom.yml`'s `fail-on-forbidden-licenses` input defaults to `false`
+        and does not carry this deny-list. Tracked as a known coverage gap
+        pending a replacement license gate.
+        """
         workflow = supply_chain_project / ".github" / "workflows" / "dependency-review.yml"
-        content = workflow.read_text()
-
-        # Uses deny-list approach: copyleft licenses explicitly blocked,
-        # permissive licenses (MIT, Apache-2.0) allowed implicitly.
-
-        assert "deny-licenses" in content, "Should use deny-list approach"
-
-        # Strong copyleft variants that must be denied (AGPL family + GPLv2/3)
-        denied_required = [
-            "AGPL-3.0",
-            "AGPL-3.0-only",
-            "AGPL-3.0-or-later",
-            "GPL-2.0-only",
-            "GPL-2.0-or-later",
-            "GPL-3.0-only",
-            "GPL-3.0-or-later",
-            "LGPL-2.0-only",
-            "LGPL-2.1-only",
-            "LGPL-3.0-only",
-            "LGPL-3.0-or-later",
-        ]
-        for spdx in denied_required:
-            assert spdx in content, f"Should deny {spdx}"
-
-        # Negative test: permissive licenses MUST NOT appear in the deny-list.
-        # The comment above claims they are allowed implicitly; this assertion
-        # verifies the claim by failing if any permissive SPDX identifier
-        # accidentally lands in deny-licenses.
-        permissive_must_not_be_denied = [
-            "MIT",
-            "Apache-2.0",
-            "BSD-3-Clause",
-            "BSD-2-Clause",
-            "ISC",
-        ]
-        # Look at only the deny-licenses section to avoid false positives from
-        # other YAML keys that may legitimately mention permissive licenses.
-        deny_section_match = re.search(
-            r"deny-licenses:\s*[\"']?([^\n]+(?:\n\s+[^\n]+)*)",
-            content,
+        assert not workflow.exists(), (
+            "dependency-review.yml should not exist; its deny-licenses "
+            "configuration was removed along with it"
         )
-        deny_block = deny_section_match.group(1) if deny_section_match else content
-        for spdx in permissive_must_not_be_denied:
-            # Use word-boundary regex so MIT does not match e.g. MITRE
-            assert not re.search(rf"\b{re.escape(spdx)}\b", deny_block), (
-                f"{spdx} is a permissive license and must not appear in deny-licenses"
-            )
 
     def test_gcp_variables_rendered_in_pyproject(self, supply_chain_project: Path) -> None:
         """Verify GCP variables are properly rendered in pyproject.toml."""

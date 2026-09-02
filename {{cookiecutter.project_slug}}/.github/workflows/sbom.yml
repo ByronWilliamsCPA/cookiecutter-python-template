@@ -6,7 +6,12 @@
 #   - CycloneDX SBOM generation
 #   - Trivy vulnerability scanning
 #   - License compliance checking
-#   - SARIF upload to GitHub Security tab
+#   - SBOM/artifact results published as downloadable build artifacts. The
+#     upstream python-sbom.yml reusable workflow also attempts a SARIF
+#     upload to the GitHub Security tab for its Trivy runtime-deps scan;
+#     GitHub Advanced Security (Code Security) requires a paid plan and is
+#     not assumed to be enabled on projects generated from this template, so
+#     that upload will be a no-op unless the downstream project enables it.
 {%- if cookiecutter.include_github_actions == "yes" %}
 name: SBOM & Security Scan
 

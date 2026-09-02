@@ -123,6 +123,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   SonarCloud quality-gate API. Generated child projects continue to opt into
   their own SonarCloud analysis via the rendered config that ships inside the
   template's rendered output directory.
+- GitHub Advanced Security (Code Security) dependent CI, fleet-wide: GitHub
+  now bills this feature, so CodeQL code scanning, `actions/dependency-review-action`,
+  and SARIF ingestion into the Security tab no longer function without it.
+  Removed `.github/workflows/codeql.yml`, `.github/workflows/dependency-review.yml`,
+  `.github/codeql-config.yml`, `.github/codeql/codeql-config.yml`, and
+  `.codeqlignore` from this template repository's own CI, plus
+  `{{cookiecutter.project_slug}}/.github/workflows/dependency-review.yml`
+  from generated projects. Removed the direct `github/codeql-action/upload-sarif`
+  step from `{{cookiecutter.project_slug}}/.github/workflows/cifuzzy.yml`
+  (replaced with an `actions/upload-artifact` step) and from the standalone
+  branch of `{{cookiecutter.project_slug}}/.github/workflows/scorecard.yml`
+  (an artifact upload of the same file already existed). Flipped
+  `upload-sarif: true` to `false` on the org-workflow callers that expose
+  that toggle (`.github/workflows/scorecard.yml`,
+  `{{cookiecutter.project_slug}}/.github/workflows/scorecard.yml`,
+  `{{cookiecutter.project_slug}}/.github/workflows/container-security.yml`);
+  each callee already publishes an unconditional `actions/upload-artifact`
+  fallback, so no findings are lost. `run-codeql` / `run-dependency-review`
+  input lines on `security-analysis.yml` callers were intentionally left
+  untouched: their defaults live in the shared `ByronWilliamsCPA/.github`
+  reusable workflow and are being retired there in a separate coordinated
+  change.
 
 ### Fixed
 

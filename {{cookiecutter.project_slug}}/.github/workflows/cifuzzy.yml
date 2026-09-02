@@ -11,7 +11,10 @@
 #
 # Duration: 600 seconds per run
 # Sanitizer: AddressSanitizer for memory safety
-# Reporting: SARIF format uploaded to Security tab
+# Reporting: SARIF format published as a downloadable build artifact.
+#   GitHub Advanced Security (Code Security) requires a paid plan and is not
+#   assumed to be enabled on projects generated from this template, so
+#   results are not uploaded to the Security tab.
 
 {%- if cookiecutter.include_fuzzing == "yes" %}
 name: Continuous Fuzzing
@@ -29,7 +32,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write  # For SARIF upload
 
 jobs:
   fuzzing:
@@ -79,12 +81,19 @@ jobs:
           sanitizer: {% raw %}${{  matrix.sanitizer  }}{% endraw %}
           output-sarif: true
 
-      - name: Upload SARIF
+      # GitHub Advanced Security (Code Security) requires a paid plan and is
+      # not assumed to be enabled on projects generated from this template,
+      # so github/codeql-action/upload-sarif has no destination to post to.
+      # Publish the SARIF as a downloadable artifact instead so findings
+      # remain reviewable.
+      - name: Upload fuzzing SARIF artifact
         if: always() && steps.check-fuzz.outputs.has-targets == 'true'
-        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          sarif_file: results.sarif
-          category: fuzzing-{% raw %}${{  matrix.sanitizer  }}{% endraw %}
+          name: fuzzing-sarif-{% raw %}${{  matrix.sanitizer  }}{% endraw %}
+          path: results.sarif
+          retention-days: 30
+          if-no-files-found: warn
 
       - name: Upload Crash Artifacts
         if: failure() && steps.check-fuzz.outputs.has-targets == 'true'
