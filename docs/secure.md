@@ -211,7 +211,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write  # For SARIF upload
 
 env:
   INFISICAL_DOMAIN: https://secrets.byronwilliamscpa.com
@@ -288,34 +287,42 @@ jobs:
       INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
 ```
 
-### 3.3 Dependency Review (PRs)
+### 3.3 Dependency Vetting (PRs)
 
-Add dependency review for pull requests:
+`actions/dependency-review-action` relies on GitHub's dependency-graph diff
+and GitHub Advanced Security (Code Security), a paid GitHub feature; without
+it the action either fails to resolve a diff or (with `continue-on-error`)
+silently reports nothing. Do not add `dependency-review.yml` unless GHAS is
+actually enabled and verified on the target repo.
+
+For projects without GHAS, gate PRs with OSV-Scanner against the lockfile
+instead, which needs no GitHub billing feature and no API key:
 
 ```yaml
 # .github/workflows/dependency-review.yml
-name: Dependency Review
+name: Dependency Vetting
 
 on:
   pull_request:
     branches: [main]
+    paths:
+      - 'pyproject.toml'
+      - 'uv.lock'
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
-  dependency-review:
+  osv-scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
+      - name: OSV-Scanner dependency scan
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
         with:
-          fail-on-severity: high
-          deny-licenses: GPL-3.0, AGPL-3.0
-          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
+          scan-args: |-
+            --lockfile=./uv.lock
 ```
 
 ---

@@ -34,7 +34,6 @@ concurrency:
 
 permissions:
   contents: read
-  security-events: write
   packages: read
 
 jobs:
@@ -51,7 +50,12 @@ jobs:
       run-hadolint: true
       hadolint-failure-threshold: 'warning'
       generate-sbom: true
-      upload-sarif: true
+      # GitHub Advanced Security (Code Security) requires a paid plan and is
+      # not assumed to be enabled on projects generated from this template.
+      # The reusable workflow's "Upload container security artifacts" step
+      # runs unconditionally (not gated on upload-sarif), so results remain
+      # reviewable as a build artifact even with SARIF upload disabled.
+      upload-sarif: false
       artifact-retention-days: 90
     secrets: inherit
 {%- elif cookiecutter.include_github_actions == "yes" %}

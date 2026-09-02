@@ -221,7 +221,10 @@ Complete project structure with:
 - ✅ **Architecture Decision Records** (ADRs)
 
 **Security (OWASP Top 10 Compliant):**
-- ✅ **7+ security tools** (Bandit, Safety, OSV-Scanner, CodeQL, Gitleaks, etc.)
+- ✅ **Security tools** (Bandit, OSV-Scanner, Trivy, Gitleaks, etc.); the org-workflow variant
+  can also enable CodeQL and `actions/dependency-review-action` via `security-analysis.yml`,
+  but both require GitHub Advanced Security (Code Security), a paid GitHub feature not assumed
+  to be enabled on generated projects
 - ✅ **SBOM generation** (CycloneDX format)
 - ✅ **API security middleware** (headers, rate limiting, SSRF prevention)
 - ✅ **Secrets scanning** with Gitleaks

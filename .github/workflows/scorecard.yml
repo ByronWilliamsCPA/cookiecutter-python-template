@@ -23,8 +23,14 @@ jobs:
   scorecard:
     name: Scorecard Analysis
     permissions:
-      security-events: write
       id-token: write
       contents: read
       actions: read
     uses: ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml@961eb17d8e9b7fe0d8bfc5dbe9d23c824484fb11  # main
+    with:
+      # GitHub Advanced Security (Code Security) is not enabled on this repo,
+      # so the reusable workflow's upload-sarif step (default: true) has no
+      # destination to post to. The callee's "Upload Scorecard artifact"
+      # step runs unconditionally, so results remain reviewable as a build
+      # artifact.
+      upload-sarif: false
