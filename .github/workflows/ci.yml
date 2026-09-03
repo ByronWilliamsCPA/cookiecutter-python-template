@@ -20,6 +20,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main, master, develop]
+  merge_group:
   workflow_dispatch:
 
 permissions:
