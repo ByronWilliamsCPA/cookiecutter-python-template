@@ -781,6 +781,7 @@ def setup_claude_user_settings() -> None:
 
 
 def _collect_optional_features(
+    *,
     include_background_jobs: str,
     include_frontend: str,
     include_docker: bool,
@@ -914,6 +915,7 @@ def _print_infrastructure_integrations(
 
 
 def _print_developer_tool_integrations(
+    *,
     include_semantic_release: bool,
     include_coderabbit: bool,
     include_linear: bool,
@@ -1005,17 +1007,17 @@ def print_success_message() -> None:
     print("=" * 60)
 
     optional_features = _collect_optional_features(
-        include_background_jobs,
-        include_frontend,
-        include_docker,
-        include_sentry,
-        include_health_checks,
-        include_caching,
-        include_load_testing,
-        include_semantic_release,
-        include_coderabbit,
-        include_linear,
-        include_supply_chain,
+        include_background_jobs=include_background_jobs,
+        include_frontend=include_frontend,
+        include_docker=include_docker,
+        include_sentry=include_sentry,
+        include_health_checks=include_health_checks,
+        include_caching=include_caching,
+        include_load_testing=include_load_testing,
+        include_semantic_release=include_semantic_release,
+        include_coderabbit=include_coderabbit,
+        include_linear=include_linear,
+        include_supply_chain=include_supply_chain,
     )
     if optional_features:
         print("\n✨ Optional features included:")
@@ -1027,13 +1029,13 @@ def print_success_message() -> None:
         include_docker, include_background_jobs, include_load_testing, include_sentry
     )
     _print_developer_tool_integrations(
-        include_semantic_release,
-        include_coderabbit,
-        include_linear,
-        include_supply_chain,
-        include_frontend,
-        frontend_package_manager,
-        include_docker,
+        include_semantic_release=include_semantic_release,
+        include_coderabbit=include_coderabbit,
+        include_linear=include_linear,
+        include_supply_chain=include_supply_chain,
+        include_frontend=include_frontend,
+        frontend_package_manager=frontend_package_manager,
+        include_docker=include_docker,
     )
 
     print("\n" + "=" * 60)
