@@ -647,7 +647,7 @@ Semantic Release uses conventional commits to automatically determine version bu
 ```toml
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
-commit_parser = "conventional_commits"
+commit_parser = "conventional"
 major_on_zero = false  # Don't bump major for breaking changes on 0.x
 allow_zero_version = true
 ```
